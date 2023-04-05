@@ -1,8 +1,9 @@
 package ua.foxminded.schoolapp.datageneration;
 
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import ua.foxminded.schoolapp.dto.Group;
+import java.util.List;
 import java.util.Random;
 
 public class GroupsGenerator {
@@ -10,11 +11,19 @@ public class GroupsGenerator {
     private final String SEPARATOR = "-";
     private Random random = new Random();
 
-    public Set<String> generateUniqueGroups() {
+    public List<Group> getGroups() {
+        List<String> groupsNames = generateGroupsNames();
+
+        return IntStream.rangeClosed(1, 10)
+                        .mapToObj(i -> new Group(i, groupsNames.get(i - 1)))
+                        .toList();
+    }
+
+    private List<String> generateGroupsNames() {
         return Stream.generate(() -> createRandomInitials() + SEPARATOR + createRandomDigits())
                      .distinct()
                      .limit(10)
-                     .collect(Collectors.toSet());
+                     .toList();
     }
 
     private String createRandomInitials() {

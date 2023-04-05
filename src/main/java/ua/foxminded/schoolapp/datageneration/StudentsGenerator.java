@@ -6,23 +6,40 @@ import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Random;
 import java.util.ArrayList;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import ua.foxminded.schoolapp.dto.Student;
 
-public class StudentsGeneration {
+public class StudentsGenerator {
 
-    Random random = new Random();
+    private Random random = new Random();
     
-    public Set<String> generateStudents() {
+    public List<Student> getStudents() {
+        List<String[]> nameOfStudents = generateStudents();        
+
+        return IntStream.rangeClosed(1, 200)
+                        .mapToObj(i -> {
+                            String firstName = nameOfStudents.get(i - 1)[0];
+                            String lastName = nameOfStudents.get(i - 1)[1];
+                            return new Student(i, generateRandomGroupId(), firstName, lastName);
+                         })
+                        .toList();
+    }
+    
+    
+    private List<String[]> generateStudents() {
         List<String> firstNames = read("first_names.txt");
         List<String> lastNames = read("last_names.txt");
         
         return Stream.generate(() -> firstNames.get(random.nextInt(20)) + " " + lastNames.get(random.nextInt(20)))
                      .distinct()
                      .limit(200)
-                     .collect(Collectors.toSet());
-        
+                     .map(fullName -> fullName.split(" "))
+                     .toList();
+    }
+
+    private int generateRandomGroupId() {
+        return random.nextInt(1, 11);
     }
 
     private List<String> read(String fileName) {
@@ -37,4 +54,5 @@ public class StudentsGeneration {
         }
         return names;
     }
+
 }
