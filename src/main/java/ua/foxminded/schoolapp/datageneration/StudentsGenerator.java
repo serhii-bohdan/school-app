@@ -25,12 +25,11 @@ public class StudentsGenerator {
                          })
                         .toList();
     }
-    
-    
+
     private List<String[]> generateStudents() {
         List<String> firstNames = read("first_names.txt");
         List<String> lastNames = read("last_names.txt");
-        
+
         return Stream.generate(() -> firstNames.get(random.nextInt(20)) + " " + lastNames.get(random.nextInt(20)))
                      .distinct()
                      .limit(200)
