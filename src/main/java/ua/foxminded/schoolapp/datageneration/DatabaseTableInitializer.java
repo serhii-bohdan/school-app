@@ -1,7 +1,7 @@
 package ua.foxminded.schoolapp.datageneration;
 
 import java.util.List;
-import ua.foxminded.schoolapp.dao.TablesSetupDAO;
+import ua.foxminded.schoolapp.dao.SqlScriptsExecutorDAO;
 import ua.foxminded.schoolapp.dao.GroupDAO;
 import ua.foxminded.schoolapp.dao.StudentDAO;
 import ua.foxminded.schoolapp.dao.CourseDAO;
@@ -9,21 +9,19 @@ import ua.foxminded.schoolapp.dto.Course;
 import ua.foxminded.schoolapp.dto.Group;
 import ua.foxminded.schoolapp.dto.Student;
 
-public class TablesPlaceholder {
+public class DatabaseTableInitializer {
 
-    private TablesSetupDAO setUp = new TablesSetupDAO();
+    private SqlScriptsExecutorDAO executor = new SqlScriptsExecutorDAO();
     private GroupsGenerator groupsGenerator = new GroupsGenerator();
     private StudentsGenerator studGen = new StudentsGenerator();
     private CoursesGenerator courseGenerator = new CoursesGenerator();
 
-    public void fillTables() {
+    public void initialize() {
+        executor.executeSqlScriptFrom("tables_creation.sql");
         fillGroupsTable();
         fillStudentsTable();
         fillCoursesTable();
-    }
-
-    public void createTables() {
-        setUp.createTables();
+        executor.executeSqlScriptFrom("students_courses_filling.sql");
     }
 
     private void fillGroupsTable() {

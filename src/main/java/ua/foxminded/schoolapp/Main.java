@@ -1,13 +1,13 @@
 package ua.foxminded.schoolapp;
 
-import ua.foxminded.schoolapp.datageneration.TablesPlaceholder;
+import ua.foxminded.schoolapp.datageneration.DatabaseTableInitializer;
 
 public class Main {
 
+    private static DatabaseTableInitializer initializer = new DatabaseTableInitializer();
+    
     public static void main(String[] args) {
-        TablesPlaceholder holder = new TablesPlaceholder();
-        holder.createTables();
-        holder.fillTables();
+        initializer.initialize();
     }
 
 }
