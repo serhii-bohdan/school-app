@@ -1,4 +1,4 @@
-package ua.foxminded.schoolapp.dto;
+package ua.foxminded.schoolapp.entity;
 
 public class Group {
 
