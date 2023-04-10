@@ -1,10 +1,10 @@
-Mathematics
-Biology
-Physics
-Art
-History
-Chemistry
-English
-Literature
-Music
-Computer Science
+Mathematics_Mathematics is a course that delves into the study of numbers, shapes, and patterns, with a focus on concepts, theories, and problem-solving techniques.
+Biology_Biology is a course that explores the study of living organisms and their interactions with their environment, covering topics such as cellular structure, genetics, evolution, and ecology.
+Physics_Physics is a course that delves into the fundamental principles that govern the behavior of matter and energy in the universe, covering topics such as motion, forces, energy, waves, and electromagnetism.
+Art_Art is a course that delves into the world of creativity, aesthetics, and expression through various forms of visual, auditory, and tactile media.
+History_History is a course that explores the past to understand the present and shape the future, examining significant events, cultures, and societies that have shaped human civilization throughout time.
+Chemistry_Explore the world of Chemistry - the study of matter, atoms, and molecules. Discover the principles and applications of chemical reactions, compounds, and more in this fascinating course!
+English_Improve your English skills with our comprehensive English course. Enhance your speaking, listening, reading, and writing abilities for personal or professional success.
+Literature_Explore the world of literature through our engaging course. Discover classic and contemporary works of fiction, poetry, and drama, and gain insights into their cultural and historical significance.
+Music_Dive into the world of music with our dynamic course. Learn about various genres, styles, and techniques, and develop your musical skills through practical exercises and creative projects.
+Computer Science_Discover the world of Computer Science through programming, algorithms, data structures, and cutting-edge technologies. Develop problem-solving and critical-thinking skills for the digital age.
