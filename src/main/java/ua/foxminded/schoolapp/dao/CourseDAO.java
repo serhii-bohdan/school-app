@@ -10,7 +10,7 @@ public class CourseDAO {
     private static final String URL = "jdbc:postgresql://localhost:5432/school";
     private static final String USER = "postgres";
     private static final String PASSWORD = "1234";
-    private final String sqlQuery = "insert into courses (course_id, course_name, course_description) values(?, ?, ?)";
+    private final String sqlQuery = "INSERT INTO courses (course_id, course_name, course_description) VALUES(?, ?, ?)";
 
     public void saveCourse(int courseId, String courseName, String courseDescription) {
         try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {

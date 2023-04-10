@@ -1,13 +1,10 @@
 package ua.foxminded.schoolapp.dao;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import org.apache.commons.io.FileUtils;
+import ua.foxminded.schoolapp.datageneration.Reader;
 
 public class SqlScriptsExecutorDAO {
 
@@ -15,10 +12,12 @@ public class SqlScriptsExecutorDAO {
     private static final String USER = "postgres";
     private static final String PASSWORD = "1234";
 
-    public void executeSqlScriptFrom(String scriptFileName) {
+    Reader reader = new Reader();
+
+    public void executeSqlScriptFrom(String filePath) {
         try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
             Statement statement = connection.createStatement();
-            String sqlScript = convertFileToSqlScript(scriptFileName);
+            String sqlScript = reader.readSqlScriptFrom(filePath);
             statement.execute(sqlScript);
         } catch (SQLException e) {
             System.err.println("Connection failure.");
@@ -26,16 +25,4 @@ public class SqlScriptsExecutorDAO {
         }
     }
 
-    private String convertFileToSqlScript(String scriptFileName) {
-        File scriptFile = new File("src/main/resources/sql/" + scriptFileName);
-        String script = null;
-
-        try {
-            script = FileUtils.readFileToString(scriptFile, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            System.err.println("File not found.");
-            e.printStackTrace();
-        }
-        return script;
-    }
 }
