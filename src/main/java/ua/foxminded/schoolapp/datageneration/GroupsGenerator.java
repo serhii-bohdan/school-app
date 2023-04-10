@@ -2,7 +2,7 @@ package ua.foxminded.schoolapp.datageneration;
 
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import ua.foxminded.schoolapp.dto.Group;
+import ua.foxminded.schoolapp.entity.Group;
 import java.util.List;
 import java.util.Random;
 

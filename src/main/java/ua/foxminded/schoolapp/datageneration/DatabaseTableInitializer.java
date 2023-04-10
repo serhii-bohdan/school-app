@@ -4,10 +4,10 @@ import java.util.List;
 import ua.foxminded.schoolapp.dao.SqlScriptsExecutorDAO;
 import ua.foxminded.schoolapp.dao.GroupDAO;
 import ua.foxminded.schoolapp.dao.StudentDAO;
+import ua.foxminded.schoolapp.entity.Course;
+import ua.foxminded.schoolapp.entity.Group;
+import ua.foxminded.schoolapp.entity.Student;
 import ua.foxminded.schoolapp.dao.CourseDAO;
-import ua.foxminded.schoolapp.dto.Course;
-import ua.foxminded.schoolapp.dto.Group;
-import ua.foxminded.schoolapp.dto.Student;
 
 public class DatabaseTableInitializer {
 
@@ -17,11 +17,11 @@ public class DatabaseTableInitializer {
     private CoursesGenerator courseGenerator = new CoursesGenerator();
 
     public void initialize() {
-        executor.executeSqlScriptFrom("tables_creation.sql");
+        executor.executeSqlScriptFrom("sql/tables_creation.sql");
         fillGroupsTable();
         fillStudentsTable();
         fillCoursesTable();
-        executor.executeSqlScriptFrom("students_courses_filling.sql");
+        executor.executeSqlScriptFrom("sql/students_courses_filling.sql");
     }
 
     private void fillGroupsTable() {
@@ -54,4 +54,5 @@ public class DatabaseTableInitializer {
             courseDao.saveCourse(course.getCourseId(), course.getName(), course.getDescription());
         }
     }
+
 }
