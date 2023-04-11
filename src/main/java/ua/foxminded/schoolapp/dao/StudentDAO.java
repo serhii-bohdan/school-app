@@ -10,15 +10,14 @@ public class StudentDAO {
     private static final String URL = "jdbc:postgresql://localhost:5432/school";
     private static final String USER = "postgres";
     private static final String PASSWORD = "1234";
-    private final String sqlQuery = "INSERT INTO students (student_id, group_id, first_name, last_name) VALUES(?, ?, ?, ?)";
 
-    public void saveStudent(int studentId, int groupId, String firstName, String lastName) {
+    public void saveStudent(int groupId, String firstName, String lastName) {
         try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
-            PreparedStatement statement = connection.prepareStatement(sqlQuery);
-            statement.setInt(1, studentId);
-            statement.setInt(2, groupId);
-            statement.setString(3, firstName);
-            statement.setString(4, lastName);
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO students (group_id, first_name, last_name)"
+                                                                    + "VALUES(?, ?, ?);");
+            statement.setInt(1, groupId);
+            statement.setString(2, firstName);
+            statement.setString(3, lastName);
             statement.executeUpdate();
 
         } catch (SQLException e) {

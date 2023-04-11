@@ -30,7 +30,7 @@ public class DatabaseTableInitializer {
 
         for (int i = 0; i < groups.size(); i++) {
             Group group = groups.get(i);
-            groupDao.saveGroup(group.getGroupId(), group.getName());
+            groupDao.saveGroup(group.getName());
         }
     }
 
@@ -40,7 +40,7 @@ public class DatabaseTableInitializer {
 
         for (int i = 0; i < students.size(); i++) {
             Student student = students.get(i);
-            studentDao.saveStudent(student.getStudentId(), student.getGroupId(), student.getFirstName(),
+            studentDao.saveStudent(student.getGroupId(), student.getFirstName(),
                     student.getLastName());
         }
     }

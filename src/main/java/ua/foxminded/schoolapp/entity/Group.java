@@ -5,9 +5,8 @@ public class Group {
     private int groupId;
     private String name;
 
-    public Group(int groupId, String name) {
+    public Group(String name) {
         super();
-        this.groupId = groupId;
         this.name = name;
     }
 

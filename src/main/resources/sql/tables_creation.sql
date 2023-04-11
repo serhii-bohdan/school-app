@@ -5,13 +5,13 @@ DROP TABLE IF EXISTS students_courses CASCADE;
 
 CREATE TABLE groups
 (
-group_id INTEGER PRIMARY KEY,
+group_id SERIAL PRIMARY KEY,
 group_name VARCHAR(5) NOT NULL
 );
 
 CREATE TABLE students
 (
-student_id INTEGER PRIMARY KEY,
+student_id SERIAL PRIMARY KEY,
 group_id INTEGER REFERENCES groups(group_id),
 first_name TEXT NOT NULL,
 last_name TEXT NOT NULL
