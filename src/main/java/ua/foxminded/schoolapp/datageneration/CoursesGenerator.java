@@ -9,28 +9,27 @@ public class CoursesGenerator {
     Reader reader = new Reader();
     
     public List<Course> getCourses() {
-        List<String> coursesNames = getCourses("Names");
-        List<String> coursesDescriptions = getCourses("Descriptions");
+        List<String> coursesNames = returnCoursesNames();
+        List<String> coursesDescriptions = returnCoursesDescriptions();
 
         return IntStream.rangeClosed(1, 10)
                         .mapToObj(i -> new Course(i, coursesNames.get(i - 1), coursesDescriptions.get(i - 1)))
                         .toList();
     }
 
-    private List<String> getCourses(String switcher) {
-        List<String> coursesNamesWithDescriptions = reader.readFileAndPopulateList("courses/courses.txt");
-        int index;
+    private List<String> returnCoursesNames() {
+        List<String> coursesNames = reader.readFileAndPopulateList("courses/courses.txt");
 
-        if("Names".equals(switcher)) {
-            index = 0;
-        } else if("Descriptions".equals(switcher)) {
-            index = 1;
-        } else {
-            throw new IllegalArgumentException("Only the following lines can be passed to the argument:"
-                    + " \"Names\", \"Descriptions\".");
-        }
         return IntStream.rangeClosed(0, 9)
-                        .mapToObj(i -> coursesNamesWithDescriptions.get(i).split("_")[index])
+                        .mapToObj(coursesNames::get)
+                        .toList();
+    }
+
+    private List<String> returnCoursesDescriptions() {
+        List<String> coursesDescriptions = reader.readFileAndPopulateList("courses/descriptions.txt");
+
+        return IntStream.rangeClosed(0, 9)
+                        .mapToObj(coursesDescriptions::get)
                         .toList();
     }
 
