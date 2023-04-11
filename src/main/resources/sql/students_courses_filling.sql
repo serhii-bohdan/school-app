@@ -1,22 +1,22 @@
-do $$
-declare
-  num_courses integer;
-  var_student_id integer;
-  var_course_id integer;
-begin
-  for var_student_id in (select student_id from students)
-  loop
+DO $$
+DECLARE
+  num_courses INTEGER;
+  var_student_id INTEGER;
+  var_course_id INTEGER;
+BEGIN
+  FOR var_student_id IN (SELECT student_id FROM students)
+  LOOP
     num_courses := floor(random() * 3) + 1;
-    for i in 1..num_courses
-    loop
+    FOR i IN 1..num_courses
+    LOOP
 
-      loop
-        var_course_id := (select course_id from courses order by random() limit 1);
-        exit when not exists (select 1 from students_courses where fk_student_id = var_student_id and fk_course_id = var_course_id);
-      end loop;
+      LOOP
+        var_course_id := (SELECT course_id FROM courses ORDER BY random() LIMIT 1);
+        exit when NOT EXISTS (SELECT 1 FROM students_courses WHERE fk_student_id = var_student_id AND fk_course_id = var_course_id);
+      END LOOP;
 
-      insert into students_courses (fk_student_id, fk_course_id)
-      values (var_student_id, var_course_id);
-    end loop;
-  end loop;
-end $$;
+      INSERT INTO students_courses (fk_student_id, fk_course_id)
+      VALUES (var_student_id, var_course_id);
+    END LOOP;
+  END LOOP;
+END $$;

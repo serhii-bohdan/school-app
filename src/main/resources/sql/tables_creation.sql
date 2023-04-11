@@ -1,31 +1,31 @@
-drop table if exists groups cascade;
-drop table if exists students cascade;
-drop table if exists courses cascade;
-drop table if exists students_courses cascade;
+DROP TABLE IF EXISTS groups CASCADE;
+DROP TABLE IF EXISTS students CASCADE;
+DROP TABLE IF EXISTS courses CASCADE;
+DROP TABLE IF EXISTS students_courses CASCADE;
 
-create table groups
+CREATE TABLE groups
 (
-    group_id integer primary key,
-  group_name varchar(5) not null
+group_id INTEGER PRIMARY KEY,
+group_name VARCHAR(5) NOT NULL
 );
 
-create table students
+CREATE TABLE students
 (
-  student_id integer primary key,
-  group_id integer references groups(group_id),
-  first_name text not null,
-  last_name text not null
+student_id INTEGER PRIMARY KEY,
+group_id INTEGER REFERENCES groups(group_id),
+first_name TEXT NOT NULL,
+last_name TEXT NOT NULL
 );
 
-create table courses
+CREATE TABLE courses
 (
-    course_id integer primary key,
-    course_name text not null,
-    course_description text not null
+course_id INTEGER PRIMARY KEY,
+course_name TEXT NOT NULL,
+course_description TEXT NOT NULL
 );
 
-create table students_courses (
-  student_courses_id serial primary key,
-  fk_student_id integer references students(student_id),
-  fk_course_id integer references courses(course_id)
+CREATE TABLE students_courses (
+student_courses_id SERIAL PRIMARY KEY,
+fk_student_id INTEGER REFERENCES students(student_id),
+fk_course_id INTEGER REFERENCES courses(course_id)
 );
