@@ -1,6 +1,8 @@
 package ua.foxminded.schoolapp.cli;
 
 import ua.foxminded.schoolapp.dao.ConsoleQueryDAO;
+import ua.foxminded.schoolapp.dao.GroupDAO;
+import ua.foxminded.schoolapp.dao.StudentDAO;
 import ua.foxminded.schoolapp.datageneration.Reader;
 import ua.foxminded.schoolapp.entity.Group;
 import ua.foxminded.schoolapp.entity.Student;
@@ -44,6 +46,12 @@ public class ConsoleManager {
             result.append(student.getFirstName() + " " + student.getLastName() + "\n");
         }
         return result.toString();
+    }
+
+    public void addNewStudent(String firstName, String lastName, String groupName) {
+        StudentDAO studDao = new StudentDAO();
+        GroupDAO groupDao = new GroupDAO();
+        studDao.saveStudent(groupDao.findGroupIdByGroupName(groupName), firstName, lastName);
     }
 
 }

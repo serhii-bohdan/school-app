@@ -15,7 +15,7 @@ public class GroupsGenerator {
         List<String> groupsNames = generateGroupsNames();
 
         return IntStream.rangeClosed(1, 10)
-                        .mapToObj(i -> new Group(i, groupsNames.get(i - 1)))
+                        .mapToObj(i -> new Group(groupsNames.get(i - 1)))
                         .toList();
     }
 

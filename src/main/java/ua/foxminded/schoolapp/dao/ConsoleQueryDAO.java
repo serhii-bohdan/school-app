@@ -21,7 +21,7 @@ public class ConsoleQueryDAO {
 
         try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
             PreparedStatement statement = connection.prepareStatement("""
-                    SELECT groups.group_id, group_name, COUNT(student_id)
+                    SELECT group_name, COUNT(student_id)
                     FROM students
                     LEFT JOIN groups USING(group_id)
                     GROUP BY groups.group_id
@@ -31,7 +31,7 @@ public class ConsoleQueryDAO {
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
-                groups.add(new Group(resultSet.getInt("group_id"), resultSet.getString("group_name")));
+                groups.add(new Group(resultSet.getString("group_name")));
             }
 
         } catch (SQLException e) {
@@ -46,7 +46,7 @@ public class ConsoleQueryDAO {
 
         try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
             PreparedStatement statement = connection.prepareStatement("""
-                    SELECT student_id, group_id, first_name, last_name
+                    SELECT group_id, first_name, last_name
                     FROM students
                     JOIN students_courses ON students.student_id = students_courses.fk_student_id
                     JOIN courses ON courses.course_id = students_courses.fk_course_id
@@ -55,8 +55,8 @@ public class ConsoleQueryDAO {
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
-                students.add(new Student(resultSet.getInt("student_id"), resultSet.getInt("group_id"),
-                        resultSet.getString("first_name"), resultSet.getString("last_name")));
+                students.add(new Student(resultSet.getInt("group_id"), resultSet.getString("first_name"),
+                        resultSet.getString("last_name")));
             }
 
         } catch (SQLException e) {
