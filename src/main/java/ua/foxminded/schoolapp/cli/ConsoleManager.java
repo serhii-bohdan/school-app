@@ -1,13 +1,16 @@
 package ua.foxminded.schoolapp.cli;
 
 import ua.foxminded.schoolapp.dao.ConsoleQueryDAO;
+import ua.foxminded.schoolapp.datageneration.Reader;
 import ua.foxminded.schoolapp.entity.Group;
+import ua.foxminded.schoolapp.entity.Student;
 import ua.foxminded.schoolapp.exception.InputException;
 import java.util.List;
 
 public class ConsoleManager {
 
-    ConsoleQueryDAO dao = new ConsoleQueryDAO();
+    private Reader reader = new Reader();
+    private ConsoleQueryDAO dao = new ConsoleQueryDAO();
 
     public String getGroupsWithGivenNumberStudents(int amountOfStudents) {
         List<Group> groups;
@@ -22,6 +25,23 @@ public class ConsoleManager {
 
         for (Group group : groups) {
             result.append(group.getName() + "\n");
+        }
+        return result.toString();
+    }
+
+    public String getStudentsRelatedToCourse(String courseName) {
+        List<String> groupsNamesThatExist = reader.readFileAndPopulateList("courses/courses.txt");
+        StringBuilder result = new StringBuilder();
+        List<Student> students;
+
+        if (groupsNamesThatExist.contains(courseName)) {
+            students = dao.findStudentsRelatedToCourse(courseName);
+        } else {
+            throw new InputException("A course with that name does not exist.");
+        }
+
+        for (Student student : students) {
+            result.append(student.getFirstName() + " " + student.getLastName() + "\n");
         }
         return result.toString();
     }

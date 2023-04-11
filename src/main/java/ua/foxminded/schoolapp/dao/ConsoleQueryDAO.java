@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import ua.foxminded.schoolapp.entity.Group;
+import ua.foxminded.schoolapp.entity.Student;
 
 public class ConsoleQueryDAO {
 
@@ -19,16 +20,17 @@ public class ConsoleQueryDAO {
         List<Group> groups = new ArrayList<>();
 
         try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
-            PreparedStatement statement = connection.prepareStatement("SELECT groups.group_id, group_name, COUNT(student_id)\n"
-                                                                    + "FROM students\n"
-                                                                    + "LEFT JOIN groups USING(group_id)\n"
-                                                                    + "GROUP BY groups.group_id\n"
-                                                                    + "HAVING COUNT(student_id) <= ?\n"
-                                                                    + "ORDER BY COUNT(student_id) DESC");
+            PreparedStatement statement = connection.prepareStatement("""
+                    SELECT groups.group_id, group_name, COUNT(student_id)
+                    FROM students
+                    LEFT JOIN groups USING(group_id)
+                    GROUP BY groups.group_id
+                    HAVING COUNT(student_id) <= ?
+                    ORDER BY COUNT(student_id) DESC;""");
             statement.setInt(1, amountOfStudents);
             ResultSet resultSet = statement.executeQuery();
 
-            while(resultSet.next()) {
+            while (resultSet.next()) {
                 groups.add(new Group(resultSet.getInt("group_id"), resultSet.getString("group_name")));
             }
 
@@ -37,6 +39,31 @@ public class ConsoleQueryDAO {
             e.printStackTrace();
         }
         return groups;
+    }
+
+    public List<Student> findStudentsRelatedToCourse(String courseName) {
+        List<Student> students = new ArrayList<>();
+
+        try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
+            PreparedStatement statement = connection.prepareStatement("""
+                    SELECT student_id, group_id, first_name, last_name
+                    FROM students
+                    JOIN students_courses ON students.student_id = students_courses.fk_student_id
+                    JOIN courses ON courses.course_id = students_courses.fk_course_id
+                    WHERE course_name = ?;""");
+            statement.setString(1, courseName);
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                students.add(new Student(resultSet.getInt("student_id"), resultSet.getInt("group_id"),
+                        resultSet.getString("first_name"), resultSet.getString("last_name")));
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Connection failure.");
+            e.printStackTrace();
+        }
+        return students;
     }
 
 }

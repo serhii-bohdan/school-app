@@ -11,6 +11,7 @@ public class Main {
     public static void main(String[] args) {
         initializer.initialize();
         System.out.println(manager.getGroupsWithGivenNumberStudents(30));
+        System.out.println(manager.getStudentsRelatedToCourse("Art"));
     }
 
 }
