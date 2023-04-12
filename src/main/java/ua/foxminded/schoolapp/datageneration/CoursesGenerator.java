@@ -7,13 +7,13 @@ import ua.foxminded.schoolapp.entity.Course;
 public class CoursesGenerator {
 
     Reader reader = new Reader();
-    
+
     public List<Course> getCourses() {
         List<String> coursesNames = returnCoursesNames();
         List<String> coursesDescriptions = returnCoursesDescriptions();
 
         return IntStream.rangeClosed(1, 10)
-                        .mapToObj(i -> new Course(i, coursesNames.get(i - 1), coursesDescriptions.get(i - 1)))
+                        .mapToObj(i -> new Course(coursesNames.get(i - 1), coursesDescriptions.get(i - 1)))
                         .toList();
     }
 

@@ -1,19 +1,22 @@
 package ua.foxminded.schoolapp.datageneration;
 
 import java.util.List;
-import ua.foxminded.schoolapp.dao.SqlScriptsExecutorDAO;
+import ua.foxminded.schoolapp.dao.implement.SQLScriptsExecutorDAO;
 import ua.foxminded.schoolapp.dao.GroupDAO;
+import ua.foxminded.schoolapp.dao.implement.GroupDAOImpl;
 import ua.foxminded.schoolapp.dao.StudentDAO;
+import ua.foxminded.schoolapp.dao.implement.StudentDAOImpl;
 import ua.foxminded.schoolapp.entity.Course;
 import ua.foxminded.schoolapp.entity.Group;
 import ua.foxminded.schoolapp.entity.Student;
+import ua.foxminded.schoolapp.dao.implement.CourseDAOImpl;
 import ua.foxminded.schoolapp.dao.CourseDAO;
 
 public class DatabaseTableInitializer {
 
-    private SqlScriptsExecutorDAO executor = new SqlScriptsExecutorDAO();
+    private SQLScriptsExecutorDAO executor = new SQLScriptsExecutorDAO();
     private GroupsGenerator groupsGenerator = new GroupsGenerator();
-    private StudentsGenerator studGen = new StudentsGenerator();
+    private StudentsGenerator studentsGenerator = new StudentsGenerator();
     private CoursesGenerator courseGenerator = new CoursesGenerator();
 
     public void initialize() {
@@ -25,33 +28,29 @@ public class DatabaseTableInitializer {
     }
 
     private void fillGroupsTable() {
-        GroupDAO groupDao = new GroupDAO();
+        GroupDAO groupDao = new GroupDAOImpl();
         List<Group> groups = groupsGenerator.getGroups();
 
-        for (int i = 0; i < groups.size(); i++) {
-            Group group = groups.get(i);
-            groupDao.saveGroup(group.getName());
+        for (Group group : groups) {
+            groupDao.save(group);
         }
     }
 
     private void fillStudentsTable() {
-        StudentDAO studentDao = new StudentDAO();
-        List<Student> students = studGen.getStudents();
+        StudentDAO studentDao = new StudentDAOImpl();
+        List<Student> students = studentsGenerator.getStudents();
 
-        for (int i = 0; i < students.size(); i++) {
-            Student student = students.get(i);
-            studentDao.saveStudent(student.getGroupId(), student.getFirstName(),
-                    student.getLastName());
+        for (Student student : students) {
+            studentDao.save(student);
         }
     }
 
     private void fillCoursesTable() {
-        CourseDAO courseDao = new CourseDAO();
+        CourseDAO courseDao = new CourseDAOImpl();
         List<Course> courses = courseGenerator.getCourses();
 
-        for (int i = 0; i < courses.size(); i++) {
-            Course course = courses.get(i);
-            courseDao.saveCourse(course.getCourseId(), course.getName(), course.getDescription());
+        for (Course course : courses) {
+            courseDao.save(course);
         }
     }
 

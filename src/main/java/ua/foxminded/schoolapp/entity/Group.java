@@ -14,16 +14,8 @@ public class Group {
         return groupId;
     }
 
-    public void setGroupId(int groupId) {
-        this.groupId = groupId;
-    }
-
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     @Override
