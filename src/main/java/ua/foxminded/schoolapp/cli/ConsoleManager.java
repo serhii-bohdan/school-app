@@ -6,15 +6,13 @@ import ua.foxminded.schoolapp.dao.implement.CourseDAOImpl;
 import ua.foxminded.schoolapp.dao.implement.GroupDAOImpl;
 import ua.foxminded.schoolapp.dao.StudentDAO;
 import ua.foxminded.schoolapp.dao.implement.StudentDAOImpl;
-import ua.foxminded.schoolapp.datageneration.Reader;
+import ua.foxminded.schoolapp.entity.Course;
 import ua.foxminded.schoolapp.entity.Group;
 import ua.foxminded.schoolapp.entity.Student;
 import ua.foxminded.schoolapp.exception.InputException;
 import java.util.List;
 
 public class ConsoleManager {
-
-    private Reader reader = new Reader();
 
     public String getGroupsWithGivenNumberStudents(int amountOfStudents) {
         GroupDAO groupDao = new GroupDAOImpl();
@@ -36,12 +34,14 @@ public class ConsoleManager {
 
     public String getStudentsRelatedToCourse(String courseName) {
         CourseDAO courseDao = new CourseDAOImpl();
-        List<String> groupsNamesThatExist = reader.readFileAndPopulateList("courses/courses.txt");
+        StudentDAO stuentDao = new StudentDAOImpl();
         StringBuilder result = new StringBuilder();
         List<Student> students;
-
-        if (groupsNamesThatExist.contains(courseName)) {
-            students = courseDao.findStudentsRelatedToCourse(courseName);
+        List<String> coursesNamesThatExist = courseDao.findAvailableCourses().stream()
+                                                                             .map(Course::getName)
+                                                                             .toList();
+        if (coursesNamesThatExist.contains(courseName.trim())) {
+            students = stuentDao.findStudentsRelatedToCourse(courseName.trim());
         } else {
             throw new InputException("A course with that name does not exist.");
         }
@@ -57,6 +57,19 @@ public class ConsoleManager {
         GroupDAO groupDao = new GroupDAOImpl();
         Student student = new Student(groupDao.findGroupIdByGroupName(groupName), firstName, lastName);
         studentDao.save(student);
+    }
+
+    public void deleteStudentById(int studentId) {
+        StudentDAO studentDao = new StudentDAOImpl();
+        List<Integer> studentIds = studentDao.findAvailableStudents().stream()
+                                                                     .map(Student::getStudentId)
+                                                                     .toList();
+        if (studentIds.contains(studentId)) {
+            studentDao.deleteStudentById(studentId);
+            System.out.println("The student was successfully deleted.");
+        } else {
+            throw new InputException("There is no student with this ID.");
+        }
     }
 
 }

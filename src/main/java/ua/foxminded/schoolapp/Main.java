@@ -12,7 +12,8 @@ public class Main {
         initializer.initialize();
         System.out.println(manager.getGroupsWithGivenNumberStudents(30));
         System.out.println(manager.getStudentsRelatedToCourse("Art"));
-        manager.addNewStudent("Mark", "Ostin", "GX-48");
+//        manager.addNewStudent("Mark", "Ostin", "GX-48");
+        manager.deleteStudentById(3);
     }
 
 }

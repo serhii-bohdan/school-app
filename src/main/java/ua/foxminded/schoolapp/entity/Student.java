@@ -1,11 +1,15 @@
 package ua.foxminded.schoolapp.entity;
 
+import ua.foxminded.schoolapp.dao.StudentDAO;
+import ua.foxminded.schoolapp.dao.implement.StudentDAOImpl;
+
 public class Student {
 
     private int studentId;
     private int groupId;
     private String firstName;
     private String lastName;
+    private StudentDAO studentDao = new StudentDAOImpl();
 
     public Student(int groupId, String firstName, String lastName) {
         super();
@@ -15,6 +19,7 @@ public class Student {
     }
 
     public int getStudentId() {
+        this.studentId = studentDao.findStudentIdByNameAndGroupId(firstName, lastName, groupId);
         return studentId;
     }
 
