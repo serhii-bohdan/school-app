@@ -13,4 +13,10 @@ public interface StudentDAO extends CrudDAO<Student> {
 
     void deleteStudentById(int studentId);
 
+    boolean isStudentOnCourse(String firstName, String lastName, String courseName);
+
+    void addStudentToCourse(String firstName, String lastName, String courseName);
+
+    void deleteStudentFromCourse(String firstName, String lastName, String courseName);
+
 }

@@ -9,7 +9,7 @@ import ua.foxminded.schoolapp.dao.implement.StudentDAOImpl;
 import ua.foxminded.schoolapp.entity.Course;
 import ua.foxminded.schoolapp.entity.Group;
 import ua.foxminded.schoolapp.entity.Student;
-import ua.foxminded.schoolapp.exception.InputException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ConsoleManager {
@@ -17,12 +17,12 @@ public class ConsoleManager {
     public String getGroupsWithGivenNumberStudents(int amountOfStudents) {
         GroupDAO groupDao = new GroupDAOImpl();
         StringBuilder result = new StringBuilder();
-        List<Group> groups;
+        List<Group> groups = new ArrayList<>();
 
         if (amountOfStudents >= 0 && amountOfStudents <= 30) {
             groups = groupDao.findGroupsWithGivenNumberStudents(amountOfStudents);
         } else {
-            throw new InputException("The entered number of students is not correct."
+          System.out.println("The entered number of students is not correct."
                     + "The number of students should be between 0 and 30 inclusive.");
         }
 
@@ -36,14 +36,14 @@ public class ConsoleManager {
         CourseDAO courseDao = new CourseDAOImpl();
         StudentDAO stuentDao = new StudentDAOImpl();
         StringBuilder result = new StringBuilder();
-        List<Student> students;
+        List<Student> students = new ArrayList<>();
         List<String> coursesNamesThatExist = courseDao.findAvailableCourses().stream()
                                                                              .map(Course::getName)
                                                                              .toList();
         if (coursesNamesThatExist.contains(courseName.trim())) {
             students = stuentDao.findStudentsRelatedToCourse(courseName.trim());
         } else {
-            throw new InputException("A course with that name does not exist.");
+            System.out.println("A course with that name does not exist.");
         }
 
         for (Student student : students) {
@@ -68,7 +68,29 @@ public class ConsoleManager {
             studentDao.deleteStudentById(studentId);
             System.out.println("The student was successfully deleted.");
         } else {
-            throw new InputException("There is no student with this ID.");
+            System.out.println("There is no student with this ID.");
+        }
+    }
+
+    public void addStudentToCourse(String firstName, String lastName, String courseName) {
+        StudentDAO studentDao = new StudentDAOImpl();
+
+        if (!studentDao.isStudentOnCourse(firstName, lastName, courseName)) {
+            studentDao.addStudentToCourse(firstName, lastName, courseName);
+            System.out.println("The student has been successfully added to the course.");
+        } else {
+            System.out.println("The student was already registered for the course.");
+        }
+    }
+
+    public void deleteStudentFromCourse(String firstName, String lastName, String courseName) {
+        StudentDAO studentDao = new StudentDAOImpl();
+
+        if (studentDao.isStudentOnCourse(firstName, lastName, courseName)) {
+            studentDao.deleteStudentFromCourse(firstName, lastName, courseName);
+            System.out.println("The student has been successfully removed from the course.");
+        } else {
+            System.out.println("There is no student registered for this course.");
         }
     }
 

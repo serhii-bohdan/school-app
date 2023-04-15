@@ -17,8 +17,8 @@ public class StudentDAOImpl implements StudentDAO {
         Connectable connector = new Connector();
 
         try (Connection connection = connector.createConnection()) {
-            PreparedStatement statement = connection.prepareStatement("INSERT INTO students (group_id, first_name, last_name)"
-                                                                    + "VALUES(?, ?, ?);");
+            PreparedStatement statement = connection
+                    .prepareStatement("INSERT INTO students (group_id, first_name, last_name)" + "VALUES(?, ?, ?);");
             statement.setInt(1, student.getGroupId());
             statement.setString(2, student.getFirstName());
             statement.setString(3, student.getLastName());
@@ -36,11 +36,11 @@ public class StudentDAOImpl implements StudentDAO {
         List<Student> students = new ArrayList<>();
 
         try (Connection connection = connector.createConnection()) {
-            PreparedStatement statement = connection.prepareStatement("SELECT first_name, last_name, group_id\n"
-                    + "FROM students;");
+            PreparedStatement statement = connection
+                    .prepareStatement("SELECT first_name, last_name, group_id\n" + "FROM students;");
             ResultSet resultSet = statement.executeQuery();
-            
-            while(resultSet.next()) {
+
+            while (resultSet.next()) {
                 students.add(new Student(resultSet.getInt("group_id"), resultSet.getString("first_name"),
                         resultSet.getString("last_name")));
             }
@@ -66,11 +66,11 @@ public class StudentDAOImpl implements StudentDAO {
             statement.setString(2, lastName);
             statement.setInt(3, groupId);
             ResultSet resultSet = statement.executeQuery();
-            
-            while(resultSet.next()) {
+
+            while (resultSet.next()) {
                 studentId = resultSet.getInt("student_id");
             }
-            
+
         } catch (SQLException e) {
             System.err.println("Connection failure.");
             e.printStackTrace();
@@ -109,8 +109,8 @@ public class StudentDAOImpl implements StudentDAO {
         Connectable connector = new Connector();
 
         try (Connection connection = connector.createConnection()) {
-            PreparedStatement statement = connection.prepareStatement("DELETE FROM students\n"
-                                                                    + "WHERE student_id = ?;");
+            PreparedStatement statement = connection
+                    .prepareStatement("DELETE FROM students\n" + "WHERE student_id = ?;");
             statement.setInt(1, studentId);
             statement.executeUpdate();
 
@@ -120,4 +120,70 @@ public class StudentDAOImpl implements StudentDAO {
         }
     }
 
+    public boolean isStudentOnCourse(String firstName, String lastName, String courseName) {
+        Connectable connector = new Connector();
+        boolean exists = false;
+
+        try (Connection connection = connector.createConnection()) {
+            PreparedStatement statement = connection.prepareStatement("""
+                    SELECT 1 FROM students_courses
+                    JOIN students ON students.student_id = students_courses.fk_student_id
+                    JOIN courses ON courses.course_id = students_courses.fk_course_id
+                    WHERE students.first_name = ?
+                    AND students.last_name = ?
+                    AND courses.course_name = ?""");
+            statement.setString(1, firstName);
+            statement.setString(2, lastName);
+            statement.setString(3, courseName);
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                exists = true;
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Connection failure.");
+            e.printStackTrace();
+        }
+        return exists;
+    }
+
+    public void addStudentToCourse(String firstName, String lastName, String courseName) {
+        Connectable connector = new Connector();
+
+        try (Connection connection = connector.createConnection()) {
+            PreparedStatement statement = connection.prepareStatement("""
+                    INSERT INTO students_courses (fk_student_id, fk_course_id)
+                    VALUES ((SELECT student_id FROM students WHERE first_name = ? AND last_name = ?),
+                    (SELECT course_id FROM courses WHERE course_name = ?))""");
+            statement.setString(1, firstName);
+            statement.setString(2, lastName);
+            statement.setString(3, courseName);
+            statement.execute();
+
+        } catch (SQLException e) {
+            System.err.println("Connection failure.");
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteStudentFromCourse(String firstName, String lastName, String courseName) {
+        Connectable connector = new Connector();
+
+        try (Connection connection = connector.createConnection()) {
+            PreparedStatement statement = connection.prepareStatement("""
+                    DELETE FROM students_courses
+                    WHERE fk_student_id = (SELECT student_id FROM students WHERE first_name = ?
+                    AND last_name = ?)
+                    AND fk_course_id = (SELECT course_id FROM courses WHERE course_name = ?);""");
+            statement.setString(1, firstName);
+            statement.setString(2, lastName);
+            statement.setString(3, courseName);
+            statement.execute();
+
+        } catch (SQLException e) {
+            System.err.println("Connection failure.");
+            e.printStackTrace();
+        }
+    }
 }
