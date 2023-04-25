@@ -28,14 +28,14 @@ public class GroupDAOImpl implements GroupDAO {
         }
     }
 
-    public int findGroupIdByGroupName(String groupName) {
+    public int findGroupId(Group group) {
         Connectable connector = new Connector();
         int groupId = 0;
 
         try (Connection connection = connector.createConnection()) {
             PreparedStatement statement = connection.prepareStatement("SELECT group_id FROM groups\n"
                                                                     + "WHERE group_name = ?");
-            statement.setString(1, groupName);
+            statement.setString(1, group.getName());
             ResultSet resultSet = statement.executeQuery();
 
             while(resultSet.next()) {

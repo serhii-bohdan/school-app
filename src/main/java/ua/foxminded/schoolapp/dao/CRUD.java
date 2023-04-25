@@ -1,6 +1,6 @@
 package ua.foxminded.schoolapp.dao;
 
-public interface CrudDAO<T> {
+public interface CRUD<T> {
 
     void save(T entity);
 }

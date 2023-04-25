@@ -53,7 +53,7 @@ public class StudentDAOImpl implements StudentDAO {
     }
 
     @Override
-    public int findStudentIdByNameAndGroupId(String firstName, String lastName, int groupId) {
+    public int findStudentId(Student student) {
         Connectable connector = new Connector();
         int studentId = 0;
 
@@ -62,9 +62,9 @@ public class StudentDAOImpl implements StudentDAO {
                     SELECT student_id
                     FROM students
                     WHERE first_name = ? AND last_name = ? AND group_id = ?;""");
-            statement.setString(1, firstName);
-            statement.setString(2, lastName);
-            statement.setInt(3, groupId);
+            statement.setString(1, student.getFirstName());
+            statement.setString(2, student.getLastName());
+            statement.setInt(3, student.getGroupId());
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {

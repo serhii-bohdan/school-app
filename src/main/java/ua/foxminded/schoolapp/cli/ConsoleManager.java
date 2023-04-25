@@ -14,28 +14,22 @@ import java.util.List;
 
 public class ConsoleManager {
 
-    public String getGroupsWithGivenNumberStudents(int amountOfStudents) {
+    public List<Group> getGroupsWithGivenNumberStudents(int amountOfStudents) {
         GroupDAO groupDao = new GroupDAOImpl();
-        StringBuilder result = new StringBuilder();
         List<Group> groups = new ArrayList<>();
 
         if (amountOfStudents >= 0 && amountOfStudents <= 30) {
             groups = groupDao.findGroupsWithGivenNumberStudents(amountOfStudents);
         } else {
-          System.out.println("The entered number of students is not correct."
+            System.out.println("The entered number of students is not correct."
                     + "The number of students should be between 0 and 30 inclusive.");
         }
-
-        for (Group group : groups) {
-            result.append(group.getName() + "\n");
-        }
-        return result.toString();
+        return groups;
     }
 
-    public String getStudentsRelatedToCourse(String courseName) {
+    public List<Student> getStudentsRelatedToCourse(String courseName) {
         CourseDAO courseDao = new CourseDAOImpl();
         StudentDAO stuentDao = new StudentDAOImpl();
-        StringBuilder result = new StringBuilder();
         List<Student> students = new ArrayList<>();
         List<String> coursesNamesThatExist = courseDao.findAvailableCourses().stream()
                                                                              .map(Course::getName)
@@ -45,24 +39,21 @@ public class ConsoleManager {
         } else {
             System.out.println("A course with that name does not exist.");
         }
-
-        for (Student student : students) {
-            result.append(student.getFirstName() + " " + student.getLastName() + "\n");
-        }
-        return result.toString();
+        return students;
     }
 
     public void addNewStudent(String firstName, String lastName, String groupName) {
         StudentDAO studentDao = new StudentDAOImpl();
         GroupDAO groupDao = new GroupDAOImpl();
-        Student student = new Student(groupDao.findGroupIdByGroupName(groupName), firstName, lastName);
+        Group group = new Group(groupName);
+        Student student = new Student(groupDao.findGroupId(group), firstName, lastName);
         studentDao.save(student);
     }
 
     public void deleteStudentById(int studentId) {
         StudentDAO studentDao = new StudentDAOImpl();
         List<Integer> studentIds = studentDao.findAvailableStudents().stream()
-                                                                     .map(Student::getStudentId)
+                                                                     .map(studentDao::findStudentId)
                                                                      .toList();
         if (studentIds.contains(studentId)) {
             studentDao.deleteStudentById(studentId);
