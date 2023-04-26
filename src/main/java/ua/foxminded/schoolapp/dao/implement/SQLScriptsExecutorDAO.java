@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import ua.foxminded.schoolapp.dao.Connectable;
 import ua.foxminded.schoolapp.datageneration.Reader;
+import ua.foxminded.schoolapp.exception.DAOException;
 
 public class SQLScriptsExecutorDAO {
 
@@ -18,8 +19,7 @@ public class SQLScriptsExecutorDAO {
             String sqlScript = reader.readSqlScriptFrom(filePath);
             statement.execute(sqlScript);
         } catch (SQLException e) {
-            System.err.println("Connection failure.");
-            e.printStackTrace();
+            throw new DAOException("Connection failure while executing SQL script.");
         }
     }
 

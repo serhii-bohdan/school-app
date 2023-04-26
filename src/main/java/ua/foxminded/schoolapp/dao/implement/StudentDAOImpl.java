@@ -9,35 +9,36 @@ import java.util.List;
 import ua.foxminded.schoolapp.dao.Connectable;
 import ua.foxminded.schoolapp.dao.StudentDAO;
 import ua.foxminded.schoolapp.entity.Student;
+import ua.foxminded.schoolapp.exception.DAOException;
 
 public class StudentDAOImpl implements StudentDAO {
 
-    @Override
-    public void save(Student student) {
+    public int save(Student student) {
         Connectable connector = new Connector();
+        int rowsInserted;
 
         try (Connection connection = connector.createConnection()) {
-            PreparedStatement statement = connection
-                    .prepareStatement("INSERT INTO students (group_id, first_name, last_name)" + "VALUES(?, ?, ?);");
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO students (group_id, first_name, last_name)\n"
+                                                                    + "VALUES(?, ?, ?);");
             statement.setInt(1, student.getGroupId());
             statement.setString(2, student.getFirstName());
             statement.setString(3, student.getLastName());
-            statement.executeUpdate();
+            rowsInserted = statement.executeUpdate();
 
         } catch (SQLException e) {
-            System.err.println("Connection failure.");
-            e.printStackTrace();
+            throw new DAOException("Connection failure while saving student.");
         }
+        return rowsInserted;
     }
 
-    @Override
-    public List<Student> findAvailableStudents() {
+    public List<Student> findAllStudents() {
         Connectable connector = new Connector();
         List<Student> students = new ArrayList<>();
 
         try (Connection connection = connector.createConnection()) {
             PreparedStatement statement = connection
-                    .prepareStatement("SELECT first_name, last_name, group_id\n" + "FROM students;");
+                    .prepareStatement("SELECT first_name, last_name, group_id\n"
+                                    + "FROM students;");
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
@@ -46,13 +47,11 @@ public class StudentDAOImpl implements StudentDAO {
             }
 
         } catch (SQLException e) {
-            System.err.println("Connection failure.");
-            e.printStackTrace();
+            throw new DAOException("Connection failed while finding for all students.");
         }
         return students;
     }
 
-    @Override
     public int findStudentId(Student student) {
         Connectable connector = new Connector();
         int studentId = 0;
@@ -72,13 +71,11 @@ public class StudentDAOImpl implements StudentDAO {
             }
 
         } catch (SQLException e) {
-            System.err.println("Connection failure.");
-            e.printStackTrace();
+            throw new DAOException("Connection failed while finding for student ID.");
         }
         return studentId;
     }
 
-    @Override
     public List<Student> findStudentsRelatedToCourse(String courseName) {
         Connectable connector = new Connector();
         List<Student> students = new ArrayList<>();
@@ -99,25 +96,25 @@ public class StudentDAOImpl implements StudentDAO {
             }
 
         } catch (SQLException e) {
-            System.err.println("Connection failure.");
-            e.printStackTrace();
+            throw new DAOException("Connection failure when finding for students related to a specific course.");
         }
         return students;
     }
 
-    public void deleteStudentById(int studentId) {
+    public int deleteStudentById(int studentId) {
         Connectable connector = new Connector();
+        int rowsDeleted;
 
         try (Connection connection = connector.createConnection()) {
-            PreparedStatement statement = connection
-                    .prepareStatement("DELETE FROM students\n" + "WHERE student_id = ?;");
+            PreparedStatement statement = connection.prepareStatement("DELETE FROM students\n" 
+                                                                    + "WHERE student_id = ?;");
             statement.setInt(1, studentId);
-            statement.executeUpdate();
+            rowsDeleted = statement.executeUpdate();
 
         } catch (SQLException e) {
-            System.err.println("Connection failure.");
-            e.printStackTrace();
+            throw new DAOException("Connection failure when deleting a student by their ID.");
         }
+        return rowsDeleted;
     }
 
     public boolean isStudentOnCourse(String firstName, String lastName, String courseName) {
@@ -142,14 +139,14 @@ public class StudentDAOImpl implements StudentDAO {
             }
 
         } catch (SQLException e) {
-            System.err.println("Connection failure.");
-            e.printStackTrace();
+            throw new DAOException("Connection failure while checking for student availability.");
         }
         return exists;
     }
 
-    public void addStudentToCourse(String firstName, String lastName, String courseName) {
+    public int addStudentToCourse(String firstName, String lastName, String courseName) {
         Connectable connector = new Connector();
+        int rowsInserted;
 
         try (Connection connection = connector.createConnection()) {
             PreparedStatement statement = connection.prepareStatement("""
@@ -159,16 +156,17 @@ public class StudentDAOImpl implements StudentDAO {
             statement.setString(1, firstName);
             statement.setString(2, lastName);
             statement.setString(3, courseName);
-            statement.execute();
+            rowsInserted = statement.executeUpdate();
 
         } catch (SQLException e) {
-            System.err.println("Connection failure.");
-            e.printStackTrace();
+            throw new DAOException("Connection failed while adding a student to a course.");
         }
+        return rowsInserted;
     }
 
-    public void deleteStudentFromCourse(String firstName, String lastName, String courseName) {
+    public int deleteStudentFromCourse(String firstName, String lastName, String courseName) {
         Connectable connector = new Connector();
+        int rowsDeleted;
 
         try (Connection connection = connector.createConnection()) {
             PreparedStatement statement = connection.prepareStatement("""
@@ -179,11 +177,11 @@ public class StudentDAOImpl implements StudentDAO {
             statement.setString(1, firstName);
             statement.setString(2, lastName);
             statement.setString(3, courseName);
-            statement.execute();
+            rowsDeleted = statement.executeUpdate();
 
         } catch (SQLException e) {
-            System.err.println("Connection failure.");
-            e.printStackTrace();
+            throw new DAOException("Connection failure when removing a student from a course.");
         }
+        return rowsDeleted;
     }
 }

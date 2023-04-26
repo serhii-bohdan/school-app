@@ -9,23 +9,24 @@ import java.util.List;
 import ua.foxminded.schoolapp.dao.Connectable;
 import ua.foxminded.schoolapp.dao.GroupDAO;
 import ua.foxminded.schoolapp.entity.Group;
+import ua.foxminded.schoolapp.exception.DAOException;
 
 public class GroupDAOImpl implements GroupDAO {
 
-    @Override
-    public void save(Group group) {
+    public int save(Group group) {
         Connectable connector = new Connector();
+        int rowsInserted;
 
         try (Connection connection = connector.createConnection()) {
-            PreparedStatement statement = connection.prepareStatement("INSERT INTO groups (group_name)"
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO groups (group_name)\n"
                                                                     + "VALUES(?)");
             statement.setString(1, group.getGroupName());
-            statement.executeUpdate();
+            rowsInserted = statement.executeUpdate();
 
         } catch (SQLException e) {
-            System.out.println("Connection failure.");
-            e.printStackTrace();
+            throw new DAOException("Connection failure while saving group.");
         }
+        return rowsInserted;
     }
 
     public int findGroupId(Group group) {
@@ -43,8 +44,7 @@ public class GroupDAOImpl implements GroupDAO {
             }
 
         } catch (SQLException e) {
-            System.out.println("Connection failure.");
-            e.printStackTrace();
+            throw new DAOException("Connection failed while finding group ID.");
         }
         return groupId;
     }
@@ -69,8 +69,8 @@ public class GroupDAOImpl implements GroupDAO {
             }
 
         } catch (SQLException e) {
-            System.err.println("Connection failure.");
-            e.printStackTrace();
+            throw new DAOException("Connection failed while finding for groups with "
+                    + "the specified number of students.");
         }
         return groups;
     }

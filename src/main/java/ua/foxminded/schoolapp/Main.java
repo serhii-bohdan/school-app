@@ -15,7 +15,7 @@ public class Main {
     private static Formatter formatter = new Formatter();
 
     public static void main(String[] args) {
-//        initializer.initialize();
+        initializer.initialize();
         boolean isRunning = true;
 
         try (Scanner scanner = new Scanner(System.in)) {
@@ -57,6 +57,7 @@ public class Main {
                 } else {
                     System.out.println("There is no option that matches this number.");
                 }
+                
             }
         }
     }

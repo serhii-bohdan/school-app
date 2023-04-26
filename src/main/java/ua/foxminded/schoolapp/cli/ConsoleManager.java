@@ -31,7 +31,7 @@ public class ConsoleManager {
         CourseDAO courseDao = new CourseDAOImpl();
         StudentDAO stuentDao = new StudentDAOImpl();
         List<Student> students = new ArrayList<>();
-        List<String> coursesNamesThatExist = courseDao.findAvailableCourses().stream()
+        List<String> coursesNamesThatExist = courseDao.findAllCourses().stream()
                                                                              .map(Course::getCourseName)
                                                                              .toList();
         if (coursesNamesThatExist.contains(courseName.trim())) {
@@ -52,7 +52,7 @@ public class ConsoleManager {
 
     public void deleteStudentById(int studentId) {
         StudentDAO studentDao = new StudentDAOImpl();
-        List<Integer> studentIds = studentDao.findAvailableStudents().stream()
+        List<Integer> studentIds = studentDao.findAllStudents().stream()
                                                                      .map(studentDao::findStudentId)
                                                                      .toList();
         if (studentIds.contains(studentId)) {

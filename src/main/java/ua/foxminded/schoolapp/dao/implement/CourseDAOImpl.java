@@ -10,27 +10,28 @@ import java.util.List;
 import ua.foxminded.schoolapp.dao.Connectable;
 import ua.foxminded.schoolapp.dao.CourseDAO;
 import ua.foxminded.schoolapp.entity.Course;
+import ua.foxminded.schoolapp.exception.DAOException;
 
 public class CourseDAOImpl implements CourseDAO {
 
-    @Override
-    public void save(Course course) {
+    public int save(Course course) {
         Connectable connector = new Connector();
+        int rowsInserted;
 
         try (Connection connection = connector.createConnection()) {
             PreparedStatement statement = connection.prepareStatement("INSERT INTO courses (course_name, course_description)"
                                                                     + "VALUES(?, ?)");
             statement.setString(1, course.getCourseName());
             statement.setString(2, course.getDescription());
-            statement.executeUpdate();
+            rowsInserted = statement.executeUpdate();
 
         } catch (SQLException e) {
-            System.err.println("Connection failure.");
-            e.printStackTrace();
+            throw new DAOException("Connection failure while saving course.");
         }
+        return rowsInserted;
     }
 
-    public List<Course> findAvailableCourses() {
+    public List<Course> findAllCourses() {
         Connectable connector = new Connector();
         List<Course> courses = new ArrayList<>();
 
@@ -43,8 +44,7 @@ public class CourseDAOImpl implements CourseDAO {
             }
 
         } catch (SQLException e) {
-            System.err.println("Connection failure.");
-            e.printStackTrace();
+            throw new DAOException("Connection failed while finding all available courses.");
         }
         return courses;
     }

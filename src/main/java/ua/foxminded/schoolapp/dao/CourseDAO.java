@@ -5,5 +5,5 @@ import ua.foxminded.schoolapp.entity.Course;
 
 public interface CourseDAO extends CRUD<Course> {
 
-    List<Course> findAvailableCourses();
+    List<Course> findAllCourses();
 }
