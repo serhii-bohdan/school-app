@@ -20,7 +20,7 @@ public class CourseDAOImpl implements CourseDAO {
         try (Connection connection = connector.createConnection()) {
             PreparedStatement statement = connection.prepareStatement("INSERT INTO courses (course_name, course_description)"
                                                                     + "VALUES(?, ?)");
-            statement.setString(1, course.getName());
+            statement.setString(1, course.getCourseName());
             statement.setString(2, course.getDescription());
             statement.executeUpdate();
 

@@ -15,7 +15,7 @@ public class Main {
     private static Formatter formatter = new Formatter();
 
     public static void main(String[] args) {
-        initializer.initialize();
+//        initializer.initialize();
         boolean isRunning = true;
 
         try (Scanner scanner = new Scanner(System.in)) {

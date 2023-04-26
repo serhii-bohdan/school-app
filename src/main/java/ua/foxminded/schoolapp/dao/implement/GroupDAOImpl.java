@@ -19,7 +19,7 @@ public class GroupDAOImpl implements GroupDAO {
         try (Connection connection = connector.createConnection()) {
             PreparedStatement statement = connection.prepareStatement("INSERT INTO groups (group_name)"
                                                                     + "VALUES(?)");
-            statement.setString(1, group.getName());
+            statement.setString(1, group.getGroupName());
             statement.executeUpdate();
 
         } catch (SQLException e) {
@@ -35,7 +35,7 @@ public class GroupDAOImpl implements GroupDAO {
         try (Connection connection = connector.createConnection()) {
             PreparedStatement statement = connection.prepareStatement("SELECT group_id FROM groups\n"
                                                                     + "WHERE group_name = ?");
-            statement.setString(1, group.getName());
+            statement.setString(1, group.getGroupName());
             ResultSet resultSet = statement.executeQuery();
 
             while(resultSet.next()) {

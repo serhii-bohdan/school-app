@@ -21,7 +21,7 @@ public class StudentsGenerator {
                         .mapToObj(i -> {
                             String firstName = nameOfStudents.get(i - 1)[0];
                             String lastName = nameOfStudents.get(i - 1)[1];
-                            return new Student(randomGroupIds.get(i - 1), firstName, lastName);
+                            return new Student(firstName, lastName, randomGroupIds.get(i - 1));
                          })
                         .toList();
     }

@@ -1,21 +1,59 @@
 package ua.foxminded.schoolapp.entity;
 
-public class Group {
+import java.io.Serializable;
+import java.util.Objects;
 
-    private String name;
+public class Group implements Serializable {
 
-    public Group(String name) {
-        super();
-        this.name = name;
+    private static final long serialVersionUID = 1L;
+
+    private int id;
+    private String groupName;
+
+    public Group(String groupName) {
+        this.groupName = groupName;
     }
 
-    public String getName() {
-        return name;
+    public Group() {
+
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(groupName);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Group other = (Group) obj;
+        return Objects.equals(groupName, other.groupName);
     }
 
     @Override
     public String toString() {
-        return "Group [name=" + name + "]";
+        return "Group [id=" + id + ", groupName=" + groupName + "]";
     }
 
 }

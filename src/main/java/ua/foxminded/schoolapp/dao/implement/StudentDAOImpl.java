@@ -41,8 +41,8 @@ public class StudentDAOImpl implements StudentDAO {
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
-                students.add(new Student(resultSet.getInt("group_id"), resultSet.getString("first_name"),
-                        resultSet.getString("last_name")));
+                students.add(new Student(resultSet.getString("first_name"), resultSet.getString("last_name"),
+                        resultSet.getInt("group_id")));
             }
 
         } catch (SQLException e) {
@@ -94,8 +94,8 @@ public class StudentDAOImpl implements StudentDAO {
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
-                students.add(new Student(resultSet.getInt("group_id"), resultSet.getString("first_name"),
-                        resultSet.getString("last_name")));
+                students.add(new Student(resultSet.getString("first_name"), resultSet.getString("last_name"),
+                        resultSet.getInt("group_id")));
             }
 
         } catch (SQLException e) {

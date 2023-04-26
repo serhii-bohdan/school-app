@@ -14,7 +14,7 @@ public class Formatter {
         StringBuilder formattedGroups = new StringBuilder("Groups:");
 
         for (Group group : groups) {
-            formattedGroups.append(String.format("\n%-6s %s", "", group.getName()));
+            formattedGroups.append(String.format("\n%-6s %s", "", group.getGroupName()));
         }
         return formattedGroups.toString();
     }

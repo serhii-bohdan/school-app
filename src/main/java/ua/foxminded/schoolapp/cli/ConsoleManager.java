@@ -32,7 +32,7 @@ public class ConsoleManager {
         StudentDAO stuentDao = new StudentDAOImpl();
         List<Student> students = new ArrayList<>();
         List<String> coursesNamesThatExist = courseDao.findAvailableCourses().stream()
-                                                                             .map(Course::getName)
+                                                                             .map(Course::getCourseName)
                                                                              .toList();
         if (coursesNamesThatExist.contains(courseName.trim())) {
             students = stuentDao.findStudentsRelatedToCourse(courseName.trim());
@@ -46,7 +46,7 @@ public class ConsoleManager {
         StudentDAO studentDao = new StudentDAOImpl();
         GroupDAO groupDao = new GroupDAOImpl();
         Group group = new Group(groupName);
-        Student student = new Student(groupDao.findGroupId(group), firstName, lastName);
+        Student student = new Student(firstName, lastName, groupDao.findGroupId(group));
         studentDao.save(student);
     }
 
