@@ -1,4 +1,4 @@
-package ua.foxminded.schoolapp.datageneration;
+package ua.foxminded.schoolapp.datasetup;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -6,7 +6,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import ua.foxminded.schoolapp.entity.Student;
+
+import ua.foxminded.schoolapp.model.Student;
 
 public class StudentsGenerator {
 

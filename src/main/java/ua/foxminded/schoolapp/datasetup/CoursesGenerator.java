@@ -1,8 +1,9 @@
-package ua.foxminded.schoolapp.datageneration;
+package ua.foxminded.schoolapp.datasetup;
 
 import java.util.List;
 import java.util.stream.IntStream;
-import ua.foxminded.schoolapp.entity.Course;
+
+import ua.foxminded.schoolapp.model.Course;
 
 public class CoursesGenerator {
 

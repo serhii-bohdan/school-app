@@ -1,4 +1,4 @@
-package ua.foxminded.schoolapp.datageneration;
+package ua.foxminded.schoolapp.datasetup;
 
 import java.util.List;
 import ua.foxminded.schoolapp.dao.implement.SQLScriptsExecutorDAO;
@@ -6,9 +6,9 @@ import ua.foxminded.schoolapp.dao.GroupDAO;
 import ua.foxminded.schoolapp.dao.implement.GroupDAOImpl;
 import ua.foxminded.schoolapp.dao.StudentDAO;
 import ua.foxminded.schoolapp.dao.implement.StudentDAOImpl;
-import ua.foxminded.schoolapp.entity.Course;
-import ua.foxminded.schoolapp.entity.Group;
-import ua.foxminded.schoolapp.entity.Student;
+import ua.foxminded.schoolapp.model.Course;
+import ua.foxminded.schoolapp.model.Group;
+import ua.foxminded.schoolapp.model.Student;
 import ua.foxminded.schoolapp.dao.implement.CourseDAOImpl;
 import ua.foxminded.schoolapp.dao.CourseDAO;
 

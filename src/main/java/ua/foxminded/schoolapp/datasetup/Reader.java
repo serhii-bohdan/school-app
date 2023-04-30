@@ -1,4 +1,4 @@
-package ua.foxminded.schoolapp.datageneration;
+package ua.foxminded.schoolapp.datasetup;
 
 import java.io.BufferedReader;
 import java.io.File;

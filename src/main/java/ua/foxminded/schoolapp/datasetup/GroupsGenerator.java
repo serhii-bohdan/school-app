@@ -1,8 +1,10 @@
-package ua.foxminded.schoolapp.datageneration;
+package ua.foxminded.schoolapp.datasetup;
 
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import ua.foxminded.schoolapp.entity.Group;
+
+import ua.foxminded.schoolapp.model.Group;
+
 import java.util.List;
 import java.util.Random;
 
