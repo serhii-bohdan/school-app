@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import ua.foxminded.schoolapp.dao.Connectable;
 import ua.foxminded.schoolapp.dao.GroupDAO;
-import ua.foxminded.schoolapp.entity.Group;
 import ua.foxminded.schoolapp.exception.DAOException;
+import ua.foxminded.schoolapp.model.Group;
 
 public class GroupDAOImpl implements GroupDAO {
 

@@ -1,4 +1,4 @@
-package ua.foxminded.schoolapp.entity;
+package ua.foxminded.schoolapp.model;
 
 import java.io.Serializable;
 import java.util.Objects;

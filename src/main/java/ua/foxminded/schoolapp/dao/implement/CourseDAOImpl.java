@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import ua.foxminded.schoolapp.dao.Connectable;
 import ua.foxminded.schoolapp.dao.CourseDAO;
-import ua.foxminded.schoolapp.entity.Course;
 import ua.foxminded.schoolapp.exception.DAOException;
+import ua.foxminded.schoolapp.model.Course;
 
 public class CourseDAOImpl implements CourseDAO {
 

@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import ua.foxminded.schoolapp.dao.Connectable;
-import ua.foxminded.schoolapp.datageneration.Reader;
+import ua.foxminded.schoolapp.datasetup.Reader;
 import ua.foxminded.schoolapp.exception.DAOException;
 
 public class SQLScriptsExecutorDAO {

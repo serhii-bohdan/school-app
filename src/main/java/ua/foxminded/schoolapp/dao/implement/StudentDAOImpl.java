@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import ua.foxminded.schoolapp.dao.Connectable;
 import ua.foxminded.schoolapp.dao.StudentDAO;
-import ua.foxminded.schoolapp.entity.Student;
 import ua.foxminded.schoolapp.exception.DAOException;
+import ua.foxminded.schoolapp.model.Student;
 
 public class StudentDAOImpl implements StudentDAO {
 
