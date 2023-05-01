@@ -6,7 +6,7 @@ import ua.foxminded.schoolapp.model.*;
 public interface View {
 
     void showMenu();
-    
+
     void printMessage(String message);
 
     int getChoise();
@@ -20,6 +20,10 @@ public interface View {
     String getStudentLastNameFromUser();
 
     int getGroupIdFromUser();
+
+    int getStudentIdForDeletingFromUser();
+
+    String getConfirmationFromUserAboutDeletingStudent(Student student);
 
     void displayGroups(List<Group> groups);
 

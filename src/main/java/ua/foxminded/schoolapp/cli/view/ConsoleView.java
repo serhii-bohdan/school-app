@@ -26,7 +26,7 @@ public class ConsoleView implements View {
     }
 
     public void printMessage(String message) {
-        System.out.println(message + "\n");
+        System.out.println(message);
     }
 
     public int getChoise() {
@@ -35,23 +35,17 @@ public class ConsoleView implements View {
     }
 
     public int getNumberOfStuentsFromUser() {
-        System.out.print("""
-                \nYou want to know groups with a given and smaller number of students.
-                Enter the number of students:\u00A0""");
+        System.out.print("Enter the number of students:\u00A0");
         return scanner.nextInt();
     }
 
     public String getCourseNameFromUser() {
-        System.out.print("""
-                \nYou want to know the list of students related to the course.
-                Enter the name of the course:\u00A0""");
+        System.out.print("Enter the name of the course:\u00A0");
         return scanner.next();
     }
 
     public String getStudentFirstNameFromUser() {
-        System.out.print("""
-                \nYou want to add a new student.
-                Enter the student's first name:\u00A0""");
+        System.out.print("Enter the student's first name:\u00A0");
         return scanner.next();
     }
 
@@ -63,6 +57,18 @@ public class ConsoleView implements View {
     public int getGroupIdFromUser() {
         System.out.print("Enter the ID of the group to which the student should belong (from 1 to 10):\u00A0");
         return scanner.nextInt();
+    }
+
+    public int getStudentIdForDeletingFromUser() {
+        System.out.print("Enter your student ID:\u00A0");
+        return scanner.nextInt();
+    }
+
+    public String getConfirmationFromUserAboutDeletingStudent(Student student) {
+        String confirmationQuestion = String.format("Are you sure you want to delete a student %s %s?",
+                student.getFirstName(), student.getLastName());
+        System.out.print(confirmationQuestion + "\nPlease confirm your actions (enter Y or N):\u00A0");
+        return scanner.next();
     }
 
     public void displayGroups(List<Group> groups) {

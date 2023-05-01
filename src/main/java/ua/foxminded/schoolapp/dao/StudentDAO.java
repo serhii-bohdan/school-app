@@ -10,7 +10,7 @@ public interface StudentDAO extends DAO<Student> {
 
     List<Student> findStudentsRelatedToCourse(String courseName);
 
-    int findStudentId(Student student);
+    Student findStudentById(int studentId);
 
     int deleteStudentById(int studentId);
 

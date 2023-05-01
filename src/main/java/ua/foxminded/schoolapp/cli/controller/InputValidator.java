@@ -1,6 +1,5 @@
 package ua.foxminded.schoolapp.cli.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 import ua.foxminded.schoolapp.dao.CourseDAO;
 import ua.foxminded.schoolapp.dao.GroupDAO;
@@ -23,26 +22,26 @@ public class InputValidator implements Validator {
     }
     
     public List<Group> getGroupsWithGivenNumberStudents(int amountOfStudents) {
-        List<Group> groups = new ArrayList<>();
+        List<Group> groups;
 
         if (amountOfStudents >= 10 && amountOfStudents <= 30) {
             groups = groupDao.findGroupsWithGivenNumberStudents(amountOfStudents);
         } else {
-            System.out.println("The entered number of students is not correct."
+            throw new InputException("The entered number of students is not correct."
                     + "The number of students should be between 0 and 30 inclusive.");
         }
         return groups;
     }
 
     public List<Student> getStudentsRelatedToCourse(String courseName) {
-        List<Student> students = new ArrayList<>();
-        List<String> coursesNamesThatExist = courseDao.findAllCourses().stream()
-                                                                       .map(Course::getCourseName)
-                                                                       .toList();
-        if (coursesNamesThatExist.contains(courseName.trim())) {
-            students = studentDao.findStudentsRelatedToCourse(courseName.trim());
+        List<Student> students;
+        boolean coursesExist = courseDao.findAllCourses().stream()
+                                                         .map(Course::getCourseName)
+                                                         .toList().contains(courseName);
+        if (coursesExist) {
+            students = studentDao.findStudentsRelatedToCourse(courseName);
         } else {
-            System.out.println("A course with that name does not exist.");
+            throw new InputException("A course with that name does not exist.");
         }
         return students;
     }
@@ -51,31 +50,54 @@ public class InputValidator implements Validator {
         Student student = new Student(firstName, lastName, groupId);
         List<Student> students = studentDao.findAllStudents();
 
-        if(!students.contains(student)) {
+        if(!students.contains(student) && (groupId >= 1 && groupId <= 10)) {
             studentDao.save(student);
         } else {
-            throw new InputException("Error adding new student.");
+            throw new InputException("Error adding new student. Perhaps a student with such data is "
+                    + "already registered. Also check that the group ID is correct.");
+        }
+    }
+
+    public Student findStudentById(int studentId) {
+        List<Integer> studentIds = studentDao.findAllStudents().stream()
+                                                               .map(Student::getId)
+                                                               .toList();
+        if (studentIds.contains(studentId)) {
+            return studentDao.findStudentById(studentId);
+        } else {
+            throw new InputException("There is no student with this ID.");
         }
     }
 
     public void deleteStudentById(int studentId) {
         List<Integer> studentIds = studentDao.findAllStudents().stream()
-                                                               .map(studentDao::findStudentId)
+                                                               .map(Student::getId)
                                                                .toList();
         if (studentIds.contains(studentId)) {
             studentDao.deleteStudentById(studentId);
-            System.out.println("The student was successfully deleted.");
         } else {
-            System.out.println("There is no student with this ID.");
+            throw new InputException("There is no student with this ID.");
         }
+    }
+    
+    public List<Student> getAllAvailableStudents() {
+        return studentDao.findAllStudents();
     }
 
     public void addStudentToCourse(String firstName, String lastName, String courseName) {
-        if (!studentDao.isStudentOnCourse(firstName, lastName, courseName)) {
+        boolean studentExists = studentDao.findAllStudents().stream()
+                .anyMatch(s -> firstName.equals(s.getFirstName()) && lastName.equals(s.getLastName()));
+        boolean coursesExist = courseDao.findAllCourses().stream()
+                                                         .map(Course::getCourseName)
+                                                         .toList().contains(courseName);
+        boolean  studentIsNotRegisteredForCourse = !studentDao.isStudentOnCourse(firstName, lastName, courseName);
+        
+        if (studentExists && coursesExist && studentIsNotRegisteredForCourse) {
             studentDao.addStudentToCourse(firstName, lastName, courseName);
-            System.out.println("The student has been successfully added to the course.");
         } else {
-            System.out.println("The student was already registered for the course.");
+            throw new InputException("An error occurred when adding a student to the additional course. Perhaps "
+                    + "this student does not exist, or he is already registered for this course. Also, check "
+                    + "whether the name of the course is entered correctly.");
         }
     }
 

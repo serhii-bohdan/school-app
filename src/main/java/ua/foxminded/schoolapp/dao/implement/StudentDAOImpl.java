@@ -37,13 +37,17 @@ public class StudentDAOImpl implements StudentDAO {
 
         try (Connection connection = connector.createConnection()) {
             PreparedStatement statement = connection
-                    .prepareStatement("SELECT first_name, last_name, group_id\n"
+                    .prepareStatement("SELECT student_id, first_name, last_name, group_id\n"
                                     + "FROM students;");
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
-                students.add(new Student(resultSet.getString("first_name"), resultSet.getString("last_name"),
-                        resultSet.getInt("group_id")));
+                Student student = new Student();
+                student.setId(resultSet.getInt("student_id"));
+                student.setFirstName(resultSet.getString("first_name"));
+                student.setLastName(resultSet.getString("last_name"));
+                student.setGroupId(resultSet.getInt("group_id"));
+                students.add(student);
             }
 
         } catch (SQLException e) {
@@ -52,28 +56,29 @@ public class StudentDAOImpl implements StudentDAO {
         return students;
     }
 
-    public int findStudentId(Student student) {
+    public Student findStudentById(int studentId) {
         Connectable connector = new Connector();
-        int studentId = 0;
+        Student student = new Student();
 
         try (Connection connection = connector.createConnection()) {
             PreparedStatement statement = connection.prepareStatement("""
-                    SELECT student_id
+                    SELECT student_id, first_name, last_name, group_id
                     FROM students
-                    WHERE first_name = ? AND last_name = ? AND group_id = ?;""");
-            statement.setString(1, student.getFirstName());
-            statement.setString(2, student.getLastName());
-            statement.setInt(3, student.getGroupId());
+                    WHERE student_id = ?;""");
+            statement.setInt(1, studentId);
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
-                studentId = resultSet.getInt("student_id");
+                student.setId(resultSet.getInt("student_id"));
+                student.setFirstName(resultSet.getString("first_name"));
+                student.setLastName(resultSet.getString("last_name"));
+                student.setGroupId(resultSet.getInt("group_id"));
             }
 
         } catch (SQLException e) {
             throw new DAOException("Connection failed while finding for student ID.");
         }
-        return studentId;
+        return student;
     }
 
     public List<Student> findStudentsRelatedToCourse(String courseName) {
