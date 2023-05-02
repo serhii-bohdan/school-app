@@ -19,7 +19,7 @@ public class CourseDAOImpl implements CourseDAO {
         int rowsInserted;
 
         try (Connection connection = connector.createConnection()) {
-            PreparedStatement statement = connection.prepareStatement("INSERT INTO courses (course_name, course_description)"
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO courses (course_name, course_description)\n"
                                                                     + "VALUES(?, ?)");
             statement.setString(1, course.getCourseName());
             statement.setString(2, course.getDescription());
@@ -37,10 +37,14 @@ public class CourseDAOImpl implements CourseDAO {
 
         try (Connection connection = connector.createConnection()) {
             Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT course_name, course_description "
+            ResultSet resultSet = statement.executeQuery("SELECT course_id, course_name, course_description\n"
                                                        + "FROM courses");
             while (resultSet.next()) {
-                courses.add(new Course(resultSet.getString("course_name"), (resultSet.getString("course_description"))));
+                Course course = new Course();
+                course.setId(resultSet.getInt("course_id"));
+                course.setCourseName(resultSet.getString("course_name"));
+                course.setDescription(resultSet.getString("course_description"));
+                courses.add(course);
             }
 
         } catch (SQLException e) {

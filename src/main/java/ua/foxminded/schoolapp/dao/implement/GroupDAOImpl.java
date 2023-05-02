@@ -29,33 +29,13 @@ public class GroupDAOImpl implements GroupDAO {
         return rowsInserted;
     }
 
-    public int findGroupId(Group group) {
-        Connectable connector = new Connector();
-        int groupId = 0;
-
-        try (Connection connection = connector.createConnection()) {
-            PreparedStatement statement = connection.prepareStatement("SELECT group_id FROM groups\n"
-                                                                    + "WHERE group_name = ?");
-            statement.setString(1, group.getGroupName());
-            ResultSet resultSet = statement.executeQuery();
-
-            while(resultSet.next()) {
-                groupId = resultSet.getInt("group_id");
-            }
-
-        } catch (SQLException e) {
-            throw new DAOException("Connection failed while finding group ID.");
-        }
-        return groupId;
-    }
-
     public List<Group> findGroupsWithGivenNumberStudents(int amountOfStudents) {
         Connectable connector = new Connector();
         List<Group> groups = new ArrayList<>();
 
         try (Connection connection = connector.createConnection()) {
             PreparedStatement statement = connection.prepareStatement("""
-                    SELECT group_name, COUNT(student_id)
+                    SELECT groups.group_id, group_name, COUNT(student_id)
                     FROM students
                     LEFT JOIN groups USING(group_id)
                     GROUP BY groups.group_id
@@ -65,7 +45,10 @@ public class GroupDAOImpl implements GroupDAO {
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
-                groups.add(new Group(resultSet.getString("group_name")));
+                Group group = new Group();
+                group.setId(resultSet.getInt("group_id"));
+                group.setGroupName(resultSet.getString("group_name"));
+                groups.add(group);
             }
 
         } catch (SQLException e) {

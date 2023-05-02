@@ -18,11 +18,11 @@ public class StudentDAOImpl implements StudentDAO {
         int rowsInserted;
 
         try (Connection connection = connector.createConnection()) {
-            PreparedStatement statement = connection.prepareStatement("INSERT INTO students (group_id, first_name, last_name)\n"
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO students (first_name, last_name, group_id)\n"
                                                                     + "VALUES(?, ?, ?);");
-            statement.setInt(1, student.getGroupId());
-            statement.setString(2, student.getFirstName());
-            statement.setString(3, student.getLastName());
+            statement.setString(1, student.getFirstName());
+            statement.setString(2, student.getLastName());
+            statement.setInt(3, student.getGroupId());
             rowsInserted = statement.executeUpdate();
 
         } catch (SQLException e) {
@@ -87,7 +87,7 @@ public class StudentDAOImpl implements StudentDAO {
 
         try (Connection connection = connector.createConnection()) {
             PreparedStatement statement = connection.prepareStatement("""
-                    SELECT group_id, first_name, last_name
+                    SELECT student_id, first_name, last_name, group_id
                     FROM students
                     JOIN students_courses ON students.student_id = students_courses.fk_student_id
                     JOIN courses ON courses.course_id = students_courses.fk_course_id
@@ -96,8 +96,12 @@ public class StudentDAOImpl implements StudentDAO {
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
-                students.add(new Student(resultSet.getString("first_name"), resultSet.getString("last_name"),
-                        resultSet.getInt("group_id")));
+                Student student = new Student();
+                student.setId(resultSet.getInt("student_id"));
+                student.setFirstName(resultSet.getString("first_name"));
+                student.setLastName(resultSet.getString("last_name"));
+                student.setGroupId(resultSet.getInt("group_id"));
+                students.add(student);
             }
 
         } catch (SQLException e) {
