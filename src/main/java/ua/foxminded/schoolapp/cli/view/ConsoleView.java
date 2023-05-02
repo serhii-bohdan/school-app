@@ -25,13 +25,13 @@ public class ConsoleView implements View {
                 """);
     }
 
-    public void printMessage(String message) {
-        System.out.println(message);
-    }
-
     public int getChoise() {
         System.out.print("Select an option: ");
         return scanner.nextInt();
+    }
+
+    public void printMessage(String message) {
+        System.out.println(message);
     }
 
     public int getNumberOfStuentsFromUser() {
@@ -59,7 +59,7 @@ public class ConsoleView implements View {
         return scanner.nextInt();
     }
 
-    public int getStudentIdForDeletingFromUser() {
+    public int getStudentIdFromUser() {
         System.out.print("Enter your student ID:\u00A0");
         return scanner.nextInt();
     }

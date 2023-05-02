@@ -7,9 +7,9 @@ public interface View {
 
     void showMenu();
 
-    void printMessage(String message);
-
     int getChoise();
+
+    void printMessage(String message);
 
     int getNumberOfStuentsFromUser();
 
@@ -21,7 +21,7 @@ public interface View {
 
     int getGroupIdFromUser();
 
-    int getStudentIdForDeletingFromUser();
+    int getStudentIdFromUser();
 
     String getConfirmationFromUserAboutDeletingStudent(Student student);
 

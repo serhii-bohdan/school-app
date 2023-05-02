@@ -22,7 +22,7 @@ public class Main {
     private static Controller controller = new QueryController(validator, view);
 
     public static void main(String[] args) {
-        initializer.initialize();
+//        initializer.initialize();
         controller.run();
     }
 

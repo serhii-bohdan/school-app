@@ -14,13 +14,13 @@ public class InputValidator implements Validator {
     private StudentDAO studentDao;
     private GroupDAO groupDao;
     private CourseDAO courseDao;
-    
+
     public InputValidator(StudentDAO studentDao, GroupDAO groupDao, CourseDAO courseDao) {
         this.studentDao = studentDao;
         this.groupDao = groupDao;
         this.courseDao = courseDao;
     }
-    
+
     public List<Group> getGroupsWithGivenNumberStudents(int amountOfStudents) {
         List<Group> groups;
 
@@ -47,52 +47,39 @@ public class InputValidator implements Validator {
     }
 
     public void addNewStudent(String firstName, String lastName, int groupId) {
-        Student student = new Student(firstName, lastName, groupId);
-        List<Student> students = studentDao.findAllStudents();
+        boolean studentIsNotExists = !studentDao.findAllStudents().stream()
+                                                                  .anyMatch(s -> firstName.equals(s.getFirstName()) && 
+                                                                          lastName.equals(s.getLastName()));
 
-        if(!students.contains(student) && (groupId >= 1 && groupId <= 10)) {
-            studentDao.save(student);
+        if(studentIsNotExists && (groupId >= 1 && groupId <= 10)) {
+            studentDao.save(new Student(firstName, lastName, groupId));
         } else {
             throw new InputException("Error adding new student. Perhaps a student with such data is "
                     + "already registered. Also check that the group ID is correct.");
         }
     }
 
-    public Student findStudentById(int studentId) {
-        List<Integer> studentIds = studentDao.findAllStudents().stream()
-                                                               .map(Student::getId)
-                                                               .toList();
-        if (studentIds.contains(studentId)) {
-            return studentDao.findStudentById(studentId);
-        } else {
-            throw new InputException("There is no student with this ID.");
-        }
-    }
-
     public void deleteStudentById(int studentId) {
-        List<Integer> studentIds = studentDao.findAllStudents().stream()
+        boolean studentIdExists = studentDao.findAllStudents().stream()
                                                                .map(Student::getId)
-                                                               .toList();
-        if (studentIds.contains(studentId)) {
+                                                               .toList().contains(studentId);
+        if (studentIdExists) {
             studentDao.deleteStudentById(studentId);
         } else {
             throw new InputException("There is no student with this ID.");
         }
     }
-    
-    public List<Student> getAllAvailableStudents() {
-        return studentDao.findAllStudents();
-    }
 
     public void addStudentToCourse(String firstName, String lastName, String courseName) {
         boolean studentExists = studentDao.findAllStudents().stream()
-                .anyMatch(s -> firstName.equals(s.getFirstName()) && lastName.equals(s.getLastName()));
+                                                            .anyMatch(s -> firstName.equals(s.getFirstName()) && 
+                                                                    lastName.equals(s.getLastName()));
         boolean coursesExist = courseDao.findAllCourses().stream()
                                                          .map(Course::getCourseName)
                                                          .toList().contains(courseName);
-        boolean  studentIsNotRegisteredForCourse = !studentDao.isStudentOnCourse(firstName, lastName, courseName);
-        
-        if (studentExists && coursesExist && studentIsNotRegisteredForCourse) {
+        boolean  studentIsNotOnCourse = !studentDao.isStudentOnCourse(firstName, lastName, courseName);
+
+        if (studentExists && coursesExist && studentIsNotOnCourse) {
             studentDao.addStudentToCourse(firstName, lastName, courseName);
         } else {
             throw new InputException("An error occurred when adding a student to the additional course. Perhaps "
@@ -102,11 +89,36 @@ public class InputValidator implements Validator {
     }
 
     public void deleteStudentFromCourse(String firstName, String lastName, String courseName) {
-        if (studentDao.isStudentOnCourse(firstName, lastName, courseName)) {
+        boolean studentExists = studentDao.findAllStudents().stream()
+                                                            .anyMatch(s -> firstName.equals(s.getFirstName()) && 
+                                                                    lastName.equals(s.getLastName()));
+        boolean coursesExist = courseDao.findAllCourses().stream()
+                                                         .map(Course::getCourseName)
+                                                         .toList().contains(courseName);
+        boolean  studentOnCourse = studentDao.isStudentOnCourse(firstName, lastName, courseName);
+
+        if (studentExists && coursesExist && studentOnCourse) {
             studentDao.deleteStudentFromCourse(firstName, lastName, courseName);
-            System.out.println("The student has been successfully removed from the course.");
         } else {
-            System.out.println("There is no student registered for this course.");
+            throw new InputException("An error occurred when removing a student from the course. Perhaps this "
+                    + "student does not exist or is not registered in the specified course. Also check the "
+                    + "correctness of the entered course name.");
         }
     }
+
+    public Student findStudentById(int studentId) {
+        boolean studentIdExists = studentDao.findAllStudents().stream()
+                                                               .map(Student::getId)
+                                                               .toList().contains(studentId);
+        if (studentIdExists) {
+            return studentDao.findStudentById(studentId);
+        } else {
+            throw new InputException("There is no student with this ID.");
+        }
+    }
+
+    public List<Student> getAllStudents() {
+        return studentDao.findAllStudents();
+    }
+
 }

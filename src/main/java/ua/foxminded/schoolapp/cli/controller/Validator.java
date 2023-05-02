@@ -12,14 +12,13 @@ public interface Validator {
 
     void addNewStudent(String firstName, String lastName, int groupId);
 
-    Student findStudentById(int studentId);
-
     void deleteStudentById(int studentId);
-
-    List<Student> getAllAvailableStudents();
 
     void addStudentToCourse(String firstName, String lastName, String courseName);
 
     void deleteStudentFromCourse(String firstName, String lastName, String courseName);
 
+    Student findStudentById(int studentId);
+
+    List<Student> getAllStudents();
 }

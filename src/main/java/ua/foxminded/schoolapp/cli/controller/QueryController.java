@@ -41,7 +41,7 @@ public class QueryController implements Controller {
                 view.printMessage("The student has been successfully added.\n");
             } else if (option == 4) {
                 view.printMessage("\nYou want to delete a student by their ID.");
-                int studentId = view.getStudentIdForDeletingFromUser();
+                int studentId = view.getStudentIdFromUser();
                 Student student = validator.findStudentById(studentId);
                 String confirmationFromUser = view.getConfirmationFromUserAboutDeletingStudent(student);
 
@@ -56,16 +56,24 @@ public class QueryController implements Controller {
 
             } else if (option == 5) {
                 view.printMessage("\nYou want to add a student (from the list) to the course.");
-                view.displayStudents(validator.getAllAvailableStudents());
+                view.displayStudents(validator.getAllStudents());
                 String firstName = view.getStudentFirstNameFromUser();
                 String lastName = view.getStudentLastNameFromUser();
                 String coerseName = view.getCourseNameFromUser();
                 validator.addStudentToCourse(firstName, lastName, coerseName);
                 view.printMessage("The student has been successfully added to the course.\n");
+            } else if (option == 6) {
+                view.printMessage("\nYou want to delete a student from a course.");
+                view.displayStudents(validator.getAllStudents());
+                String firstName = view.getStudentFirstNameFromUser();
+                String lastName = view.getStudentLastNameFromUser();
+                String coerseName = view.getCourseNameFromUser();
+                validator.deleteStudentFromCourse(firstName, lastName, coerseName);
+                view.printMessage("The student has been successfully deleted from the course.\n");
             } else if (option == 0) {
                 isRunning = false;
             } else {
-                view.printMessage("There is no option that matches this number.");
+                view.printMessage("There is no option that matches this number.\n");
             }
 
         }
