@@ -7,7 +7,7 @@ import ua.foxminded.schoolapp.model.Student;
 
 public class ConsoleView implements View {
 
-    Scanner scanner = new Scanner(System.in);
+    private Scanner scanner = new Scanner(System.in);
 
     public void showMenu() {
         System.out.println("""

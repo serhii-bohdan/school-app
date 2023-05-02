@@ -35,10 +35,10 @@ public class InputValidator implements Validator {
 
     public List<Student> getStudentsRelatedToCourse(String courseName) {
         List<Student> students;
-        boolean coursesExist = courseDao.findAllCourses().stream()
+        boolean courseExists = courseDao.findAllCourses().stream()
                                                          .map(Course::getCourseName)
                                                          .toList().contains(courseName);
-        if (coursesExist) {
+        if (courseExists) {
             students = studentDao.findStudentsRelatedToCourse(courseName);
         } else {
             throw new InputException("A course with that name does not exist.");
