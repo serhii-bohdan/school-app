@@ -14,15 +14,15 @@ import ua.foxminded.schoolapp.cli.view.View;
 public class Main {
 
     private static DatabaseTableInitializer initializer = new DatabaseTableInitializer();
-    private static StudentDAO studentDao = new StudentDAOImpl(); 
-    private static GroupDAO groupDao = new GroupDAOImpl(); 
-    private static CourseDAO courseDao = new CourseDAOImpl(); 
+    private static StudentDAO studentDao = new StudentDAOImpl();
+    private static GroupDAO groupDao = new GroupDAOImpl();
+    private static CourseDAO courseDao = new CourseDAOImpl();
     private static Validator validator = new InputValidator(studentDao, groupDao, courseDao);
     private static View view = new ConsoleView();
     private static Controller controller = new QueryController(validator, view);
 
     public static void main(String[] args) {
-//        initializer.initialize();
+        initializer.initialize();
         controller.run();
     }
 
