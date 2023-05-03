@@ -5,7 +5,7 @@ import java.util.Objects;
 
 public class Course implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -7353839263354063173L;
 
     private int id;
     private String courseName;
