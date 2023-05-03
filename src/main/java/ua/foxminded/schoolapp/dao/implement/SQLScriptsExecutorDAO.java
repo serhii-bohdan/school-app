@@ -4,12 +4,17 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import ua.foxminded.schoolapp.dao.Connectable;
-import ua.foxminded.schoolapp.datasetup.Reader;
+import ua.foxminded.schoolapp.dao.ExecutorDAO;
 import ua.foxminded.schoolapp.exception.DAOException;
+import ua.foxminded.schoolapp.datasetup.Reader;
 
-public class SQLScriptsExecutorDAO {
+public class SQLScriptsExecutorDAO implements ExecutorDAO {
 
-    Reader reader = new Reader();
+    private Reader reader;
+
+    public SQLScriptsExecutorDAO(Reader reader) {
+        this.reader = reader;
+    }
 
     public void executeSqlScriptFrom(String filePath) {
         Connectable connector = new Connector();
