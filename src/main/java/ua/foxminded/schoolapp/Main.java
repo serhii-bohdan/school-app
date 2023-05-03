@@ -1,19 +1,23 @@
 package ua.foxminded.schoolapp;
 
-import ua.foxminded.schoolapp.datasetup.DatabaseTableInitializer;
-import ua.foxminded.schoolapp.cli.controller.Validator;
+import ua.foxminded.schoolapp.datasetup.*;
+import ua.foxminded.schoolapp.datasetup.impl.*;
+import ua.foxminded.schoolapp.model.*;
 import ua.foxminded.schoolapp.dao.*;
 import ua.foxminded.schoolapp.dao.implement.*;
-import ua.foxminded.schoolapp.dao.implement.StudentDAOImpl;
-import ua.foxminded.schoolapp.cli.controller.Controller;
-import ua.foxminded.schoolapp.cli.controller.InputValidator;
-import ua.foxminded.schoolapp.cli.controller.QueryController;
-import ua.foxminded.schoolapp.cli.view.ConsoleView;
-import ua.foxminded.schoolapp.cli.view.View;
+import ua.foxminded.schoolapp.cli.controller.*;
+import ua.foxminded.schoolapp.cli.view.*;
 
 public class Main {
 
-    private static DatabaseTableInitializer initializer = new DatabaseTableInitializer();
+    private static Reader reader = new ReaderImpl();
+    private static ExecutorDAO executor = new SQLScriptsExecutorDAO(reader);
+    private static Generatable<Group> groupsGenerator = new GroupsGenerator();
+    private static Generatable<Student> studentsGenerator = new StudentsGenerator(reader);
+    private static Generatable<Course> coursesGenerator = new CoursesGenerator(reader);
+    private static Initializable initializer = new DatabaseTableInitializer(executor, groupsGenerator,
+            studentsGenerator, coursesGenerator);
+
     private static StudentDAO studentDao = new StudentDAOImpl();
     private static GroupDAO groupDao = new GroupDAOImpl();
     private static CourseDAO courseDao = new CourseDAOImpl();
