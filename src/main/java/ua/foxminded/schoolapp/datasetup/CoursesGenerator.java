@@ -1,9 +1,8 @@
-package ua.foxminded.schoolapp.datasetup.impl;
+package ua.foxminded.schoolapp.datasetup;
 
 import java.util.List;
 import java.util.stream.IntStream;
-import ua.foxminded.schoolapp.datasetup.Generatable;
-import ua.foxminded.schoolapp.datasetup.Reader;
+
 import ua.foxminded.schoolapp.model.Course;
 
 public class CoursesGenerator implements Generatable<Course> {

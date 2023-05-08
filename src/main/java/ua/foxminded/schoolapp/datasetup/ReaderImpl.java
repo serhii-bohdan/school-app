@@ -1,4 +1,4 @@
-package ua.foxminded.schoolapp.datasetup.impl;
+package ua.foxminded.schoolapp.datasetup;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
-import ua.foxminded.schoolapp.datasetup.Reader;
+
 import ua.foxminded.schoolapp.exception.FileReadingException;
 
 public class ReaderImpl implements Reader {

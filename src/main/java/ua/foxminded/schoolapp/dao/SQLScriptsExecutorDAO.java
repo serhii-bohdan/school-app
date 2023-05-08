@@ -1,10 +1,9 @@
-package ua.foxminded.schoolapp.dao.impl;
+package ua.foxminded.schoolapp.dao;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import ua.foxminded.schoolapp.dao.Connectable;
-import ua.foxminded.schoolapp.dao.ExecutorDAO;
+
 import ua.foxminded.schoolapp.exception.DAOException;
 import ua.foxminded.schoolapp.datasetup.Reader;
 

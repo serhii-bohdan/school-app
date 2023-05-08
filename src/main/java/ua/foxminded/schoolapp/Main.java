@@ -1,10 +1,8 @@
 package ua.foxminded.schoolapp;
 
 import ua.foxminded.schoolapp.datasetup.*;
-import ua.foxminded.schoolapp.datasetup.impl.*;
 import ua.foxminded.schoolapp.model.*;
 import ua.foxminded.schoolapp.dao.*;
-import ua.foxminded.schoolapp.dao.impl.*;
 import ua.foxminded.schoolapp.cli.controller.*;
 import ua.foxminded.schoolapp.cli.view.*;
 
