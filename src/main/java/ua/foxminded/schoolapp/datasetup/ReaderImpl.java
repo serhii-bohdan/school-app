@@ -21,8 +21,8 @@ public class ReaderImpl implements Reader {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
             lines = reader.lines()
                           .toList();
-        } catch (IOException e) {
-            throw new FileReadingException("Failed to read file: " + filePathInResources);
+        } catch (Exception e) {
+            throw new FileReadingException("Failed to read file: " + filePathInResources + ". Make sure this file exists.");
         }
         return lines;
     }
