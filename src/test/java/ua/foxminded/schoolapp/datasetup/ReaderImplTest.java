@@ -1,8 +1,6 @@
 package ua.foxminded.schoolapp.datasetup;
 
 import static org.junit.jupiter.api.Assertions.*;
-import java.io.File;
-import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,8 +8,6 @@ import org.junit.jupiter.api.Test;
 import ua.foxminded.schoolapp.exception.*;
 
 class ReaderImplTest {
-
-    static final String TEST_FILE = "test.txt";
 
     Reader reader;
 
@@ -21,36 +17,98 @@ class ReaderImplTest {
     }
 
     @Test
-    void readFileAndPopulateList_shouldReadedLinesFromFile_whenFileIsCorrect() throws Exception {
-        String testFileContent = """
-                Line_1
-                Line_2
-                Line_3""";
+    void readFileAndPopulateList_shouldFileReadingException_whenFileNotExist() {
 
+        assertThrows(FileReadingException.class, () -> {
+            reader.readFileAndPopulateList("non-existent-file.txt");
+        });
+    }
+
+    @Test
+    void readFileAndPopulateList_shouldEmptyList_whenFileIsEmpty() {
         List<String> expectedFileLinesList = new ArrayList<>();
-        expectedFileLinesList.add("Line_1");
-        expectedFileLinesList.add("Line_2");
-        expectedFileLinesList.add("Line_3");
 
-        File testFile = new File("src/test/resources/" + TEST_FILE);
-        FileWriter writer = new FileWriter(testFile);
-        writer.write(testFileContent);
-        writer.close();
-
-        List<String> actualFileLinesList = reader.readFileAndPopulateList(TEST_FILE);
-        File file = new File("src/test/resources/" + TEST_FILE);
-        file.delete();
+        List<String> actualFileLinesList = reader.readFileAndPopulateList("readingtest/empty_test.txt");
 
         assertEquals(expectedFileLinesList, actualFileLinesList);
     }
 
+    @Test
+    void readFileAndPopulateList_shouldListOfLines_whenFileContainsFirstNamesAndLinesWithOnlySpaces() {
+        List<String> expectedFileLinesList = new ArrayList<>();
+        expectedFileLinesList.add("First_Name_1");
+        expectedFileLinesList.add("First_Name_2");
+        expectedFileLinesList.add("First_Name_3");
+
+        List<String> actualFileLinesList = reader.readFileAndPopulateList("readingtest/first_names_test.txt");
+
+        assertEquals(expectedFileLinesList, actualFileLinesList);
+    }
 
     @Test
-    void readFileAndPopulateList_shouldFileReadingException_whenFilePathIsIncorrect() {
+    void readFileAndPopulateList_shouldListOfLines_whenFileContainsLastNamesAndEmptyLines() {
+        List<String> expectedFileLinesList = new ArrayList<>();
+        expectedFileLinesList.add("Last Name 1");
+        expectedFileLinesList.add("Last Name 2");
+        expectedFileLinesList.add("Last Name 3");
+
+        List<String> actualFileLinesList = reader.readFileAndPopulateList("readingtest/last_names_test.txt");
+
+        assertEquals(expectedFileLinesList, actualFileLinesList);
+    }
+
+    @Test
+    void readFileAndPopulateList_shouldListOfLines_whenFileContainsCoursesNamesWithSpacesAtBeginningAndEnd() {
+        List<String> expectedFileLinesList = new ArrayList<>();
+        expectedFileLinesList.add("Course_1");
+        expectedFileLinesList.add("Course_2");
+        expectedFileLinesList.add("Course_3");
+
+        List<String> actualFileLinesList = reader.readFileAndPopulateList("readingtest/courses_test.txt");
+
+        assertEquals(expectedFileLinesList, actualFileLinesList);
+    }
+
+    @Test
+    void readFileAndPopulateList_shouldListOfLines_whenFileContainsCoursesDscriptionsWithSpacesAndEmptyLines() {
+        List<String> expectedFileLinesList = new ArrayList<>();
+        expectedFileLinesList.add("Description One");
+        expectedFileLinesList.add("Description Two");
+        expectedFileLinesList.add("Description Three");
+
+        List<String> actualFileLinesList = reader.readFileAndPopulateList("readingtest/descriptions_test.txt");
+
+        assertEquals(expectedFileLinesList, actualFileLinesList);
+    }
+
+    @Test
+    void readAllFileToString_shouldFileReadingException_whenwhenFileNotExist() {
 
         assertThrows(FileReadingException.class, () -> {
-            reader.readFileAndPopulateList("incorrect.txt");
+            reader.readAllFileToString("non-existent-file.txt");
         });
+    }
+
+    @Test
+    void readAllFileToString_shouldFileContentsAsString_whenFileIsSQLQuery() {
+        String expectedFileContents = """
+                SELECT students.first_name, courses.course_name
+                FROM students
+                INNER JOIN students_courses ON students.student_id = students_courses.fk_student_id
+                INNER JOIN courses ON courses.course_id = students_courses.fk_course_id;""";
+
+        String actualFileLinesList = reader.readAllFileToString("readingtest/query_test.sql");
+
+        assertEquals(expectedFileContents, actualFileLinesList);
+    }
+
+    @Test
+    void readAllFileToString_shouldEmptyString_whenFileIsEmpty() {
+        String expectedFileContents = "";
+
+        String actualFileLinesList = reader.readAllFileToString("readingtest/empty_test.txt");
+
+        assertEquals(expectedFileContents, actualFileLinesList);
     }
 
 }

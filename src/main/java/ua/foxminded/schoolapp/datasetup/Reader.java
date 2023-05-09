@@ -6,6 +6,6 @@ public interface Reader {
 
     List<String> readFileAndPopulateList(String filePathInResources);
 
-    String readSqlScriptFrom(String filePathInResources);
+    String readAllFileToString(String filePathInResources);
 
 }
