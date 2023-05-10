@@ -3,10 +3,10 @@ package ua.foxminded.schoolapp.datasetup;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
 import ua.foxminded.schoolapp.model.Student;
 
 public class StudentsGenerator implements Generatable<Student> {
@@ -15,6 +15,7 @@ public class StudentsGenerator implements Generatable<Student> {
     private Reader reader;
 
     public StudentsGenerator(Reader reader) {
+        Objects.requireNonNull(reader);
         this.reader = reader;
     }
 
@@ -42,7 +43,7 @@ public class StudentsGenerator implements Generatable<Student> {
                      .toList();
     }
 
-    public List<Integer> generateRandomGroupIds() {
+    private List<Integer> generateRandomGroupIds() {
         List<Integer> randomGroupIds = new ArrayList<>();
         int maxCountStudentsInGroup = 30;
         int minCountStudentsInGroup = 10;
