@@ -2,7 +2,6 @@ package ua.foxminded.schoolapp.datasetup;
 
 import java.util.List;
 import java.util.Random;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import ua.foxminded.schoolapp.model.Group;
 
@@ -13,17 +12,10 @@ public class GroupsGenerator implements Generatable<Group> {
     private Random random = new Random();
 
     public List<Group> toGenerate() {
-        List<String> groupsNames = generateGroupsNames();
-
-        return IntStream.rangeClosed(1, 10)
-                        .mapToObj(i -> new Group(groupsNames.get(i - 1)))
-                        .toList();
-    }
-
-    private List<String> generateGroupsNames() {
         return Stream.generate(() -> createRandomInitials() + SEPARATOR + createTwoRandomDigits())
                      .distinct()
                      .limit(10)
+                     .map(Group::new)
                      .toList();
     }
 
