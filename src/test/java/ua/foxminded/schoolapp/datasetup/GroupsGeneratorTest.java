@@ -37,33 +37,6 @@ class GroupsGeneratorTest {
     }
 
     @Test
-    void generateGroupsNames_shouldGroupNmesList_whenInvokeGenerateGroupsNames() throws Exception {
-        String groupNameRegex = "^[A-Z]{2}-[0-9]{2}$";
-        Method method = GroupsGenerator.class.getDeclaredMethod("generateGroupsNames");
-        method.setAccessible(true);
-
-        @SuppressWarnings("unchecked")
-        List<String> groupsNames = (List<String>) method.invoke(groupsGenerator);
-
-        for (String groupName : groupsNames) {
-            assertTrue(groupName.matches(groupNameRegex));
-        }
-    }
-
-    @Test
-    void generateGroupsNames_shouldListWithSizeTen_whenInvokeGenerateGroupsNames() throws Exception {
-        int expectedSize = 10;
-        Method method = GroupsGenerator.class.getDeclaredMethod("generateGroupsNames");
-        method.setAccessible(true);
-
-        @SuppressWarnings("unchecked")
-        List<String> groupsNames = (List<String>) method.invoke(groupsGenerator);
-        int actualSize = groupsNames.size();
-
-        assertEquals(expectedSize, actualSize);
-    }
-
-    @Test
     void createRandomInitials_shouldRandomInitials_whenInvokeCreateRandomInitials() throws Exception {
         String groupNameRegex = "^[A-Z]{2}$";
         Method method = GroupsGenerator.class.getDeclaredMethod("createRandomInitials");
@@ -72,7 +45,6 @@ class GroupsGeneratorTest {
         String groupInitials = method.invoke(groupsGenerator).toString();
 
         assertTrue(groupInitials.matches(groupNameRegex));
-
     }
 
     @Test

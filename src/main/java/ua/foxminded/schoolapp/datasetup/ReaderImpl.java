@@ -35,7 +35,7 @@ public class ReaderImpl implements Reader {
             File scriptFile = new File(classLoader.getResource(filePathInResources).getFile());
             script = FileUtils.readFileToString(scriptFile, StandardCharsets.UTF_8);
         } catch (Exception e) {
-            throw new FileReadingException("Failed to read file " + filePathInResources);
+            throw new FileReadingException("Failed to read file " + filePathInResources + ". Make sure this file exists.");
         }
         return script.strip();
     }
