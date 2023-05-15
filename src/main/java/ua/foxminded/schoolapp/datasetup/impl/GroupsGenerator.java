@@ -1,8 +1,9 @@
-package ua.foxminded.schoolapp.datasetup;
+package ua.foxminded.schoolapp.datasetup.impl;
 
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Stream;
+import ua.foxminded.schoolapp.datasetup.Generatable;
 import ua.foxminded.schoolapp.model.Group;
 
 public class GroupsGenerator implements Generatable<Group> {

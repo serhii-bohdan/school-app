@@ -1,4 +1,4 @@
-package ua.foxminded.schoolapp.datasetup;
+package ua.foxminded.schoolapp.datasetup.impl;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,6 +8,8 @@ import java.util.Random;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import ua.foxminded.schoolapp.model.Student;
+import ua.foxminded.schoolapp.datasetup.Generatable;
+import ua.foxminded.schoolapp.datasetup.Reader;
 import ua.foxminded.schoolapp.exception.DataSetUpException;
 
 public class StudentsGenerator implements Generatable<Student> {

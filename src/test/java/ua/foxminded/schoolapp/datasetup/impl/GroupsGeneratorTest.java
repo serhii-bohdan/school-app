@@ -1,8 +1,9 @@
-package ua.foxminded.schoolapp.datasetup;
+package ua.foxminded.schoolapp.datasetup.impl;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ua.foxminded.schoolapp.datasetup.Generatable;
 import ua.foxminded.schoolapp.model.Group;
 import java.lang.reflect.Method;
 import java.util.List;

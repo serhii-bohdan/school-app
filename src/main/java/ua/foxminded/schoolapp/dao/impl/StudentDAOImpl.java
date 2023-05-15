@@ -1,4 +1,4 @@
-package ua.foxminded.schoolapp.dao;
+package ua.foxminded.schoolapp.dao.impl;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -6,7 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
+import ua.foxminded.schoolapp.dao.Connectable;
+import ua.foxminded.schoolapp.dao.StudentDAO;
 import ua.foxminded.schoolapp.exception.DAOException;
 import ua.foxminded.schoolapp.model.Student;
 

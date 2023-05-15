@@ -1,4 +1,4 @@
-package ua.foxminded.schoolapp.datasetup;
+package ua.foxminded.schoolapp.datasetup.impl;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -8,6 +8,9 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ua.foxminded.schoolapp.model.Course;
+import ua.foxminded.schoolapp.datasetup.CoursesGeneratorTestHelper;
+import ua.foxminded.schoolapp.datasetup.Generatable;
+import ua.foxminded.schoolapp.datasetup.Reader;
 import ua.foxminded.schoolapp.exception.DataSetUpException;
 import ua.foxminded.schoolapp.exception.FileReadingException;
 

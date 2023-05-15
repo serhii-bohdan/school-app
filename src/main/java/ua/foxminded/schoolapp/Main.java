@@ -1,8 +1,15 @@
 package ua.foxminded.schoolapp;
 
-import ua.foxminded.schoolapp.datasetup.*;
 import ua.foxminded.schoolapp.model.*;
 import ua.foxminded.schoolapp.dao.*;
+import ua.foxminded.schoolapp.dao.impl.CourseDAOImpl;
+import ua.foxminded.schoolapp.dao.impl.GroupDAOImpl;
+import ua.foxminded.schoolapp.dao.impl.SQLScriptsExecutorDAO;
+import ua.foxminded.schoolapp.dao.impl.StudentDAOImpl;
+import ua.foxminded.schoolapp.datasetup.Generatable;
+import ua.foxminded.schoolapp.datasetup.Initializable;
+import ua.foxminded.schoolapp.datasetup.Reader;
+import ua.foxminded.schoolapp.datasetup.impl.*;
 import ua.foxminded.schoolapp.cli.controller.*;
 import ua.foxminded.schoolapp.cli.view.*;
 

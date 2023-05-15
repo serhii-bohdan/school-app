@@ -1,10 +1,11 @@
-package ua.foxminded.schoolapp.datasetup;
+package ua.foxminded.schoolapp.datasetup.impl;
 
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ua.foxminded.schoolapp.datasetup.Reader;
 import ua.foxminded.schoolapp.exception.*;
 
 class ReaderImplTest {

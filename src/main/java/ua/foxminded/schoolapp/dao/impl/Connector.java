@@ -1,8 +1,9 @@
-package ua.foxminded.schoolapp.dao;
+package ua.foxminded.schoolapp.dao.impl;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import ua.foxminded.schoolapp.dao.Connectable;
 
 public class Connector implements Connectable {
 
