@@ -1,6 +1,7 @@
 package ua.foxminded.schoolapp.datasetup.impl;
 
 import java.util.List;
+import ua.foxminded.schoolapp.dao.Connectable;
 import ua.foxminded.schoolapp.dao.CourseDAO;
 import ua.foxminded.schoolapp.dao.ExecutorDAO;
 import ua.foxminded.schoolapp.dao.GroupDAO;
@@ -16,13 +17,15 @@ import ua.foxminded.schoolapp.model.Student;
 
 public class DatabaseTableInitializer implements Initializable {
 
+    private Connectable connector;
     private ExecutorDAO executor;
     private Generatable<Group> groupsGenerator;
     private Generatable<Student> studentsGenerator;
     private Generatable<Course> coursesGenerator;
 
-    public DatabaseTableInitializer(ExecutorDAO executor, Generatable<Group> groupsGenerator,
+    public DatabaseTableInitializer(Connectable connector, ExecutorDAO executor, Generatable<Group> groupsGenerator,
             Generatable<Student> studentsGenerator, Generatable<Course> coursesGenerator) {
+        this.connector = connector;
         this.executor = executor;
         this.groupsGenerator = groupsGenerator;
         this.studentsGenerator = studentsGenerator;
@@ -38,7 +41,7 @@ public class DatabaseTableInitializer implements Initializable {
     }
 
     private void fillGroupsTable() {
-        GroupDAO groupDao = new GroupDAOImpl();
+        GroupDAO groupDao = new GroupDAOImpl(connector);
         List<Group> groups = groupsGenerator.toGenerate();
 
         for (Group group : groups) {
@@ -47,7 +50,7 @@ public class DatabaseTableInitializer implements Initializable {
     }
 
     private void fillStudentsTable() {
-        StudentDAO studentDao = new StudentDAOImpl();
+        StudentDAO studentDao = new StudentDAOImpl(connector);
         List<Student> students = studentsGenerator.toGenerate();
 
         for (Student student : students) {
@@ -56,7 +59,7 @@ public class DatabaseTableInitializer implements Initializable {
     }
 
     private void fillCoursesTable() {
-        CourseDAO courseDao = new CourseDAOImpl();
+        CourseDAO courseDao = new CourseDAOImpl(connector);
         List<Course> courses = coursesGenerator.toGenerate();
 
         for (Course course : courses) {

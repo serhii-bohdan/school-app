@@ -13,11 +13,16 @@ import ua.foxminded.schoolapp.model.Student;
 
 public class StudentDAOImpl implements StudentDAO {
 
+    private Connectable connector;
+
+    public StudentDAOImpl(Connectable connector) {
+        this.connector = connector;
+    }
+
     public int save(Student student) {
-        Connectable connector = new Connector();
         int rowsInserted;
 
-        try (Connection connection = connector.createConnection()) {
+        try (Connection connection = connector.getConnection()) {
             PreparedStatement statement = connection.prepareStatement("INSERT INTO students (first_name, last_name, group_id)\n"
                                                                     + "VALUES(?, ?, ?);");
             statement.setString(1, student.getFirstName());
@@ -32,10 +37,9 @@ public class StudentDAOImpl implements StudentDAO {
     }
 
     public List<Student> findAllStudents() {
-        Connectable connector = new Connector();
         List<Student> students = new ArrayList<>();
 
-        try (Connection connection = connector.createConnection()) {
+        try (Connection connection = connector.getConnection()) {
             PreparedStatement statement = connection
                     .prepareStatement("SELECT student_id, first_name, last_name, group_id\n"
                                     + "FROM students;");
@@ -57,10 +61,9 @@ public class StudentDAOImpl implements StudentDAO {
     }
 
     public Student findStudentById(int studentId) {
-        Connectable connector = new Connector();
         Student student = new Student();
 
-        try (Connection connection = connector.createConnection()) {
+        try (Connection connection = connector.getConnection()) {
             PreparedStatement statement = connection.prepareStatement("""
                     SELECT student_id, first_name, last_name, group_id
                     FROM students
@@ -82,10 +85,9 @@ public class StudentDAOImpl implements StudentDAO {
     }
 
     public List<Student> findStudentsRelatedToCourse(String courseName) {
-        Connectable connector = new Connector();
         List<Student> students = new ArrayList<>();
 
-        try (Connection connection = connector.createConnection()) {
+        try (Connection connection = connector.getConnection()) {
             PreparedStatement statement = connection.prepareStatement("""
                     SELECT student_id, first_name, last_name, group_id
                     FROM students
@@ -111,10 +113,9 @@ public class StudentDAOImpl implements StudentDAO {
     }
 
     public int deleteStudentById(int studentId) {
-        Connectable connector = new Connector();
         int rowsDeleted;
 
-        try (Connection connection = connector.createConnection()) {
+        try (Connection connection = connector.getConnection()) {
             PreparedStatement statement = connection.prepareStatement("DELETE FROM students\n" 
                                                                     + "WHERE student_id = ?;");
             statement.setInt(1, studentId);
@@ -127,10 +128,9 @@ public class StudentDAOImpl implements StudentDAO {
     }
 
     public boolean isStudentOnCourse(String firstName, String lastName, String courseName) {
-        Connectable connector = new Connector();
         boolean exists = false;
 
-        try (Connection connection = connector.createConnection()) {
+        try (Connection connection = connector.getConnection()) {
             PreparedStatement statement = connection.prepareStatement("""
                     SELECT 1 FROM students_courses
                     JOIN students ON students.student_id = students_courses.fk_student_id
@@ -154,10 +154,9 @@ public class StudentDAOImpl implements StudentDAO {
     }
 
     public int addStudentToCourse(String firstName, String lastName, String courseName) {
-        Connectable connector = new Connector();
         int rowsInserted;
 
-        try (Connection connection = connector.createConnection()) {
+        try (Connection connection = connector.getConnection()) {
             PreparedStatement statement = connection.prepareStatement("""
                     INSERT INTO students_courses (fk_student_id, fk_course_id)
                     VALUES ((SELECT student_id FROM students WHERE first_name = ? AND last_name = ?),
@@ -174,10 +173,9 @@ public class StudentDAOImpl implements StudentDAO {
     }
 
     public int deleteStudentFromCourse(String firstName, String lastName, String courseName) {
-        Connectable connector = new Connector();
         int rowsDeleted;
 
-        try (Connection connection = connector.createConnection()) {
+        try (Connection connection = connector.getConnection()) {
             PreparedStatement statement = connection.prepareStatement("""
                     DELETE FROM students_courses
                     WHERE fk_student_id = (SELECT student_id FROM students WHERE first_name = ?
@@ -193,4 +191,5 @@ public class StudentDAOImpl implements StudentDAO {
         }
         return rowsDeleted;
     }
+
 }

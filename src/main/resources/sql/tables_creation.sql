@@ -10,14 +10,14 @@ CREATE TABLE groups (
 
 CREATE TABLE students (
   student_id SERIAL PRIMARY KEY,
-  group_id INTEGER REFERENCES groups(group_id),
-  first_name TEXT NOT NULL,
-  last_name TEXT NOT NULL
+  first_name VARCHAR(25) NOT NULL,
+  last_name VARCHAR(25) NOT NULL,
+  group_id INTEGER REFERENCES groups(group_id)
 );
 
 CREATE TABLE courses (
   course_id SERIAL PRIMARY KEY,
-  course_name TEXT NOT NULL,
+  course_name VARCHAR(25) NOT NULL,
   course_description TEXT NOT NULL
 );
 

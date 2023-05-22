@@ -13,12 +13,17 @@ import ua.foxminded.schoolapp.exception.DAOException;
 import ua.foxminded.schoolapp.model.Course;
 
 public class CourseDAOImpl implements CourseDAO {
+    
+    private Connectable connector;
+
+    public CourseDAOImpl(Connectable connector) {
+        this.connector = connector;
+    }
 
     public int save(Course course) {
-        Connectable connector = new Connector();
         int rowsInserted;
 
-        try (Connection connection = connector.createConnection()) {
+        try (Connection connection = connector.getConnection()) {
             PreparedStatement statement = connection.prepareStatement("INSERT INTO courses (course_name, course_description)\n"
                                                                     + "VALUES(?, ?)");
             statement.setString(1, course.getCourseName());
@@ -32,10 +37,9 @@ public class CourseDAOImpl implements CourseDAO {
     }
 
     public List<Course> findAllCourses() {
-        Connectable connector = new Connector();
         List<Course> courses = new ArrayList<>();
 
-        try (Connection connection = connector.createConnection()) {
+        try (Connection connection = connector.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT course_id, course_name, course_description\n"
                                                        + "FROM courses");

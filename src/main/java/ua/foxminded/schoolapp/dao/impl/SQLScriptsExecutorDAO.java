@@ -10,16 +10,16 @@ import ua.foxminded.schoolapp.datasetup.Reader;
 
 public class SQLScriptsExecutorDAO implements ExecutorDAO {
 
+    private Connectable connector;
     private Reader reader;
 
-    public SQLScriptsExecutorDAO(Reader reader) {
+    public SQLScriptsExecutorDAO(Connectable connector, Reader reader) {
+        this.connector = connector;
         this.reader = reader;
     }
 
     public void executeSqlScriptFrom(String filePath) {
-        Connectable connector = new Connector();
-
-        try (Connection connection = connector.createConnection()) {
+        try (Connection connection = connector.getConnection()) {
             Statement statement = connection.createStatement();
             String sqlScript = reader.readAllFileToString(filePath);
             statement.execute(sqlScript);
