@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -46,7 +48,7 @@ class GroupDAOImplTest {
             Statement statement = connection.createStatement();
             statement.execute(sqlScript);
         } catch (Exception e) {
-            throw new DAOException("An error occurred while obtaining a connection to the test database.");
+            e.printStackTrace();
         }
     }
 
@@ -57,9 +59,7 @@ class GroupDAOImplTest {
 
     @Test
     void save_shouldNullPointerException_whenConnectorIsNull() {
-        assertThrows(NullPointerException.class, () -> {
-            groupDao = new GroupDAOImpl(null);
-        });
+        assertThrows(NullPointerException.class, () -> groupDao = new GroupDAOImpl(null));
     }
 
     @Test
@@ -72,9 +72,7 @@ class GroupDAOImplTest {
             e.printStackTrace();
         }
 
-        assertThrows(NullPointerException.class, () -> {
-            groupDao.save(null);
-        });
+        assertThrows(NullPointerException.class, () -> groupDao.save(null));
     }
 
     @Test
@@ -88,9 +86,7 @@ class GroupDAOImplTest {
             e.printStackTrace();
         }
 
-        assertThrows(DAOException.class, () -> {
-            groupDao.save(group);
-        });
+        assertThrows(DAOException.class, () -> groupDao.save(group));
     }
 
     @Test
@@ -105,9 +101,7 @@ class GroupDAOImplTest {
             e.printStackTrace();
         }
 
-        assertThrows(DAOException.class, () -> {
-            groupDao.save(group);
-        });
+        assertThrows(DAOException.class, () -> groupDao.save(group));
     }
 
     @Test
@@ -134,7 +128,7 @@ class GroupDAOImplTest {
                 actualGroupName = resultSet.getString("group_name");
             }
         } catch (Exception e) {
-            throw new DAOException("An error occurred while obtaining a connection to the test database.");
+            e.printStackTrace();
         }
 
         assertEquals(expectedGroupName, actualGroupName);
@@ -165,7 +159,7 @@ class GroupDAOImplTest {
                 actualGroupName = resultSet.getString("group_name");
             }
         } catch (Exception e) {
-            throw new DAOException("An error occurred while obtaining a connection to the test database.");
+            e.printStackTrace();
         }
 
         assertEquals(expectedGroupName, actualGroupName);
@@ -196,7 +190,7 @@ class GroupDAOImplTest {
                 actualGroupName = resultSet.getString("group_name");
             }
         } catch (Exception e) {
-            throw new DAOException("An error occurred while obtaining a connection to the test database.");
+            e.printStackTrace();
         }
 
         assertEquals(expectedGroupName, actualGroupName);
@@ -222,6 +216,263 @@ class GroupDAOImplTest {
         assertEquals(expectedRecordsNumber, actualRecordsNumber);
     }
 
+    @Test
+    void findGroupsWithGivenNumberStudents_shouldDAOException_whenConnectorThrowSQLException() {
+        groupDao = new GroupDAOImpl(connectorMock);
+
+        try {
+            when(connectorMock.getConnection()).thenThrow(SQLException.class);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        assertThrows(DAOException.class, () -> groupDao.findGroupsWithGivenNumberStudents(4));
+
+    }
+
+    @Test
+    void findGroupsWithGivenNumberStudents_shouldEmptyGroupsList_whenNegativeNumberOfStudents() {
+        List<Group> groups = new ArrayList<>();
+        String sqlScript = """
+                INSERT INTO groups (group_name)
+                VALUES('XZ-21'),
+                      ('DF-86'),
+                      ('PO-37');
+
+                INSERT INTO students (first_name, last_name, group_id)
+                VALUES ('FirstName', 'LastName', 1),
+                       ('FirstName', 'LastName', 1),
+                       ('FirstName', 'LastName', 1),
+                       ('FirstName', 'LastName', 1),
+                       ('FirstName', 'LastName', 2),
+                       ('FirstName', 'LastName', 2),
+                       ('FirstName', 'LastName', 2),
+                       ('FirstName', 'LastName', 3),
+                       ('FirstName', 'LastName', 3),
+                       ('FirstName', 'LastName', 3),
+                       ('FirstName', 'LastName', 3),
+                       ('FirstName', 'LastName', 3);""";
+        try (Connection connection = getConnection()) {
+            Statement statement = connection.createStatement();
+            statement.execute(sqlScript);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            groupDao = new GroupDAOImpl(connectorMock);
+            when(connectorMock.getConnection()).thenReturn(getConnection());
+            groups = groupDao.findGroupsWithGivenNumberStudents(-1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        assertTrue(groups.isEmpty());
+    }
+
+    @Test
+    void findGroupsWithGivenNumberStudents_shouldEmptyGroupsList_whenNumberOfStudentsIsZero() {
+        List<Group> groups = new ArrayList<>();
+        String sqlScript = """
+                INSERT INTO groups (group_name)
+                VALUES('XZ-21'),
+                      ('DF-86'),
+                      ('PO-37');
+
+                INSERT INTO students (first_name, last_name, group_id)
+                VALUES ('FirstName', 'LastName', 1),
+                       ('FirstName', 'LastName', 1),
+                       ('FirstName', 'LastName', 1),
+                       ('FirstName', 'LastName', 1),
+                       ('FirstName', 'LastName', 2),
+                       ('FirstName', 'LastName', 2),
+                       ('FirstName', 'LastName', 2),
+                       ('FirstName', 'LastName', 3),
+                       ('FirstName', 'LastName', 3),
+                       ('FirstName', 'LastName', 3),
+                       ('FirstName', 'LastName', 3),
+                       ('FirstName', 'LastName', 3);""";
+        try (Connection connection = getConnection()) {
+            Statement statement = connection.createStatement();
+            statement.execute(sqlScript);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            groupDao = new GroupDAOImpl(connectorMock);
+            when(connectorMock.getConnection()).thenReturn(getConnection());
+            groups = groupDao.findGroupsWithGivenNumberStudents(0);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        assertTrue(groups.isEmpty());
+    }
+
+    @Test
+    void findGroupsWithGivenNumberStudents_shouldEmptyGroupsList_whenThereNoGroupWithGivenNumberOfStudents() {
+        List<Group> groups = new ArrayList<>();
+        String sqlScript = """
+                INSERT INTO groups (group_name)
+                VALUES('XZ-21'),
+                      ('DF-86'),
+                      ('PO-37');
+
+                INSERT INTO students (first_name, last_name, group_id)
+                VALUES ('FirstName', 'LastName', 1),
+                       ('FirstName', 'LastName', 1),
+                       ('FirstName', 'LastName', 1),
+                       ('FirstName', 'LastName', 1),
+                       ('FirstName', 'LastName', 2),
+                       ('FirstName', 'LastName', 2),
+                       ('FirstName', 'LastName', 2),
+                       ('FirstName', 'LastName', 3),
+                       ('FirstName', 'LastName', 3),
+                       ('FirstName', 'LastName', 3),
+                       ('FirstName', 'LastName', 3),
+                       ('FirstName', 'LastName', 3);""";
+        try (Connection connection = getConnection()) {
+            Statement statement = connection.createStatement();
+            statement.execute(sqlScript);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            groupDao = new GroupDAOImpl(connectorMock);
+            when(connectorMock.getConnection()).thenReturn(getConnection());
+            groups = groupDao.findGroupsWithGivenNumberStudents(2);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        assertTrue(groups.isEmpty());
+    }
+
+    @Test
+    void findGroupsWithGivenNumberStudents_shouldOneGroup_whenOneGroupWithGivenAndSmallerNumberOfStudents() {
+        List<Group> groups = new ArrayList<>();
+        String sqlScript = """
+                INSERT INTO groups (group_name)
+                VALUES('XZ-21'),
+                      ('DF-86'),
+                      ('PO-37');
+
+                INSERT INTO students (first_name, last_name, group_id)
+                VALUES ('FirstName', 'LastName', 1),
+                       ('FirstName', 'LastName', 1),
+                       ('FirstName', 'LastName', 1),
+                       ('FirstName', 'LastName', 1),
+                       ('FirstName', 'LastName', 2),
+                       ('FirstName', 'LastName', 2),
+                       ('FirstName', 'LastName', 2),
+                       ('FirstName', 'LastName', 3),
+                       ('FirstName', 'LastName', 3),
+                       ('FirstName', 'LastName', 3),
+                       ('FirstName', 'LastName', 3),
+                       ('FirstName', 'LastName', 3);""";
+        try (Connection connection = getConnection()) {
+            Statement statement = connection.createStatement();
+            statement.execute(sqlScript);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            groupDao = new GroupDAOImpl(connectorMock);
+            when(connectorMock.getConnection()).thenReturn(getConnection());
+            groups = groupDao.findGroupsWithGivenNumberStudents(3);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        assertEquals("DF-86", groups.get(0).getGroupName());
+    }
+
+    @Test
+    void findGroupsWithGivenNumberOfStudents_shouldTwoGroups_whenTwoGroupsWithGivenAndSmallerNumberOfStudents() {
+        List<Group> groups = new ArrayList<>();
+        String sqlScript = """
+                INSERT INTO groups (group_name)
+                VALUES('XZ-21'),
+                      ('DF-86'),
+                      ('PO-37');
+
+                INSERT INTO students (first_name, last_name, group_id)
+                VALUES ('FirstName', 'LastName', 1),
+                       ('FirstName', 'LastName', 1),
+                       ('FirstName', 'LastName', 1),
+                       ('FirstName', 'LastName', 1),
+                       ('FirstName', 'LastName', 2),
+                       ('FirstName', 'LastName', 2),
+                       ('FirstName', 'LastName', 2),
+                       ('FirstName', 'LastName', 3),
+                       ('FirstName', 'LastName', 3),
+                       ('FirstName', 'LastName', 3),
+                       ('FirstName', 'LastName', 3),
+                       ('FirstName', 'LastName', 3);""";
+        try (Connection connection = getConnection()) {
+            Statement statement = connection.createStatement();
+            statement.execute(sqlScript);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            groupDao = new GroupDAOImpl(connectorMock);
+            when(connectorMock.getConnection()).thenReturn(getConnection());
+            groups = groupDao.findGroupsWithGivenNumberStudents(4);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        assertEquals("XZ-21", groups.get(0).getGroupName());
+        assertEquals("DF-86", groups.get(1).getGroupName());
+    }
+
+    @Test
+    void findGroupsWithGivenNumberStudents_shouldAllExistingGroups_whenGivenNumberOfStudentsIsMuchLargerThanWhatInEachOfAvailableGroups() {
+        List<Group> groups = new ArrayList<>();
+        String sqlScript = """
+                INSERT INTO groups (group_name)
+                VALUES('XZ-21'),
+                      ('DF-86'),
+                      ('PO-37');
+
+                INSERT INTO students (first_name, last_name, group_id)
+                VALUES ('FirstName', 'LastName', 1),
+                       ('FirstName', 'LastName', 1),
+                       ('FirstName', 'LastName', 1),
+                       ('FirstName', 'LastName', 1),
+                       ('FirstName', 'LastName', 2),
+                       ('FirstName', 'LastName', 2),
+                       ('FirstName', 'LastName', 2),
+                       ('FirstName', 'LastName', 3),
+                       ('FirstName', 'LastName', 3),
+                       ('FirstName', 'LastName', 3),
+                       ('FirstName', 'LastName', 3),
+                       ('FirstName', 'LastName', 3);""";
+        try (Connection connection = getConnection()) {
+            Statement statement = connection.createStatement();
+            statement.execute(sqlScript);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            groupDao = new GroupDAOImpl(connectorMock);
+            when(connectorMock.getConnection()).thenReturn(getConnection());
+            groups = groupDao.findGroupsWithGivenNumberStudents(100);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        assertEquals("PO-37", groups.get(0).getGroupName());
+        assertEquals("XZ-21", groups.get(1).getGroupName());
+        assertEquals("DF-86", groups.get(2).getGroupName());
+    }
+
     @AfterEach
     void tearDown() {
         String sqlScript = """
@@ -234,7 +485,7 @@ class GroupDAOImplTest {
             Statement statement = connection.createStatement();
             statement.execute(sqlScript);
         } catch (Exception e) {
-            throw new DAOException("An error occurred while obtaining a connection to the test database.");
+            e.printStackTrace();
         }
     }
 
@@ -247,11 +498,11 @@ class GroupDAOImplTest {
             Statement statement = connection.createStatement();
             statement.execute(sqlScript);
         } catch (Exception e) {
-            throw new DAOException("An error occurred while obtaining a connection to the test database.");
+            e.printStackTrace();
         }
     }
 
-    private static Connection getConnection() throws Exception {
+    private static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 
