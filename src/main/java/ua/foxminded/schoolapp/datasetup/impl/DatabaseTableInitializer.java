@@ -11,6 +11,7 @@ import ua.foxminded.schoolapp.dao.impl.GroupDAOImpl;
 import ua.foxminded.schoolapp.dao.impl.StudentDAOImpl;
 import ua.foxminded.schoolapp.datasetup.Generatable;
 import ua.foxminded.schoolapp.datasetup.Initializable;
+import ua.foxminded.schoolapp.datasetup.Reader;
 import ua.foxminded.schoolapp.model.Course;
 import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
@@ -18,14 +19,17 @@ import ua.foxminded.schoolapp.model.Student;
 public class DatabaseTableInitializer implements Initializable {
 
     private Connectable connector;
+    private Reader reader;
     private ExecutorDAO executor;
     private Generatable<Group> groupsGenerator;
     private Generatable<Student> studentsGenerator;
     private Generatable<Course> coursesGenerator;
 
-    public DatabaseTableInitializer(Connectable connector, ExecutorDAO executor, Generatable<Group> groupsGenerator,
-            Generatable<Student> studentsGenerator, Generatable<Course> coursesGenerator) {
+    public DatabaseTableInitializer(Connectable connector, Reader reader, ExecutorDAO executor,
+            Generatable<Group> groupsGenerator, Generatable<Student> studentsGenerator,
+            Generatable<Course> coursesGenerator) {
         this.connector = connector;
+        this.reader = reader;
         this.executor = executor;
         this.groupsGenerator = groupsGenerator;
         this.studentsGenerator = studentsGenerator;
@@ -33,11 +37,13 @@ public class DatabaseTableInitializer implements Initializable {
     }
 
     public void initialize() {
-        executor.executeSqlScriptFrom("sql/tables_creation.sql");
+        String tablesCreationScript = reader.readAllFileToString("sql/tables_creation.sql");
+        String studentsCoursesFillingScript = reader.readAllFileToString("sql/students_courses_filling.sql");
+        executor.executeSqlScript(tablesCreationScript);
         fillGroupsTable();
         fillStudentsTable();
         fillCoursesTable();
-        executor.executeSqlScriptFrom("sql/students_courses_filling.sql");
+        executor.executeSqlScript(studentsCoursesFillingScript);
     }
 
     private void fillGroupsTable() {

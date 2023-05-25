@@ -1,6 +1,7 @@
 package ua.foxminded.schoolapp.dao.impl;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -14,10 +15,10 @@ public class Connector implements Connectable {
     public Connector(String configFilePath) {
         properties = new Properties();
 
-        try {
-            properties.load(getClass().getClassLoader().getResourceAsStream(configFilePath));
+        try (InputStream input = getClass().getClassLoader().getResourceAsStream(configFilePath)) {
+            properties.load(input);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to load database configuration", e);
+            throw new NullPointerException("Failed to load database configuration");
         }
     }
 

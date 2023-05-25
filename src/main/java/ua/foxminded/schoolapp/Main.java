@@ -18,12 +18,12 @@ public class Main {
 
     private static Connectable connector = new Connector("application.properties");
     private static Reader reader = new ReaderImpl();
-    private static ExecutorDAO executor = new SQLScriptsExecutorDAO(connector, reader);
+    private static ExecutorDAO executor = new SQLScriptsExecutorDAO(connector);
     private static Generatable<Group> groupsGenerator = new GroupsGenerator();
     private static Generatable<Student> studentsGenerator = new StudentsGenerator(reader);
     private static Generatable<Course> coursesGenerator = new CoursesGenerator(reader);
-    private static Initializable initializer = new DatabaseTableInitializer(connector, executor, groupsGenerator,
-            studentsGenerator, coursesGenerator);
+    private static Initializable initializer = new DatabaseTableInitializer(connector, reader, executor,
+            groupsGenerator, studentsGenerator, coursesGenerator);
 
     private static StudentDAO studentDao = new StudentDAOImpl(connector);
     private static GroupDAO groupDao = new GroupDAOImpl(connector);
