@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import ua.foxminded.schoolapp.dao.Connectable;
 import ua.foxminded.schoolapp.dao.CourseDAO;
 import ua.foxminded.schoolapp.exception.DAOException;
@@ -17,6 +18,7 @@ public class CourseDAOImpl implements CourseDAO {
     private Connectable connector;
 
     public CourseDAOImpl(Connectable connector) {
+        Objects.requireNonNull(connector);
         this.connector = connector;
     }
 
@@ -31,7 +33,7 @@ public class CourseDAOImpl implements CourseDAO {
             rowsInserted = statement.executeUpdate();
 
         } catch (SQLException e) {
-            throw new DAOException("Connection failure while saving course.");
+            throw new DAOException("Exception while saving course to database.");
         }
         return rowsInserted;
     }
@@ -52,7 +54,7 @@ public class CourseDAOImpl implements CourseDAO {
             }
 
         } catch (SQLException e) {
-            throw new DAOException("Connection failed while finding all available courses.");
+            throw new DAOException("Exception failed while finding all available courses.");
         }
         return courses;
     }

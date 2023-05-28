@@ -58,8 +58,8 @@ class GroupDAOImplTest {
     }
 
     @Test
-    void save_shouldNullPointerException_whenConnectorIsNull() {
-        assertThrows(NullPointerException.class, () -> groupDao = new GroupDAOImpl(null));
+    void groupdaoimpl_shouldNullPointerException_whenConnectorIsNull() {
+        assertThrows(NullPointerException.class, () -> new GroupDAOImpl(null));
     }
 
     @Test
