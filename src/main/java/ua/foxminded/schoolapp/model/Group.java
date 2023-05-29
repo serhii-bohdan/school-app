@@ -36,7 +36,7 @@ public class Group implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(groupName);
+        return Objects.hash(groupName, id);
     }
 
     @Override
@@ -48,7 +48,7 @@ public class Group implements Serializable {
         if (getClass() != obj.getClass())
             return false;
         Group other = (Group) obj;
-        return Objects.equals(groupName, other.groupName);
+        return Objects.equals(groupName, other.groupName) && id == other.id;
     }
 
     @Override

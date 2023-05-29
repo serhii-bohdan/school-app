@@ -46,7 +46,7 @@ public class Course implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(courseName, description);
+        return Objects.hash(courseName, description, id);
     }
 
     @Override
@@ -58,7 +58,8 @@ public class Course implements Serializable {
         if (getClass() != obj.getClass())
             return false;
         Course other = (Course) obj;
-        return Objects.equals(courseName, other.courseName) && Objects.equals(description, other.description);
+        return Objects.equals(courseName, other.courseName) && Objects.equals(description, other.description)
+                && id == other.id;
     }
 
     @Override

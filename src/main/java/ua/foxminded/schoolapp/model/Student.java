@@ -56,7 +56,7 @@ public class Student implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(firstName, groupId, lastName);
+        return Objects.hash(firstName, groupId, id, lastName);
     }
 
     @Override
@@ -68,7 +68,7 @@ public class Student implements Serializable {
         if (getClass() != obj.getClass())
             return false;
         Student other = (Student) obj;
-        return Objects.equals(firstName, other.firstName) && groupId == other.groupId
+        return Objects.equals(firstName, other.firstName) && groupId == other.groupId && id == other.id
                 && Objects.equals(lastName, other.lastName);
     }
 
