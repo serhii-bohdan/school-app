@@ -26,7 +26,7 @@ class CourseDAOImplTest {
     final static String USER = "sa";
     final static String PASSWORD = "1234";
 
-    Connectable connector;
+    Connectable connectorMock;
     CourseDAO courseDao;
 
     @BeforeAll
@@ -48,7 +48,7 @@ class CourseDAOImplTest {
 
     @BeforeEach
     void setUp() {
-        connector = mock(Connectable.class);
+        connectorMock = mock(Connectable.class);
     }
 
     @Test
@@ -58,10 +58,10 @@ class CourseDAOImplTest {
 
     @Test
     void save_shouldNullPointerException_whenCourseIsNull() {
-        courseDao = new CourseDAOImpl(connector);
+        courseDao = new CourseDAOImpl(connectorMock);
 
         try {
-            when(connector.getConnection()).thenReturn(getConnection());
+            when(connectorMock.getConnection()).thenReturn(getConnection());
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -71,11 +71,11 @@ class CourseDAOImplTest {
 
     @Test
     void save_shouldDAOException_whenCourseFieldsNotInitialized() {
-        courseDao = new CourseDAOImpl(connector);
+        courseDao = new CourseDAOImpl(connectorMock);
         Course course = new Course();
 
         try {
-            when(connector.getConnection()).thenReturn(getConnection());
+            when(connectorMock.getConnection()).thenReturn(getConnection());
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -85,12 +85,12 @@ class CourseDAOImplTest {
 
     @Test
     void save_shouldDAOException_whenCourseDescriptionNotInitialized() {
-        courseDao = new CourseDAOImpl(connector);
+        courseDao = new CourseDAOImpl(connectorMock);
         Course course = new Course();
         course.setCourseName("CourseName");
 
         try {
-            when(connector.getConnection()).thenReturn(getConnection());
+            when(connectorMock.getConnection()).thenReturn(getConnection());
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -100,11 +100,11 @@ class CourseDAOImplTest {
 
     @Test
     void save_shouldDAOException_whenCourseNameContainsMoreThanTwentyFiveCharacters() {
-        courseDao = new CourseDAOImpl(connector);
+        courseDao = new CourseDAOImpl(connectorMock);
         Course course = new Course("CourseNameThatContainsMoreThanTwentyFiveCharacters", "Description");
 
         try {
-            when(connector.getConnection()).thenReturn(getConnection());
+            when(connectorMock.getConnection()).thenReturn(getConnection());
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -114,7 +114,7 @@ class CourseDAOImplTest {
 
     @Test
     void save_shouldOneRecordInTestDatabase_whenCourseNameAndDescriptionIsEmpty() {
-        courseDao = new CourseDAOImpl(connector);
+        courseDao = new CourseDAOImpl(connectorMock);
         Course course = new Course("", "");
         String actualCourseName = null;
         String actualCourseDescription = null;
@@ -122,7 +122,7 @@ class CourseDAOImplTest {
         int recordNumber = 0;
 
         try (Connection connection = getConnection()) {
-            when(connector.getConnection()).thenReturn(getConnection());
+            when(connectorMock.getConnection()).thenReturn(getConnection());
             recordNumber = courseDao.save(course);
 
             Statement statement = connection.createStatement();
@@ -149,7 +149,7 @@ class CourseDAOImplTest {
 
     @Test
     void save_shouldOneRecordInTestDatabase_whenCourseNameAndDescriptionIsOnlySpaces() {
-        courseDao = new CourseDAOImpl(connector);
+        courseDao = new CourseDAOImpl(connectorMock);
         Course course = new Course("    ", "      ");
         String actualCourseName = null;
         String actualCourseDescription = null;
@@ -157,7 +157,7 @@ class CourseDAOImplTest {
         int recordNumber = 0;
 
         try (Connection connection = getConnection()) {
-            when(connector.getConnection()).thenReturn(getConnection());
+            when(connectorMock.getConnection()).thenReturn(getConnection());
             recordNumber = courseDao.save(course);
 
             Statement statement = connection.createStatement();
@@ -184,7 +184,7 @@ class CourseDAOImplTest {
 
     @Test
     void save_shouldOneRecordInTestDatabase_whenCourseIsCorrectAndSavedSuccessfully() {
-        courseDao = new CourseDAOImpl(connector);
+        courseDao = new CourseDAOImpl(connectorMock);
         Course course = new Course("CourseName", "Description");
         String actualCourseName = null;
         String actualCourseDescription = null;
@@ -192,7 +192,7 @@ class CourseDAOImplTest {
         int recordNumber = 0;
 
         try (Connection connection = getConnection()) {
-            when(connector.getConnection()).thenReturn(getConnection());
+            when(connectorMock.getConnection()).thenReturn(getConnection());
             recordNumber = courseDao.save(course);
 
             Statement statement = connection.createStatement();
@@ -219,10 +219,10 @@ class CourseDAOImplTest {
 
     @Test
     void findAllCourses_shouldDAOException_whenThrownSQLException() {
-        courseDao = new CourseDAOImpl(connector);
+        courseDao = new CourseDAOImpl(connectorMock);
 
         try {
-            when(connector.getConnection()).thenThrow(SQLException.class);
+            when(connectorMock.getConnection()).thenThrow(SQLException.class);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -232,12 +232,12 @@ class CourseDAOImplTest {
 
     @Test
     void findAllCourses_shouldEmptyList_whenDatabaseEmpty() {
-        courseDao = new CourseDAOImpl(connector);
+        courseDao = new CourseDAOImpl(connectorMock);
         List<Course> exceptAllAvailableCourses = new ArrayList<>();
-        List<Course> actualAllAvailableCourses = new ArrayList<>();
+        List<Course> actualAllAvailableCourses = null;
 
         try {
-            when(connector.getConnection()).thenReturn(getConnection());
+            when(connectorMock.getConnection()).thenReturn(getConnection());
             actualAllAvailableCourses = courseDao.findAllCourses();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -248,7 +248,7 @@ class CourseDAOImplTest {
 
     @Test
     void findAllCourses_shouldListAllAvailableCoursesInDatabase_whenDatabaseContainsCourses() {
-        courseDao = new CourseDAOImpl(connector);
+        courseDao = new CourseDAOImpl(connectorMock);
         List<Course> exceptAllAvailableCourses = new ArrayList<>();
         List<Course> actualAllAvailableCourses = new ArrayList<>();
         String sqlScript = """
@@ -269,7 +269,7 @@ class CourseDAOImplTest {
             Statement statement = connection.createStatement();
             statement.execute(sqlScript);
 
-            when(connector.getConnection()).thenReturn(getConnection());
+            when(connectorMock.getConnection()).thenReturn(getConnection());
             actualAllAvailableCourses = courseDao.findAllCourses();
 
         } catch (SQLException e) {

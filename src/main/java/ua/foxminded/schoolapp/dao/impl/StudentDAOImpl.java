@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import ua.foxminded.schoolapp.dao.Connectable;
 import ua.foxminded.schoolapp.dao.StudentDAO;
 import ua.foxminded.schoolapp.exception.DAOException;
@@ -16,6 +17,7 @@ public class StudentDAOImpl implements StudentDAO {
     private Connectable connector;
 
     public StudentDAOImpl(Connectable connector) {
+        Objects.requireNonNull(connector);
         this.connector = connector;
     }
 
