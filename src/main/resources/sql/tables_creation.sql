@@ -23,6 +23,6 @@ CREATE TABLE courses (
 
 CREATE TABLE students_courses (
   student_courses_id SERIAL PRIMARY KEY,
-  fk_student_id INTEGER REFERENCES students(student_id) ON DELETE CASCADE,
-  fk_course_id INTEGER REFERENCES courses(course_id) ON DELETE CASCADE
+  fk_student_id INTEGER REFERENCES students(student_id) ON DELETE CASCADE NOT NULL,
+  fk_course_id INTEGER REFERENCES courses(course_id) ON DELETE CASCADE NOT NULL
 );
