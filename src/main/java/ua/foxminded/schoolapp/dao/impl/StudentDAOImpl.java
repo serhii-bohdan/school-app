@@ -134,12 +134,12 @@ public class StudentDAOImpl implements StudentDAO {
 
         try (Connection connection = connector.getConnection()) {
             PreparedStatement statement = connection.prepareStatement("""
-                    SELECT 1 FROM students_courses
-                    JOIN students ON students.student_id = students_courses.fk_student_id
+                    SELECT 1 FROM students
+                    JOIN students_courses ON students.student_id = students_courses.fk_student_id
                     JOIN courses ON courses.course_id = students_courses.fk_course_id
                     WHERE students.first_name = ?
                     AND students.last_name = ?
-                    AND courses.course_name = ?""");
+                    AND courses.course_name = ?;""");
             statement.setString(1, firstName);
             statement.setString(2, lastName);
             statement.setString(3, courseName);
