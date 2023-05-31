@@ -3,7 +3,7 @@ package ua.foxminded.schoolapp.dao;
 import java.util.List;
 import ua.foxminded.schoolapp.model.Student;
 
-public interface StudentDAO extends DAO<Student> {
+public interface StudentDao extends BaseDao<Student> {
 
     List<Student> findAllStudents();
 

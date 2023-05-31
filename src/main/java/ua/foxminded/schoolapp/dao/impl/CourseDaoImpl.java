@@ -9,15 +9,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import ua.foxminded.schoolapp.dao.Connectable;
-import ua.foxminded.schoolapp.dao.CourseDAO;
-import ua.foxminded.schoolapp.exception.DAOException;
+import ua.foxminded.schoolapp.dao.CourseDao;
+import ua.foxminded.schoolapp.exception.DaoException;
 import ua.foxminded.schoolapp.model.Course;
 
-public class CourseDAOImpl implements CourseDAO {
+public class CourseDaoImpl implements CourseDao {
     
     private Connectable connector;
 
-    public CourseDAOImpl(Connectable connector) {
+    public CourseDaoImpl(Connectable connector) {
         Objects.requireNonNull(connector);
         this.connector = connector;
     }
@@ -33,7 +33,7 @@ public class CourseDAOImpl implements CourseDAO {
             rowsInserted = statement.executeUpdate();
 
         } catch (SQLException e) {
-            throw new DAOException("Exception while saving course to database.");
+            throw new DaoException("Exception while saving course to database.");
         }
         return rowsInserted;
     }
@@ -54,7 +54,7 @@ public class CourseDAOImpl implements CourseDAO {
             }
 
         } catch (SQLException e) {
-            throw new DAOException("Exception failed while finding all available courses.");
+            throw new DaoException("Exception failed while finding all available courses.");
         }
         return courses;
     }

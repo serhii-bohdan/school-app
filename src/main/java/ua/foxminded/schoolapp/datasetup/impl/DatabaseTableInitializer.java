@@ -2,13 +2,13 @@ package ua.foxminded.schoolapp.datasetup.impl;
 
 import java.util.List;
 import ua.foxminded.schoolapp.dao.Connectable;
-import ua.foxminded.schoolapp.dao.CourseDAO;
-import ua.foxminded.schoolapp.dao.ExecutorDAO;
-import ua.foxminded.schoolapp.dao.GroupDAO;
-import ua.foxminded.schoolapp.dao.StudentDAO;
-import ua.foxminded.schoolapp.dao.impl.CourseDAOImpl;
-import ua.foxminded.schoolapp.dao.impl.GroupDAOImpl;
-import ua.foxminded.schoolapp.dao.impl.StudentDAOImpl;
+import ua.foxminded.schoolapp.dao.CourseDao;
+import ua.foxminded.schoolapp.dao.ExecutorDao;
+import ua.foxminded.schoolapp.dao.GroupDao;
+import ua.foxminded.schoolapp.dao.StudentDao;
+import ua.foxminded.schoolapp.dao.impl.CourseDaoImpl;
+import ua.foxminded.schoolapp.dao.impl.GroupDaoImpl;
+import ua.foxminded.schoolapp.dao.impl.StudentDaoImpl;
 import ua.foxminded.schoolapp.datasetup.Generatable;
 import ua.foxminded.schoolapp.datasetup.Initializable;
 import ua.foxminded.schoolapp.datasetup.Reader;
@@ -20,12 +20,12 @@ public class DatabaseTableInitializer implements Initializable {
 
     private Connectable connector;
     private Reader reader;
-    private ExecutorDAO executor;
+    private ExecutorDao executor;
     private Generatable<Group> groupsGenerator;
     private Generatable<Student> studentsGenerator;
     private Generatable<Course> coursesGenerator;
 
-    public DatabaseTableInitializer(Connectable connector, Reader reader, ExecutorDAO executor,
+    public DatabaseTableInitializer(Connectable connector, Reader reader, ExecutorDao executor,
             Generatable<Group> groupsGenerator, Generatable<Student> studentsGenerator,
             Generatable<Course> coursesGenerator) {
         this.connector = connector;
@@ -47,7 +47,7 @@ public class DatabaseTableInitializer implements Initializable {
     }
 
     private void fillGroupsTable() {
-        GroupDAO groupDao = new GroupDAOImpl(connector);
+        GroupDao groupDao = new GroupDaoImpl(connector);
         List<Group> groups = groupsGenerator.toGenerate();
 
         for (Group group : groups) {
@@ -56,7 +56,7 @@ public class DatabaseTableInitializer implements Initializable {
     }
 
     private void fillStudentsTable() {
-        StudentDAO studentDao = new StudentDAOImpl(connector);
+        StudentDao studentDao = new StudentDaoImpl(connector);
         List<Student> students = studentsGenerator.toGenerate();
 
         for (Student student : students) {
@@ -65,7 +65,7 @@ public class DatabaseTableInitializer implements Initializable {
     }
 
     private void fillCoursesTable() {
-        CourseDAO courseDao = new CourseDAOImpl(connector);
+        CourseDao courseDao = new CourseDaoImpl(connector);
         List<Course> courses = coursesGenerator.toGenerate();
 
         for (Course course : courses) {

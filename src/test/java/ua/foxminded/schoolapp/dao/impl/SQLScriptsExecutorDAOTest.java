@@ -12,8 +12,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ua.foxminded.schoolapp.dao.Connectable;
-import ua.foxminded.schoolapp.dao.ExecutorDAO;
-import ua.foxminded.schoolapp.exception.DAOException;
+import ua.foxminded.schoolapp.dao.ExecutorDao;
+import ua.foxminded.schoolapp.exception.DaoException;
 
 class SQLScriptsExecutorDAOTest {
 
@@ -21,7 +21,7 @@ class SQLScriptsExecutorDAOTest {
     final static String USER = "sa";
     final static String PASSWORD = "1234";
 
-    ExecutorDAO executor;
+    ExecutorDao executor;
     Connectable connector;
 
     @BeforeEach
@@ -31,13 +31,13 @@ class SQLScriptsExecutorDAOTest {
 
     @Test
     void sqlscriptsexecutordao_shouldNullPointerException_whenConnectorIsNull() {
-        assertThrows(NullPointerException.class, () -> executor = new SQLScriptsExecutorDAO(null));
+        assertThrows(NullPointerException.class, () -> executor = new SQLScriptsExecutorDao(null));
     }
 
     @Test
     void sqlscriptsexecutordao_shouldNullPointerException_whenSQLScriptIsNull() {
         try {
-            when(connector.getConnection()).thenReturn(getConnection());
+            when(connector.getConnection()).thenReturn(getTestConnection());
             assertThrows(NullPointerException.class, () -> executor.executeSqlScript(null));
         } catch (Exception e) {
             e.printStackTrace();
@@ -55,18 +55,20 @@ class SQLScriptsExecutorDAOTest {
                 );
 
                 INSERT INTO groups (group_name)
-                VALUES ('LK-61');""";
+                VALUES ('LK-61');
+                """;
 
-        try (Connection connection = getConnection()) {
-            executor = new SQLScriptsExecutorDAO(connector);
-            when(connector.getConnection()).thenReturn(getConnection());
+        try (Connection connection = getTestConnection()) {
+            executor = new SQLScriptsExecutorDao(connector);
+            when(connector.getConnection()).thenReturn(getTestConnection());
             executor.executeSqlScript(sqlScript);
 
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("""
                     SELECT group_id, group_name
                     FROM groups
-                    WHERE group_name = 'LK-61';""");
+                    WHERE group_name = 'LK-61';
+                    """);
             while (resultSet.next()) {
                 actualGroupName = resultSet.getString("group_name");
                 actualGroupId = resultSet.getInt("group_id");
@@ -85,24 +87,26 @@ class SQLScriptsExecutorDAOTest {
                 CRE TABLE IF NOT EXISTS groups (
                   group_id SERIAL PRIMARY KEY,
                   group_name VARCHAR(5) NOT NULL
-                );""";
+                );
+                """;
 
-        try (Connection connection = getConnection()) {
-            executor = new SQLScriptsExecutorDAO(connector);
-            when(connector.getConnection()).thenReturn(getConnection());
+        try (Connection connection = getTestConnection()) {
+            executor = new SQLScriptsExecutorDao(connector);
+            when(connector.getConnection()).thenReturn(getTestConnection());
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        assertThrows(DAOException.class, () -> executor.executeSqlScript(sqlScript));
+        assertThrows(DaoException.class, () -> executor.executeSqlScript(sqlScript));
     }
 
     @AfterEach
     void tearDown() {
         String sqlScript = """
-                DROP TABLE IF EXISTS groups CASCADE;""";
+                DROP TABLE IF EXISTS groups CASCADE;
+                """;
 
-        try (Connection connection = getConnection()) {
+        try (Connection connection = getTestConnection()) {
             Statement statement = connection.createStatement();
             statement.execute(sqlScript);
         } catch (Exception e) {
@@ -110,7 +114,7 @@ class SQLScriptsExecutorDAOTest {
         }
     }
 
-    private static Connection getConnection() throws SQLException {
+    private static Connection getTestConnection() throws SQLException {
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 

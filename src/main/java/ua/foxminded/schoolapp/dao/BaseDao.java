@@ -1,6 +1,6 @@
 package ua.foxminded.schoolapp.dao;
 
-public interface DAO<T> {
+public interface BaseDao<T> {
 
     int save(T entity);
 }

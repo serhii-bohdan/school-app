@@ -16,8 +16,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ua.foxminded.schoolapp.dao.Connectable;
-import ua.foxminded.schoolapp.dao.GroupDAO;
-import ua.foxminded.schoolapp.exception.DAOException;
+import ua.foxminded.schoolapp.dao.GroupDao;
+import ua.foxminded.schoolapp.exception.DaoException;
 import ua.foxminded.schoolapp.model.*;
 
 class GroupDAOImplTest {
@@ -27,7 +27,7 @@ class GroupDAOImplTest {
     final static String PASSWORD = "1234";
 
     Connectable connectorMock;
-    GroupDAO groupDao;
+    GroupDao groupDao;
 
     @BeforeAll
     static void setUpBeforeClass() {
@@ -42,9 +42,10 @@ class GroupDAOImplTest {
                   first_name VARCHAR(25) NOT NULL,
                   last_name VARCHAR(25) NOT NULL,
                   group_id INTEGER REFERENCES groups(group_id)
-                );""";
+                );
+                """;
 
-        try (Connection connection = getConnection()) {
+        try (Connection connection = getTestConnection()) {
             Statement statement = connection.createStatement();
             statement.execute(sqlScript);
         } catch (Exception e) {
@@ -59,15 +60,15 @@ class GroupDAOImplTest {
 
     @Test
     void groupdaoimpl_shouldNullPointerException_whenConnectorIsNull() {
-        assertThrows(NullPointerException.class, () -> new GroupDAOImpl(null));
+        assertThrows(NullPointerException.class, () -> new GroupDaoImpl(null));
     }
 
     @Test
     void save_shouldNullPointerException_whenGroupIsNull() {
-        groupDao = new GroupDAOImpl(connectorMock);
+        groupDao = new GroupDaoImpl(connectorMock);
 
         try {
-            when(connectorMock.getConnection()).thenReturn(getConnection());
+            when(connectorMock.getConnection()).thenReturn(getTestConnection());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -77,31 +78,31 @@ class GroupDAOImplTest {
 
     @Test
     void save_shouldDAOException_whenGroupNameNotInitialized() {
-        groupDao = new GroupDAOImpl(connectorMock);
+        groupDao = new GroupDaoImpl(connectorMock);
         Group group = new Group();
 
         try {
-            when(connectorMock.getConnection()).thenReturn(getConnection());
+            when(connectorMock.getConnection()).thenReturn(getTestConnection());
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        assertThrows(DAOException.class, () -> groupDao.save(group));
+        assertThrows(DaoException.class, () -> groupDao.save(group));
     }
 
     @Test
     void save_shouldDAOException_whenGroupNameContainsMoreThanFiveCharacters() {
         String expectedGroupName = "LKJ-576";
         Group group = new Group(expectedGroupName);
-        groupDao = new GroupDAOImpl(connectorMock);
+        groupDao = new GroupDaoImpl(connectorMock);
 
         try {
-            when(connectorMock.getConnection()).thenReturn(getConnection());
+            when(connectorMock.getConnection()).thenReturn(getTestConnection());
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        assertThrows(DAOException.class, () -> groupDao.save(group));
+        assertThrows(DaoException.class, () -> groupDao.save(group));
     }
 
     @Test
@@ -111,17 +112,18 @@ class GroupDAOImplTest {
         int actualGroupId = 0;
         String actualGroupName = "";
         Group group = new Group(expectedGroupName);
-        groupDao = new GroupDAOImpl(connectorMock);
+        groupDao = new GroupDaoImpl(connectorMock);
 
-        try (Connection connection = getConnection()) {
-            when(connectorMock.getConnection()).thenReturn(getConnection());
+        try (Connection connection = getTestConnection()) {
+            when(connectorMock.getConnection()).thenReturn(getTestConnection());
             groupDao.save(group);
 
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("""
                     SELECT group_id, group_name
                     FROM groups
-                    WHERE group_name = 'AQ-';""");
+                    WHERE group_name = 'AQ-';
+                    """);
 
             while (resultSet.next()) {
                 actualGroupId = resultSet.getInt("group_id");
@@ -142,17 +144,18 @@ class GroupDAOImplTest {
         int actualGroupId = 0;
         String actualGroupName = "";
         Group group = new Group(expectedGroupName);
-        groupDao = new GroupDAOImpl(connectorMock);
+        groupDao = new GroupDaoImpl(connectorMock);
 
-        try (Connection connection = getConnection()) {
-            when(connectorMock.getConnection()).thenReturn(getConnection());
+        try (Connection connection = getTestConnection()) {
+            when(connectorMock.getConnection()).thenReturn(getTestConnection());
             groupDao.save(group);
 
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("""
                     SELECT group_id, group_name
                     FROM groups
-                    WHERE group_name = '';""");
+                    WHERE group_name = '';
+                    """);
 
             while (resultSet.next()) {
                 actualGroupId = resultSet.getInt("group_id");
@@ -173,17 +176,18 @@ class GroupDAOImplTest {
         int actualGroupId = 0;
         String actualGroupName = "";
         Group group = new Group(expectedGroupName);
-        groupDao = new GroupDAOImpl(connectorMock);
+        groupDao = new GroupDaoImpl(connectorMock);
 
-        try (Connection connection = getConnection()) {
-            when(connectorMock.getConnection()).thenReturn(getConnection());
+        try (Connection connection = getTestConnection()) {
+            when(connectorMock.getConnection()).thenReturn(getTestConnection());
             groupDao.save(group);
 
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("""
                     SELECT group_id, group_name
                     FROM groups
-                    WHERE group_name = 'GC-34';""");
+                    WHERE group_name = 'GC-34';
+                    """);
 
             while (resultSet.next()) {
                 actualGroupId = resultSet.getInt("group_id");
@@ -202,10 +206,10 @@ class GroupDAOImplTest {
         int expectedRecordsNumber = 1;
         String expectedGroupName = "GC-34";
         Group group = new Group(expectedGroupName);
-        groupDao = new GroupDAOImpl(connectorMock);
+        groupDao = new GroupDaoImpl(connectorMock);
 
         try {
-            when(connectorMock.getConnection()).thenReturn(getConnection());
+            when(connectorMock.getConnection()).thenReturn(getTestConnection());
         } catch (SQLException e) {
             e.printStackTrace();
         } catch (Exception e) {
@@ -218,7 +222,7 @@ class GroupDAOImplTest {
 
     @Test
     void findGroupsWithGivenNumberStudents_shouldDAOException_whenConnectorThrowSQLException() {
-        groupDao = new GroupDAOImpl(connectorMock);
+        groupDao = new GroupDaoImpl(connectorMock);
 
         try {
             when(connectorMock.getConnection()).thenThrow(SQLException.class);
@@ -226,7 +230,7 @@ class GroupDAOImplTest {
             e.printStackTrace();
         }
 
-        assertThrows(DAOException.class, () -> groupDao.findGroupsWithGivenNumberStudents(4));
+        assertThrows(DaoException.class, () -> groupDao.findGroupsWithGivenNumberStudents(4));
 
     }
 
@@ -251,8 +255,9 @@ class GroupDAOImplTest {
                        ('FirstName', 'LastName', 3),
                        ('FirstName', 'LastName', 3),
                        ('FirstName', 'LastName', 3),
-                       ('FirstName', 'LastName', 3);""";
-        try (Connection connection = getConnection()) {
+                       ('FirstName', 'LastName', 3);
+                """;
+        try (Connection connection = getTestConnection()) {
             Statement statement = connection.createStatement();
             statement.execute(sqlScript);
         } catch (Exception e) {
@@ -260,8 +265,8 @@ class GroupDAOImplTest {
         }
 
         try {
-            groupDao = new GroupDAOImpl(connectorMock);
-            when(connectorMock.getConnection()).thenReturn(getConnection());
+            groupDao = new GroupDaoImpl(connectorMock);
+            when(connectorMock.getConnection()).thenReturn(getTestConnection());
             groups = groupDao.findGroupsWithGivenNumberStudents(-1);
         } catch (Exception e) {
             e.printStackTrace();
@@ -291,8 +296,9 @@ class GroupDAOImplTest {
                        ('FirstName', 'LastName', 3),
                        ('FirstName', 'LastName', 3),
                        ('FirstName', 'LastName', 3),
-                       ('FirstName', 'LastName', 3);""";
-        try (Connection connection = getConnection()) {
+                       ('FirstName', 'LastName', 3);
+                """;
+        try (Connection connection = getTestConnection()) {
             Statement statement = connection.createStatement();
             statement.execute(sqlScript);
         } catch (Exception e) {
@@ -300,8 +306,8 @@ class GroupDAOImplTest {
         }
 
         try {
-            groupDao = new GroupDAOImpl(connectorMock);
-            when(connectorMock.getConnection()).thenReturn(getConnection());
+            groupDao = new GroupDaoImpl(connectorMock);
+            when(connectorMock.getConnection()).thenReturn(getTestConnection());
             groups = groupDao.findGroupsWithGivenNumberStudents(0);
         } catch (Exception e) {
             e.printStackTrace();
@@ -331,8 +337,9 @@ class GroupDAOImplTest {
                        ('FirstName', 'LastName', 3),
                        ('FirstName', 'LastName', 3),
                        ('FirstName', 'LastName', 3),
-                       ('FirstName', 'LastName', 3);""";
-        try (Connection connection = getConnection()) {
+                       ('FirstName', 'LastName', 3);
+                """;
+        try (Connection connection = getTestConnection()) {
             Statement statement = connection.createStatement();
             statement.execute(sqlScript);
         } catch (Exception e) {
@@ -340,8 +347,8 @@ class GroupDAOImplTest {
         }
 
         try {
-            groupDao = new GroupDAOImpl(connectorMock);
-            when(connectorMock.getConnection()).thenReturn(getConnection());
+            groupDao = new GroupDaoImpl(connectorMock);
+            when(connectorMock.getConnection()).thenReturn(getTestConnection());
             groups = groupDao.findGroupsWithGivenNumberStudents(2);
         } catch (Exception e) {
             e.printStackTrace();
@@ -371,8 +378,9 @@ class GroupDAOImplTest {
                        ('FirstName', 'LastName', 3),
                        ('FirstName', 'LastName', 3),
                        ('FirstName', 'LastName', 3),
-                       ('FirstName', 'LastName', 3);""";
-        try (Connection connection = getConnection()) {
+                       ('FirstName', 'LastName', 3);
+                """;
+        try (Connection connection = getTestConnection()) {
             Statement statement = connection.createStatement();
             statement.execute(sqlScript);
         } catch (Exception e) {
@@ -380,8 +388,8 @@ class GroupDAOImplTest {
         }
 
         try {
-            groupDao = new GroupDAOImpl(connectorMock);
-            when(connectorMock.getConnection()).thenReturn(getConnection());
+            groupDao = new GroupDaoImpl(connectorMock);
+            when(connectorMock.getConnection()).thenReturn(getTestConnection());
             groups = groupDao.findGroupsWithGivenNumberStudents(3);
         } catch (Exception e) {
             e.printStackTrace();
@@ -411,8 +419,9 @@ class GroupDAOImplTest {
                        ('FirstName', 'LastName', 3),
                        ('FirstName', 'LastName', 3),
                        ('FirstName', 'LastName', 3),
-                       ('FirstName', 'LastName', 3);""";
-        try (Connection connection = getConnection()) {
+                       ('FirstName', 'LastName', 3);
+                """;
+        try (Connection connection = getTestConnection()) {
             Statement statement = connection.createStatement();
             statement.execute(sqlScript);
         } catch (Exception e) {
@@ -420,8 +429,8 @@ class GroupDAOImplTest {
         }
 
         try {
-            groupDao = new GroupDAOImpl(connectorMock);
-            when(connectorMock.getConnection()).thenReturn(getConnection());
+            groupDao = new GroupDaoImpl(connectorMock);
+            when(connectorMock.getConnection()).thenReturn(getTestConnection());
             groups = groupDao.findGroupsWithGivenNumberStudents(4);
         } catch (Exception e) {
             e.printStackTrace();
@@ -452,8 +461,9 @@ class GroupDAOImplTest {
                        ('FirstName', 'LastName', 3),
                        ('FirstName', 'LastName', 3),
                        ('FirstName', 'LastName', 3),
-                       ('FirstName', 'LastName', 3);""";
-        try (Connection connection = getConnection()) {
+                       ('FirstName', 'LastName', 3);
+                """;
+        try (Connection connection = getTestConnection()) {
             Statement statement = connection.createStatement();
             statement.execute(sqlScript);
         } catch (Exception e) {
@@ -461,8 +471,8 @@ class GroupDAOImplTest {
         }
 
         try {
-            groupDao = new GroupDAOImpl(connectorMock);
-            when(connectorMock.getConnection()).thenReturn(getConnection());
+            groupDao = new GroupDaoImpl(connectorMock);
+            when(connectorMock.getConnection()).thenReturn(getTestConnection());
             groups = groupDao.findGroupsWithGivenNumberStudents(100);
         } catch (Exception e) {
             e.printStackTrace();
@@ -479,9 +489,10 @@ class GroupDAOImplTest {
                 ALTER TABLE students ALTER COLUMN student_id RESTART WITH 1;
                 DELETE FROM students;
                 ALTER TABLE groups ALTER COLUMN group_id RESTART WITH 1;
-                DELETE FROM groups;""";
+                DELETE FROM groups;
+                """;
 
-        try (Connection connection = getConnection()) {
+        try (Connection connection = getTestConnection()) {
             Statement statement = connection.createStatement();
             statement.execute(sqlScript);
         } catch (Exception e) {
@@ -493,8 +504,9 @@ class GroupDAOImplTest {
     static void tearDownAfterClass() {
         String sqlScript = """
                 DROP TABLE IF EXISTS groups CASCADE;
-                DROP TABLE IF EXISTS students CASCADE;""";
-        try (Connection connection = getConnection()) {
+                DROP TABLE IF EXISTS students CASCADE;
+                """;
+        try (Connection connection = getTestConnection()) {
             Statement statement = connection.createStatement();
             statement.execute(sqlScript);
         } catch (Exception e) {
@@ -502,7 +514,7 @@ class GroupDAOImplTest {
         }
     }
 
-    private static Connection getConnection() throws SQLException {
+    private static Connection getTestConnection() throws SQLException {
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 

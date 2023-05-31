@@ -4,15 +4,15 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Objects;
-import ua.foxminded.schoolapp.exception.DAOException;
+import ua.foxminded.schoolapp.exception.DaoException;
 import ua.foxminded.schoolapp.dao.Connectable;
-import ua.foxminded.schoolapp.dao.ExecutorDAO;
+import ua.foxminded.schoolapp.dao.ExecutorDao;
 
-public class SQLScriptsExecutorDAO implements ExecutorDAO {
+public class SQLScriptsExecutorDao implements ExecutorDao {
 
     private Connectable connector;
 
-    public SQLScriptsExecutorDAO(Connectable connector) {
+    public SQLScriptsExecutorDao(Connectable connector) {
         Objects.requireNonNull(connector);
         this.connector = connector;
     }
@@ -22,7 +22,7 @@ public class SQLScriptsExecutorDAO implements ExecutorDAO {
             Statement statement = connection.createStatement();
             statement.execute(sqlScript);
         } catch (SQLException e) {
-            throw new DAOException("Exception during SQL script execution.");
+            throw new DaoException("Exception during SQL script execution.");
         }
     }
 

@@ -8,15 +8,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import ua.foxminded.schoolapp.dao.Connectable;
-import ua.foxminded.schoolapp.dao.StudentDAO;
-import ua.foxminded.schoolapp.exception.DAOException;
+import ua.foxminded.schoolapp.dao.StudentDao;
+import ua.foxminded.schoolapp.exception.DaoException;
 import ua.foxminded.schoolapp.model.Student;
 
-public class StudentDAOImpl implements StudentDAO {
+public class StudentDaoImpl implements StudentDao {
 
     private Connectable connector;
 
-    public StudentDAOImpl(Connectable connector) {
+    public StudentDaoImpl(Connectable connector) {
         Objects.requireNonNull(connector);
         this.connector = connector;
     }
@@ -33,7 +33,7 @@ public class StudentDAOImpl implements StudentDAO {
             rowsInserted = statement.executeUpdate();
 
         } catch (SQLException e) {
-            throw new DAOException("Connection failure while saving student.");
+            throw new DaoException("Connection failure while saving student.");
         }
         return rowsInserted;
     }
@@ -57,7 +57,7 @@ public class StudentDAOImpl implements StudentDAO {
             }
 
         } catch (SQLException e) {
-            throw new DAOException("Connection failed while finding for all students.");
+            throw new DaoException("Connection failed while finding for all students.");
         }
         return students;
     }
@@ -69,7 +69,8 @@ public class StudentDAOImpl implements StudentDAO {
             PreparedStatement statement = connection.prepareStatement("""
                     SELECT student_id, first_name, last_name, group_id
                     FROM students
-                    WHERE student_id = ?;""");
+                    WHERE student_id = ?;
+                    """);
             statement.setInt(1, studentId);
             ResultSet resultSet = statement.executeQuery();
 
@@ -81,7 +82,7 @@ public class StudentDAOImpl implements StudentDAO {
             }
 
         } catch (SQLException e) {
-            throw new DAOException("Connection failed while finding for student ID.");
+            throw new DaoException("Connection failed while finding for student ID.");
         }
         return student;
     }
@@ -95,7 +96,8 @@ public class StudentDAOImpl implements StudentDAO {
                     FROM students
                     JOIN students_courses ON students.student_id = students_courses.fk_student_id
                     JOIN courses ON courses.course_id = students_courses.fk_course_id
-                    WHERE course_name = ?;""");
+                    WHERE course_name = ?;
+                    """);
             statement.setString(1, courseName);
             ResultSet resultSet = statement.executeQuery();
 
@@ -109,7 +111,7 @@ public class StudentDAOImpl implements StudentDAO {
             }
 
         } catch (SQLException e) {
-            throw new DAOException("Connection failure when finding for students related to a specific course.");
+            throw new DaoException("Connection failure when finding for students related to a specific course.");
         }
         return students;
     }
@@ -124,7 +126,7 @@ public class StudentDAOImpl implements StudentDAO {
             rowsDeleted = statement.executeUpdate();
 
         } catch (SQLException e) {
-            throw new DAOException("Connection failure when deleting a student by their ID.");
+            throw new DaoException("Connection failure when deleting a student by their ID.");
         }
         return rowsDeleted;
     }
@@ -139,7 +141,8 @@ public class StudentDAOImpl implements StudentDAO {
                     JOIN courses ON courses.course_id = students_courses.fk_course_id
                     WHERE students.first_name = ?
                     AND students.last_name = ?
-                    AND courses.course_name = ?;""");
+                    AND courses.course_name = ?;
+                    """);
             statement.setString(1, firstName);
             statement.setString(2, lastName);
             statement.setString(3, courseName);
@@ -150,7 +153,7 @@ public class StudentDAOImpl implements StudentDAO {
             }
 
         } catch (SQLException e) {
-            throw new DAOException("Connection failure while checking for student availability.");
+            throw new DaoException("Connection failure while checking for student availability.");
         }
         return exists;
     }
@@ -162,14 +165,15 @@ public class StudentDAOImpl implements StudentDAO {
             PreparedStatement statement = connection.prepareStatement("""
                     INSERT INTO students_courses (fk_student_id, fk_course_id)
                     VALUES ((SELECT student_id FROM students WHERE first_name = ? AND last_name = ?),
-                    (SELECT course_id FROM courses WHERE course_name = ?))""");
+                    (SELECT course_id FROM courses WHERE course_name = ?));
+                    """);
             statement.setString(1, firstName);
             statement.setString(2, lastName);
             statement.setString(3, courseName);
             rowsInserted = statement.executeUpdate();
 
         } catch (SQLException e) {
-            throw new DAOException("Connection failed while adding a student to a course.");
+            throw new DaoException("Connection failed while adding a student to a course.");
         }
         return rowsInserted;
     }
@@ -182,14 +186,15 @@ public class StudentDAOImpl implements StudentDAO {
                     DELETE FROM students_courses
                     WHERE fk_student_id = (SELECT student_id FROM students WHERE first_name = ?
                     AND last_name = ?)
-                    AND fk_course_id = (SELECT course_id FROM courses WHERE course_name = ?);""");
+                    AND fk_course_id = (SELECT course_id FROM courses WHERE course_name = ?);
+                    """);
             statement.setString(1, firstName);
             statement.setString(2, lastName);
             statement.setString(3, courseName);
             rowsDeleted = statement.executeUpdate();
 
         } catch (SQLException e) {
-            throw new DAOException("Connection failure when removing a student from a course.");
+            throw new DaoException("Connection failure when removing a student from a course.");
         }
         return rowsDeleted;
     }

@@ -1,9 +1,9 @@
 package ua.foxminded.schoolapp.cli.controller;
 
 import java.util.List;
-import ua.foxminded.schoolapp.dao.CourseDAO;
-import ua.foxminded.schoolapp.dao.GroupDAO;
-import ua.foxminded.schoolapp.dao.StudentDAO;
+import ua.foxminded.schoolapp.dao.CourseDao;
+import ua.foxminded.schoolapp.dao.GroupDao;
+import ua.foxminded.schoolapp.dao.StudentDao;
 import ua.foxminded.schoolapp.exception.InputException;
 import ua.foxminded.schoolapp.model.Course;
 import ua.foxminded.schoolapp.model.Group;
@@ -11,11 +11,11 @@ import ua.foxminded.schoolapp.model.Student;
 
 public class InputValidator implements Validator {
 
-    private StudentDAO studentDao;
-    private GroupDAO groupDao;
-    private CourseDAO courseDao;
+    private StudentDao studentDao;
+    private GroupDao groupDao;
+    private CourseDao courseDao;
 
-    public InputValidator(StudentDAO studentDao, GroupDAO groupDao, CourseDAO courseDao) {
+    public InputValidator(StudentDao studentDao, GroupDao groupDao, CourseDao courseDao) {
         this.studentDao = studentDao;
         this.groupDao = groupDao;
         this.courseDao = courseDao;
