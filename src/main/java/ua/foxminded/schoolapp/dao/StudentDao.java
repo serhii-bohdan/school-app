@@ -17,6 +17,8 @@ public interface StudentDao extends BaseDao<Student> {
 
     int addStudentToCourse(String firstName, String lastName, String courseName);
 
+    int addStudentToCourse(int studentId, int courseId);
+
     int deleteStudentFromCourse(String firstName, String lastName, String courseName);
 
 }

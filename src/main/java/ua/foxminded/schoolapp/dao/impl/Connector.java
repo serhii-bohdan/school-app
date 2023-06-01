@@ -18,7 +18,8 @@ public class Connector implements Connectable {
         try (InputStream input = getClass().getClassLoader().getResourceAsStream(configFilePath)) {
             properties.load(input);
         } catch (IOException e) {
-            throw new NullPointerException("Failed to load database configuration");
+            throw new NullPointerException("An error occurred while searching for "
+                    + "the file at the specified path: " + configFilePath);
         }
     }
 

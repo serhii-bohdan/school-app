@@ -8,11 +8,11 @@ import ua.foxminded.schoolapp.exception.DaoException;
 import ua.foxminded.schoolapp.dao.Connectable;
 import ua.foxminded.schoolapp.dao.ExecutorDao;
 
-public class SQLScriptsExecutorDao implements ExecutorDao {
+public class SqlScriptsExecutorDao implements ExecutorDao {
 
     private Connectable connector;
 
-    public SQLScriptsExecutorDao(Connectable connector) {
+    public SqlScriptsExecutorDao(Connectable connector) {
         Objects.requireNonNull(connector);
         this.connector = connector;
     }
@@ -22,7 +22,8 @@ public class SQLScriptsExecutorDao implements ExecutorDao {
             Statement statement = connection.createStatement();
             statement.execute(sqlScript);
         } catch (SQLException e) {
-            throw new DaoException("Exception during SQL script execution.");
+            throw new DaoException("An error occurred during the "
+                    + "execution of the transferred SQL script.\n" + e.getMessage());
         }
     }
 

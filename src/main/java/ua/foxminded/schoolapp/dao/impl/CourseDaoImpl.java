@@ -33,7 +33,7 @@ public class CourseDaoImpl implements CourseDao {
             rowsInserted = statement.executeUpdate();
 
         } catch (SQLException e) {
-            throw new DaoException("Exception while saving course to database.");
+            throw new DaoException("An error occurred when saving the course data to the database.\n" + e.getMessage());
         }
         return rowsInserted;
     }
@@ -54,7 +54,7 @@ public class CourseDaoImpl implements CourseDao {
             }
 
         } catch (SQLException e) {
-            throw new DaoException("Exception failed while finding all available courses.");
+            throw new DaoException("An error occurred when searching for all course data." + e.getMessage());
         }
         return courses;
     }

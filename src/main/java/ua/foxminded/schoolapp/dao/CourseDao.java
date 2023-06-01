@@ -6,4 +6,5 @@ import ua.foxminded.schoolapp.model.Course;
 public interface CourseDao extends BaseDao<Course> {
 
     List<Course> findAllCourses();
+
 }

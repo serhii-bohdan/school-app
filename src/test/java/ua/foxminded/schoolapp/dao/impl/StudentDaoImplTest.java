@@ -52,8 +52,8 @@ class StudentDaoImplTest {
 
                 CREATE TABLE students_courses (
                   student_courses_id SERIAL PRIMARY KEY,
-                  fk_student_id INTEGER REFERENCES students(student_id) ON DELETE CASCADE NOT NULL,
-                  fk_course_id INTEGER REFERENCES courses(course_id) ON DELETE CASCADE NOT NULL
+                  student_id INTEGER REFERENCES students(student_id) ON DELETE CASCADE NOT NULL,
+                  course_id INTEGER REFERENCES courses(course_id) ON DELETE CASCADE NOT NULL
                 );
                 """;
 
@@ -474,7 +474,7 @@ class StudentDaoImplTest {
                 INSERT INTO courses (course_name, course_description)
                 VALUES ('CourseName', 'Description');
 
-                INSERT INTO students_courses (fk_student_id, fk_course_id)
+                INSERT INTO students_courses (student_id, course_id)
                 VALUES (1, 1),
                        (2, 1),
                        (3, 1);
@@ -510,7 +510,7 @@ class StudentDaoImplTest {
                 INSERT INTO courses (course_name, course_description)
                 VALUES ('CourseName', 'Description');
 
-                INSERT INTO students_courses (fk_student_id, fk_course_id)
+                INSERT INTO students_courses (student_id, course_id)
                 VALUES (1, 1),
                        (2, 1),
                        (3, 1);
@@ -577,7 +577,7 @@ class StudentDaoImplTest {
                 INSERT INTO courses (course_name, course_description)
                 VALUES ('CourseName', 'Description');
 
-                INSERT INTO students_courses (fk_student_id, fk_course_id)
+                INSERT INTO students_courses (student_id, course_id)
                 VALUES (1, 1),
                        (2, 1),
                        (3, 1);
@@ -770,7 +770,7 @@ class StudentDaoImplTest {
                 INSERT INTO courses (course_name, course_description)
                 VALUES ('CourseName', 'Description');
 
-                INSERT INTO students_courses (fk_student_id, fk_course_id)
+                INSERT INTO students_courses (student_id, course_id)
                 VALUES (1, 1);
                 """;
 
@@ -829,7 +829,7 @@ class StudentDaoImplTest {
                 INSERT INTO courses (course_name, course_description)
                 VALUES ('CourseName', 'Description');
 
-                INSERT INTO students_courses (fk_student_id, fk_course_id)
+                INSERT INTO students_courses (student_id, course_id)
                 VALUES (1, 1);
                 """;
 
@@ -860,7 +860,7 @@ class StudentDaoImplTest {
                 INSERT INTO courses (course_name, course_description)
                 VALUES ('CourseName', 'Description');
 
-                INSERT INTO students_courses (fk_student_id, fk_course_id)
+                INSERT INTO students_courses (student_id, course_id)
                 VALUES (1, 1);
                 """;
 
@@ -891,7 +891,7 @@ class StudentDaoImplTest {
                 INSERT INTO courses (course_name, course_description)
                 VALUES ('CourseName', 'Description');
 
-                INSERT INTO students_courses (fk_student_id, fk_course_id)
+                INSERT INTO students_courses (student_id, course_id)
                 VALUES (1, 1);
                 """;
 
@@ -922,7 +922,7 @@ class StudentDaoImplTest {
                 INSERT INTO courses (course_name, course_description)
                 VALUES ('CourseName', 'Description');
 
-                INSERT INTO students_courses (fk_student_id, fk_course_id)
+                INSERT INTO students_courses (student_id, course_id)
                 VALUES (1, 1);
                 """;
 
@@ -971,8 +971,8 @@ class StudentDaoImplTest {
                 """;
         String selectingTestDataSqlScript = """
                 SELECT first_name, last_name, course_name FROM students
-                JOIN students_courses ON students.student_id = students_courses.fk_student_id
-                JOIN courses ON courses.course_id = students_courses.fk_course_id
+                JOIN students_courses ON students.student_id = students_courses.student_id
+                JOIN courses ON courses.course_id = students_courses.course_id
                 WHERE students.first_name = 'FirstName'
                 AND students.last_name = 'LastName'
                 AND courses.course_name = 'CourseName';
@@ -1142,13 +1142,13 @@ class StudentDaoImplTest {
                 INSERT INTO courses (course_name, course_description)
                 VALUES ('CourseName', 'Description');
 
-                INSERT INTO students_courses (fk_student_id, fk_course_id)
+                INSERT INTO students_courses (student_id, course_id)
                 VALUES (1, 1);
                 """;
         String selectingTestDataSqlScript = """
                 SELECT first_name, last_name, course_name FROM students
-                JOIN students_courses ON students.student_id = students_courses.fk_student_id
-                JOIN courses ON courses.course_id = students_courses.fk_course_id
+                JOIN students_courses ON students.student_id = students_courses.student_id
+                JOIN courses ON courses.course_id = students_courses.course_id
                 WHERE students.first_name = 'FirstName'
                 AND students.last_name = 'LastName'
                 AND courses.course_name = 'CourseName';
@@ -1225,7 +1225,7 @@ class StudentDaoImplTest {
                 INSERT INTO courses (course_name, course_description)
                 VALUES ('CourseName', 'Description');
 
-                INSERT INTO students_courses (fk_student_id, fk_course_id)
+                INSERT INTO students_courses (student_id, course_id)
                 VALUES (1, 1);
                 """;
 
@@ -1256,7 +1256,7 @@ class StudentDaoImplTest {
                 INSERT INTO courses (course_name, course_description)
                 VALUES ('CourseName', 'Description');
 
-                INSERT INTO students_courses (fk_student_id, fk_course_id)
+                INSERT INTO students_courses (student_id, course_id)
                 VALUES (1, 1);
                 """;
 
@@ -1287,7 +1287,7 @@ class StudentDaoImplTest {
                 INSERT INTO courses (course_name, course_description)
                 VALUES ('CourseName', 'Description');
 
-                INSERT INTO students_courses (fk_student_id, fk_course_id)
+                INSERT INTO students_courses (student_id, course_id)
                 VALUES (1, 1);
                 """;
 
@@ -1318,7 +1318,7 @@ class StudentDaoImplTest {
                 INSERT INTO courses (course_name, course_description)
                 VALUES ('CourseName', 'Description');
 
-                INSERT INTO students_courses (fk_student_id, fk_course_id)
+                INSERT INTO students_courses (student_id, course_id)
                 VALUES (1, 1);
                 """;
 

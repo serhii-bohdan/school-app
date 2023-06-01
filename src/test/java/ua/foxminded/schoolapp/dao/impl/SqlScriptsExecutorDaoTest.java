@@ -15,7 +15,7 @@ import ua.foxminded.schoolapp.dao.Connectable;
 import ua.foxminded.schoolapp.dao.ExecutorDao;
 import ua.foxminded.schoolapp.exception.DaoException;
 
-class SQLScriptsExecutorDAOTest {
+class SqlScriptsExecutorDaoTest {
 
     final static String URL = "jdbc:h2:~/test;MODE=PostgreSQL";
     final static String USER = "sa";
@@ -31,7 +31,7 @@ class SQLScriptsExecutorDAOTest {
 
     @Test
     void sqlscriptsexecutordao_shouldNullPointerException_whenConnectorIsNull() {
-        assertThrows(NullPointerException.class, () -> executor = new SQLScriptsExecutorDao(null));
+        assertThrows(NullPointerException.class, () -> executor = new SqlScriptsExecutorDao(null));
     }
 
     @Test
@@ -59,7 +59,7 @@ class SQLScriptsExecutorDAOTest {
                 """;
 
         try (Connection connection = getTestConnection()) {
-            executor = new SQLScriptsExecutorDao(connector);
+            executor = new SqlScriptsExecutorDao(connector);
             when(connector.getConnection()).thenReturn(getTestConnection());
             executor.executeSqlScript(sqlScript);
 
@@ -91,7 +91,7 @@ class SQLScriptsExecutorDAOTest {
                 """;
 
         try (Connection connection = getTestConnection()) {
-            executor = new SQLScriptsExecutorDao(connector);
+            executor = new SqlScriptsExecutorDao(connector);
             when(connector.getConnection()).thenReturn(getTestConnection());
         } catch (Exception e) {
             e.printStackTrace();

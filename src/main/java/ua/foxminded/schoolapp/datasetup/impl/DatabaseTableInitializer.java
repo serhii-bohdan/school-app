@@ -1,9 +1,11 @@
 package ua.foxminded.schoolapp.datasetup.impl;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.Random;
 import ua.foxminded.schoolapp.dao.Connectable;
 import ua.foxminded.schoolapp.dao.CourseDao;
-import ua.foxminded.schoolapp.dao.ExecutorDao;
 import ua.foxminded.schoolapp.dao.GroupDao;
 import ua.foxminded.schoolapp.dao.StudentDao;
 import ua.foxminded.schoolapp.dao.impl.CourseDaoImpl;
@@ -11,39 +13,30 @@ import ua.foxminded.schoolapp.dao.impl.GroupDaoImpl;
 import ua.foxminded.schoolapp.dao.impl.StudentDaoImpl;
 import ua.foxminded.schoolapp.datasetup.Generatable;
 import ua.foxminded.schoolapp.datasetup.Initializable;
-import ua.foxminded.schoolapp.datasetup.Reader;
 import ua.foxminded.schoolapp.model.Course;
 import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
 
 public class DatabaseTableInitializer implements Initializable {
 
-    private Connectable connector;
-    private Reader reader;
-    private ExecutorDao executor;
-    private Generatable<Group> groupsGenerator;
-    private Generatable<Student> studentsGenerator;
-    private Generatable<Course> coursesGenerator;
+    private final Connectable connector;
+    private final Generatable<Group> groupsGenerator;
+    private final Generatable<Student> studentsGenerator;
+    private final Generatable<Course> coursesGenerator;
 
-    public DatabaseTableInitializer(Connectable connector, Reader reader, ExecutorDao executor,
-            Generatable<Group> groupsGenerator, Generatable<Student> studentsGenerator,
-            Generatable<Course> coursesGenerator) {
+    public DatabaseTableInitializer(Connectable connector, Generatable<Group> groupsGenerator,
+            Generatable<Student> studentsGenerator, Generatable<Course> coursesGenerator) {
         this.connector = connector;
-        this.reader = reader;
-        this.executor = executor;
         this.groupsGenerator = groupsGenerator;
         this.studentsGenerator = studentsGenerator;
         this.coursesGenerator = coursesGenerator;
     }
 
     public void initialize() {
-        String tablesCreationScript = reader.readAllFileToString("sql/tables_creation.sql");
-        String studentsCoursesFillingScript = reader.readAllFileToString("sql/students_courses_filling.sql");
-        executor.executeSqlScript(tablesCreationScript);
         fillGroupsTable();
         fillStudentsTable();
         fillCoursesTable();
-        executor.executeSqlScript(studentsCoursesFillingScript);
+        fillStudentsCoursesTable();
     }
 
     private void fillGroupsTable() {
@@ -70,6 +63,25 @@ public class DatabaseTableInitializer implements Initializable {
 
         for (Course course : courses) {
             courseDao.save(course);
+        }
+    }
+
+    private void fillStudentsCoursesTable() {
+        StudentDao studentDao = new StudentDaoImpl(connector);
+        Random random = new Random();
+
+        for (int studentId = 1; studentId <= 200; studentId++) {
+            int coursesNumberForStudent = random.nextInt(3) + 1;
+            Set<Integer> coursesForStudent = new HashSet<>();
+
+            while (coursesForStudent.size() < coursesNumberForStudent) {
+                int courseId = random.nextInt(1, 11);
+                coursesForStudent.add(courseId);
+            }
+
+            for (Integer courseId : coursesForStudent) {
+                studentDao.addStudentToCourse(studentId, courseId);
+            }
         }
     }
 

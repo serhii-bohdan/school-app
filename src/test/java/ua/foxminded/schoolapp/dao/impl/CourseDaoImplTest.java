@@ -20,7 +20,7 @@ import ua.foxminded.schoolapp.dao.CourseDao;
 import ua.foxminded.schoolapp.exception.*;
 import ua.foxminded.schoolapp.model.*;
 
-class CourseDAOImplTest {
+class CourseDaoImplTest {
 
     final static String URL = "jdbc:h2:~/test;MODE=PostgreSQL";
     final static String USER = "sa";

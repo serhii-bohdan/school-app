@@ -31,7 +31,7 @@ public class GroupDaoImpl implements GroupDao {
             rowsInserted = statement.executeUpdate();
 
         } catch (SQLException e) {
-            throw new DaoException("Connection failure while saving group.");
+            throw new DaoException("Error saving group data to database.\n" + e.getMessage());
         }
         return rowsInserted;
     }
@@ -59,8 +59,8 @@ public class GroupDaoImpl implements GroupDao {
             }
 
         } catch (SQLException e) {
-            throw new DaoException("Connection failed while finding for groups with "
-                    + "the specified number of students.");
+            throw new DaoException("An error occurred when searching for groups "
+                    + "with the specified number of students.\n" + e.getMessage());
         }
         return groups;
     }
