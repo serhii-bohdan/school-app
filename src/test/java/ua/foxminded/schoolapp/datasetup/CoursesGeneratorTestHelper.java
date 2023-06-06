@@ -2,9 +2,16 @@ package ua.foxminded.schoolapp.datasetup;
 
 import java.util.List;
 import java.util.stream.IntStream;
+import ua.foxminded.schoolapp.model.Course;
 
 public class CoursesGeneratorTestHelper {
-
+    
+    public List<Course> getTestListOfCourses(int numberOfCourses) {
+        return IntStream.rangeClosed(1, numberOfCourses)
+                        .mapToObj(i -> new Course("CourseName_" + i, "CourseDescription_" + i))
+                        .toList();
+    }
+    
     public List<String> getTestListOf(String switcher, int numberCoursesNamesOrDescriptions) {
         String courseNameOrDescription;
 
