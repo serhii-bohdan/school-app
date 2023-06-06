@@ -28,7 +28,6 @@ class CoursesGeneratorTest {
 
     @Test
     void toGenerate_shouldNullPointerException_whenReaderIsNull() {
-
         assertThrows(NullPointerException.class, () -> {
             coursesGenerator = new CoursesGenerator(null);
         });

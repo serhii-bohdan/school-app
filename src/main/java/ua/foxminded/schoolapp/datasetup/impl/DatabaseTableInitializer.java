@@ -2,6 +2,7 @@ package ua.foxminded.schoolapp.datasetup.impl;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Random;
 import ua.foxminded.schoolapp.dao.Connectable;
@@ -26,6 +27,10 @@ public class DatabaseTableInitializer implements Initializable {
 
     public DatabaseTableInitializer(Connectable connector, Generatable<Group> groupsGenerator,
             Generatable<Student> studentsGenerator, Generatable<Course> coursesGenerator) {
+        Objects.requireNonNull(connector);
+        Objects.requireNonNull(groupsGenerator);
+        Objects.requireNonNull(studentsGenerator);
+        Objects.requireNonNull(coursesGenerator);
         this.connector = connector;
         this.groupsGenerator = groupsGenerator;
         this.studentsGenerator = studentsGenerator;
@@ -68,9 +73,10 @@ public class DatabaseTableInitializer implements Initializable {
 
     private void fillStudentsCoursesTable() {
         StudentDao studentDao = new StudentDaoImpl(connector);
+        int studentsNumberPresentInDatabase = studentDao.findAllStudents().size();
         Random random = new Random();
 
-        for (int studentId = 1; studentId <= 200; studentId++) {
+        for (int studentId = 1; studentId <= studentsNumberPresentInDatabase; studentId++) {
             int coursesNumberForStudent = random.nextInt(3) + 1;
             Set<Integer> coursesForStudent = new HashSet<>();
 
