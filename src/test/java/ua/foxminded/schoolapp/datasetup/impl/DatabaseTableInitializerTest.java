@@ -2,9 +2,9 @@ package ua.foxminded.schoolapp.datasetup.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -71,6 +71,7 @@ class DatabaseTableInitializerTest {
                   course_id INTEGER REFERENCES courses(course_id) ON DELETE CASCADE NOT NULL
                 );
                 """;
+
         try (Connection connection = getTestConnection()) {
             Statement statement = connection.createStatement();
             statement.execute(sqlScript);
@@ -156,7 +157,7 @@ class DatabaseTableInitializerTest {
     }
 
     @Test
-    void initialize_should_whenCoursesGeneratorReturnEmptyCoursesList() {
+    void initialize_shouldDaoException_whenCoursesGeneratorReturnEmptyCoursesList() {
         initializer = new DatabaseTableInitializer(connectorMock, groupsGeneratorMock, studentsGeneratorMock,
                 coursesGeneratorMock);
         when(groupsGeneratorMock.toGenerate()).thenReturn(groupsGeneratorHelper.getTestListOfGroups(10));
@@ -170,12 +171,15 @@ class DatabaseTableInitializerTest {
     void initialize_shouldSavedTenGroupsInTestTable_whenGroupsGeneratorReturnTenGroups() {
         initializer = new DatabaseTableInitializer(connectorMock, groupsGeneratorMock, studentsGeneratorMock,
                 coursesGeneratorMock);
+        List<Group> generatedTestGroups = groupsGeneratorHelper.getTestListOfGroups(10);
+        List<Group> actualSevedGroups = new ArrayList<>();
+        int numberOfGeneratedTestGroups = generatedTestGroups.size();
         int actualGroupsNumberInTestTable = 0;
-        when(groupsGeneratorMock.toGenerate()).thenReturn(groupsGeneratorHelper.getTestListOfGroups(10));
+        when(groupsGeneratorMock.toGenerate()).thenReturn(generatedTestGroups);
         when(studentsGeneratorMock.toGenerate()).thenReturn(studentsGeneratorHelper.getTestListOfStudents(10));
         when(coursesGeneratorMock.toGenerate()).thenReturn(coursesGeneratorHelper.getTestListOfCourses(10));
         String sqlScript = """
-                SELECT count(group_id) AS groups_number
+                SELECT group_name
                 FROM groups;
                 """;
 
@@ -186,25 +190,31 @@ class DatabaseTableInitializerTest {
             ResultSet resultSet = statement.executeQuery(sqlScript);
 
             while (resultSet.next()) {
-                actualGroupsNumberInTestTable = resultSet.getInt("groups_number");
+                actualSevedGroups.add(new Group(resultSet.getString("group_name")));
             }
+
+            actualGroupsNumberInTestTable = actualSevedGroups.size();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        assertEquals(10, actualGroupsNumberInTestTable);
+        assertEquals(numberOfGeneratedTestGroups, actualGroupsNumberInTestTable);
+        assertEquals(generatedTestGroups, actualSevedGroups);
     }
 
     @Test
     void initialize_shouldSavedTenStudentsInTestTable_whenStudentsGeneratorReturnTenStudents() {
         initializer = new DatabaseTableInitializer(connectorMock, groupsGeneratorMock, studentsGeneratorMock,
                 coursesGeneratorMock);
+        List<Student> generatedTestStudents = studentsGeneratorHelper.getTestListOfStudents(10);
+        List<Student> actualSevedStudents = new ArrayList<>();
+        int numberOfGeneratedTestStudents = generatedTestStudents.size();
         int actualStudentsNumberInTestTable = 0;
         when(groupsGeneratorMock.toGenerate()).thenReturn(groupsGeneratorHelper.getTestListOfGroups(10));
-        when(studentsGeneratorMock.toGenerate()).thenReturn(studentsGeneratorHelper.getTestListOfStudents(10));
+        when(studentsGeneratorMock.toGenerate()).thenReturn(generatedTestStudents);
         when(coursesGeneratorMock.toGenerate()).thenReturn(coursesGeneratorHelper.getTestListOfCourses(10));
         String sqlScript = """
-                SELECT count(student_id) AS students_number
+                SELECT first_name, last_name, group_id
                 FROM students;
                 """;
 
@@ -215,25 +225,32 @@ class DatabaseTableInitializerTest {
             ResultSet resultSet = statement.executeQuery(sqlScript);
 
             while (resultSet.next()) {
-                actualStudentsNumberInTestTable = resultSet.getInt("students_number");
+                actualSevedStudents.add(new Student(resultSet.getString("first_name"), resultSet.getString("last_name"),
+                        resultSet.getInt("group_id")));
             }
+
+            actualStudentsNumberInTestTable = actualSevedStudents.size();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        assertEquals(10, actualStudentsNumberInTestTable);
+        assertEquals(numberOfGeneratedTestStudents, actualStudentsNumberInTestTable);
+        assertEquals(generatedTestStudents, actualSevedStudents);
     }
 
     @Test
     void initialize_shouldSavedTenCoursesInTestTable_whenCoursesGeneratorReturnTenCourses() {
         initializer = new DatabaseTableInitializer(connectorMock, groupsGeneratorMock, studentsGeneratorMock,
                 coursesGeneratorMock);
+        List<Course> generatedTestCourses = coursesGeneratorHelper.getTestListOfCourses(10);
+        List<Course> actualSevedCourses = new ArrayList<>();
+        int numberOfGeneratedTestCourses = generatedTestCourses.size();
         int actualCoursesNumberInTestTable = 0;
         when(groupsGeneratorMock.toGenerate()).thenReturn(groupsGeneratorHelper.getTestListOfGroups(10));
         when(studentsGeneratorMock.toGenerate()).thenReturn(studentsGeneratorHelper.getTestListOfStudents(10));
-        when(coursesGeneratorMock.toGenerate()).thenReturn(coursesGeneratorHelper.getTestListOfCourses(10));
+        when(coursesGeneratorMock.toGenerate()).thenReturn(generatedTestCourses);
         String sqlScript = """
-                SELECT count(course_id) AS courses_number
+                SELECT course_name, course_description
                 FROM courses;
                 """;
 
@@ -244,43 +261,47 @@ class DatabaseTableInitializerTest {
             ResultSet resultSet = statement.executeQuery(sqlScript);
 
             while (resultSet.next()) {
-                actualCoursesNumberInTestTable = resultSet.getInt("courses_number");
+                actualSevedCourses
+                        .add(new Course(resultSet.getString("course_name"), resultSet.getString("course_description")));
             }
+
+            actualCoursesNumberInTestTable = actualSevedCourses.size();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        assertEquals(10, actualCoursesNumberInTestTable);
+        assertEquals(numberOfGeneratedTestCourses, actualCoursesNumberInTestTable);
+        assertEquals(generatedTestCourses, actualSevedCourses);
     }
 
     @Test
-    void fillGroupsTable_should_when() throws Exception {
+    void initialize_shouldFilledStudentsCoursesTableWithStudentIdsAndCoursesIds_whenDataGeneratorsReturnCorrectData() {
         initializer = new DatabaseTableInitializer(connectorMock, groupsGeneratorMock, studentsGeneratorMock,
                 coursesGeneratorMock);
-        List<Group> genratedGroups = groupsGeneratorHelper.getTestListOfGroups(10);
-        List<Group> actualSavedGroups = new ArrayList<>();
-        Method method = DatabaseTableInitializer.class.getDeclaredMethod("fillGroupsTable");
-        method.setAccessible(true);
-        when(groupsGeneratorMock.toGenerate()).thenReturn(genratedGroups);
+        when(groupsGeneratorMock.toGenerate()).thenReturn(groupsGeneratorHelper.getTestListOfGroups(10));
+        when(studentsGeneratorMock.toGenerate()).thenReturn(studentsGeneratorHelper.getTestListOfStudents(10));
+        when(coursesGeneratorMock.toGenerate()).thenReturn(coursesGeneratorHelper.getTestListOfCourses(10));
         String sqlScript = """
-                SELECT group_name
-                FROM groups;
+                SELECT student_id, course_id
+                FROM students_courses;
                 """;
 
-        method.invoke(initializer);
+        initializer.initialize();
 
         try (Connection connection = getTestConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sqlScript);
 
             while (resultSet.next()) {
-                actualSavedGroups.add(new Group(resultSet.getString("group_name")));
+                int studentId = resultSet.getInt("student_id");
+                int courseId = resultSet.getInt("course_id");
+                assertTrue(studentId >= 1 && studentId <= 10);
+                assertTrue(courseId >= 1 && courseId <= 10);
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        assertEquals(genratedGroups, actualSavedGroups);
     }
 
     @AfterEach

@@ -16,9 +16,9 @@ public class CoursesGeneratorTestHelper {
         String courseNameOrDescription;
 
         if ("courses_names".equals(switcher) && numberCoursesNamesOrDescriptions > 0) {
-            courseNameOrDescription = "Course_Name_";
+            courseNameOrDescription = "CourseName_";
         } else if ("courses_descriptions".equals(switcher) && numberCoursesNamesOrDescriptions > 0) {
-            courseNameOrDescription = "Course_Description_";
+            courseNameOrDescription = "CourseDescription_";
         } else {
             throw new IllegalArgumentException();
         }
