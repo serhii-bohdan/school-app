@@ -1,4 +1,4 @@
-package ua.foxminded.schoolapp.cli.controller;
+package ua.foxminded.schoolapp.cli;
 
 public interface Controller {
 

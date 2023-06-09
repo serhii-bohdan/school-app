@@ -1,4 +1,4 @@
-package ua.foxminded.schoolapp.cli.view;
+package ua.foxminded.schoolapp.cli;
 
 import java.util.List;
 import ua.foxminded.schoolapp.model.*;
@@ -7,21 +7,11 @@ public interface View {
 
     void showMenu();
 
-    int getChoise();
-
     void printMessage(String message);
 
-    int getNumberOfStuentsFromUser();
+    int getIntNumberFromUser(String message);
 
-    String getCourseNameFromUser();
-
-    String getStudentFirstNameFromUser();
-
-    String getStudentLastNameFromUser();
-
-    int getGroupIdFromUser();
-
-    int getStudentIdFromUser();
+    String getWordFromUser(String message);
 
     String getConfirmationFromUserAboutDeletingStudent(Student student);
 

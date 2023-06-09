@@ -1,4 +1,4 @@
-package ua.foxminded.schoolapp.cli.controller;
+package ua.foxminded.schoolapp.service;
 
 import java.util.List;
 import ua.foxminded.schoolapp.dao.CourseDao;
@@ -9,13 +9,13 @@ import ua.foxminded.schoolapp.model.Course;
 import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
 
-public class InputValidator implements Validator {
+public class SchoolService implements Service {
 
     private StudentDao studentDao;
     private GroupDao groupDao;
     private CourseDao courseDao;
 
-    public InputValidator(StudentDao studentDao, GroupDao groupDao, CourseDao courseDao) {
+    public SchoolService(StudentDao studentDao, GroupDao groupDao, CourseDao courseDao) {
         this.studentDao = studentDao;
         this.groupDao = groupDao;
         this.courseDao = courseDao;
@@ -61,8 +61,8 @@ public class InputValidator implements Validator {
 
     public void deleteStudentById(int studentId) {
         boolean studentIdExists = studentDao.findAllStudents().stream()
-                                                               .map(Student::getId)
-                                                               .toList().contains(studentId);
+                                                              .map(Student::getId)
+                                                              .toList().contains(studentId);
         if (studentIdExists) {
             studentDao.deleteStudentById(studentId);
         } else {

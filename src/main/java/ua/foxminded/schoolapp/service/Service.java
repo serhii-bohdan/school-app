@@ -1,10 +1,10 @@
-package ua.foxminded.schoolapp.cli.controller;
+package ua.foxminded.schoolapp.service;
 
 import java.util.List;
 import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
 
-public interface Validator {
+public interface Service {
 
     List<Group> getGroupsWithGivenNumberStudents(int amountOfStudents);
 
@@ -21,4 +21,5 @@ public interface Validator {
     Student findStudentById(int studentId);
 
     List<Student> getAllStudents();
+
 }

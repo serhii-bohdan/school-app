@@ -1,13 +1,19 @@
-package ua.foxminded.schoolapp.cli.view;
+package ua.foxminded.schoolapp.cli;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Scanner;
 import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
 
 public class ConsoleView implements View {
 
-    private Scanner scanner = new Scanner(System.in);
+    private Scanner scanner;
+
+    public ConsoleView(Scanner scanner) {
+        Objects.requireNonNull(scanner);
+        this.scanner = scanner;
+    }
 
     public void showMenu() {
         System.out.println("""
@@ -25,43 +31,18 @@ public class ConsoleView implements View {
                 """);
     }
 
-    public int getChoise() {
-        System.out.print("Select an option: ");
-        return scanner.nextInt();
-    }
-
     public void printMessage(String message) {
         System.out.println(message);
     }
 
-    public int getNumberOfStuentsFromUser() {
-        System.out.print("Enter the number of students:\u00A0");
-        return scanner.nextInt();
+    public int getIntNumberFromUser(String message) {
+        System.out.print(message);
+        return getIntInput();
     }
 
-    public String getCourseNameFromUser() {
-        System.out.print("Enter the name of the course:\u00A0");
+    public String getWordFromUser(String message) {
+        System.out.print(message);
         return scanner.next();
-    }
-
-    public String getStudentFirstNameFromUser() {
-        System.out.print("Enter the student's first name:\u00A0");
-        return scanner.next();
-    }
-
-    public String getStudentLastNameFromUser() {
-        System.out.print("Enter the student's last name:\u00A0");
-        return scanner.next();
-    }
-
-    public int getGroupIdFromUser() {
-        System.out.print("Enter the ID of the group to which the student should belong (from 1 to 10):\u00A0");
-        return scanner.nextInt();
-    }
-
-    public int getStudentIdFromUser() {
-        System.out.print("Enter your student ID:\u00A0");
-        return scanner.nextInt();
     }
 
     public String getConfirmationFromUserAboutDeletingStudent(Student student) {
@@ -73,7 +54,8 @@ public class ConsoleView implements View {
 
     public void displayGroups(List<Group> groups) {
         if (groups.isEmpty()) {
-            System.out.println("The list of groups is empty.");
+            System.out.println("The list of groups is empty.\n");
+            return;
         }
 
         StringBuilder formattedGroups = new StringBuilder("Groups:");
@@ -87,6 +69,7 @@ public class ConsoleView implements View {
     public void displayStudents(List<Student> students) {
         if (students.isEmpty()) {
             System.out.println("The list of students is empty.");
+            return;
         }
 
         StringBuilder sformatedStuentes = new StringBuilder("Students:");
@@ -95,6 +78,18 @@ public class ConsoleView implements View {
             sformatedStuentes.append(String.format("\n%-8s %s %s", "", student.getFirstName(), student.getLastName()));
         }
         System.out.println(sformatedStuentes + "\n");
+    }
+
+    private int getIntInput() {
+        while (true) {
+
+            if (scanner.hasNextInt()) {
+                return scanner.nextInt();
+            } else {
+                System.out.print("Invalid input. Please enter a valid integer value: ");
+                scanner.next();
+            }
+        }
     }
 
 }
