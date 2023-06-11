@@ -53,11 +53,6 @@ public class ConsoleView implements View {
     }
 
     public void displayGroups(List<Group> groups) {
-        if (groups.isEmpty()) {
-            System.out.println("The list of groups is empty.\n");
-            return;
-        }
-
         StringBuilder formattedGroups = new StringBuilder("Groups:");
 
         for (Group group : groups) {
@@ -67,11 +62,6 @@ public class ConsoleView implements View {
     }
 
     public void displayStudents(List<Student> students) {
-        if (students.isEmpty()) {
-            System.out.println("The list of students is empty.");
-            return;
-        }
-
         StringBuilder sformatedStuentes = new StringBuilder("Students:");
 
         for (Student student : students) {

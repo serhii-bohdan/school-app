@@ -1,6 +1,7 @@
 package ua.foxminded.schoolapp.cli;
 
 import java.util.List;
+import java.util.Objects;
 import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
 import ua.foxminded.schoolapp.service.Service;
@@ -46,14 +47,30 @@ public class ConsoleController implements Controller {
         view.printMessage("\nYou want to know groups with a given and smaller number of students.");
         int numberOfStudents = view.getIntNumberFromUser("Enter the number of students:\u00A0");
         List<Group> groups = service.getGroupsWithGivenNumberStudents(numberOfStudents);
-        view.displayGroups(groups);
+
+        if (Objects.isNull(groups)) {
+            view.printMessage("""
+                    The entered number of students is not correct.
+                    The number of students should be between 0 and 30 inclusive.\n""");
+        } else if (groups.isEmpty()) {
+            view.printMessage("The list of groups is empty.\n");
+        } else {
+            view.displayGroups(groups);
+        }
     }
 
     private void findAllStudentsRelatedToCourseWithGivenName() {
         view.printMessage("\nYou want to know the list of students related to the course.");
         String courseName = view.getWordFromUser("Enter the name of the course:\u00A0");
         List<Student> students = service.getStudentsRelatedToCourse(courseName);
-        view.displayStudents(students);
+
+        if (Objects.isNull(students)) {
+            view.printMessage("A course with that name does not exist.\n");
+        } else if (students.isEmpty()) {
+            view.printMessage("The list of students is empty.\n");
+        } else {
+            view.displayStudents(students);
+        }
     }
 
     private void addNewStudent() {
@@ -62,23 +79,35 @@ public class ConsoleController implements Controller {
         String lastName = view.getWordFromUser("Enter the student's last name:\u00A0");
         int groupId = view.getIntNumberFromUser(
                 "Enter the ID of the group to which the student should belong (from 1 to 10):\u00A0");
-        service.addNewStudent(firstName, lastName, groupId);
-        view.printMessage("The student has been successfully added.\n");
+        boolean newStudentIsAdded = service.addNewStudent(firstName, lastName, groupId);
+
+        if (newStudentIsAdded) {
+            view.printMessage("The student has been successfully added.\n");
+        } else {
+            view.printMessage("""
+                    No new student was added. Perhaps a student with such data already exists.
+                    Also check that the group ID is correct.\n""");
+        }
     }
 
     private void deleteStudent() {
         view.printMessage("\nYou want to delete a student by their ID.");
         int studentId = view.getIntNumberFromUser("Enter your student ID:\u00A0");
-        Student student = service.findStudentById(studentId);
-        String confirmationFromUser = view.getConfirmationFromUserAboutDeletingStudent(student);
+        Student student = service.getStudentById(studentId);
 
-        if ("Y".equals(confirmationFromUser)) {
-            service.deleteStudentById(studentId);
-            view.printMessage("The student was successfully deleted.\n");
-        } else if ("N".equals(confirmationFromUser)) {
-            view.printMessage("The student was not expelled.\n");
+        if(Objects.nonNull(student)) {
+            String confirmationFromUser = view.getConfirmationFromUserAboutDeletingStudent(student);
+
+            if ("Y".equals(confirmationFromUser)) {
+                service.deleteStudentById(studentId);
+                view.printMessage("The student was successfully deleted.\n");
+            } else if ("N".equals(confirmationFromUser)) {
+                view.printMessage("The student was not deleted.\n");
+            } else {
+                view.printMessage("There is no such option.\n");
+            }
         } else {
-            view.printMessage("There is no such option.\n");
+            view.printMessage("There is no student with this ID.\n");
         }
     }
 
@@ -88,8 +117,16 @@ public class ConsoleController implements Controller {
         String firstName = view.getWordFromUser("Enter the student's first name:\u00A0");
         String lastName = view.getWordFromUser("Enter the student's last name:\u00A0");
         String courseName = view.getWordFromUser("Enter the name of the course:\u00A0");
-        service.addStudentToCourse(firstName, lastName, courseName);
-        view.printMessage("The student has been successfully added to the course.\n");
+        boolean studentIsAddedToCourse = service.addStudentToCourse(firstName, lastName, courseName);
+
+        if (studentIsAddedToCourse) {
+            view.printMessage("The student has been successfully added to the course.\n");
+        } else {
+            view.printMessage("""
+                    The student has not been added to the course. Perhaps this student
+                    does not exist, or he is already registered for this course. Also,
+                    check whether the name of the course is entered correctly.\n""");
+        }
     }
 
     private void removeStudentFromOneOfTheirCourses() {
@@ -98,8 +135,16 @@ public class ConsoleController implements Controller {
         String firstName = view.getWordFromUser("Enter the student's first name:\u00A0");
         String lastName = view.getWordFromUser("Enter the student's last name:\u00A0");
         String courseName = view.getWordFromUser("Enter the name of the course:\u00A0");
-        service.deleteStudentFromCourse(firstName, lastName, courseName);
-        view.printMessage("The student has been successfully deleted from the course.\n");
+        boolean studentDeletedFromCourse = service.deleteStudentFromCourse(firstName, lastName, courseName);
+        
+        if(studentDeletedFromCourse) {
+            view.printMessage("The student has been successfully deleted from the course.\n");
+        } else {
+            view.printMessage("""
+                    The student was not deleted from the course. Perhaps this
+                    student does not exist or is not registered in the specified course.
+                    Also check the correctness of the entered course name.\n""");
+        }
     }
 
 }

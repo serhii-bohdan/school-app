@@ -231,9 +231,9 @@ class ConsoleViewTest {
     }
 
     @Test
-    void displayGroups_shouldMessageThatGroupsListIsEmpty_whenGroupsListEmpty() {
+    void displayGroups_shouldDisplayNothingBesidesGroupsWord_whenGroupsListEmpty() {
         view = new ConsoleView(scannerMock);
-        String expectedOutputMessage = "The list of groups is empty.\n"
+        String expectedOutputMessage = "Groups:\n"
                                      + "\r\n";
         List<Group> groups = new ArrayList<>();
 
@@ -298,9 +298,10 @@ class ConsoleViewTest {
     }
 
     @Test
-    void displayStudents_shouldMessageThatStudentsListIsEmpty_whenStudentsListEmpty() {
+    void displayStudents_shouldDisplayNothingBesidesStudentsWord_whenStudentsListEmpty() {
         view = new ConsoleView(scannerMock);
-        String expectedOutputMessage = "The list of students is empty.\r\n";
+        String expectedOutputMessage = "Students:\n"
+                                     + "\r\n";
         List<Student> students = new ArrayList<>();
 
         view.displayStudents(students);

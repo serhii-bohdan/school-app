@@ -1,10 +1,10 @@
 package ua.foxminded.schoolapp.service;
 
 import java.util.List;
+import java.util.Objects;
 import ua.foxminded.schoolapp.dao.CourseDao;
 import ua.foxminded.schoolapp.dao.GroupDao;
 import ua.foxminded.schoolapp.dao.StudentDao;
-import ua.foxminded.schoolapp.exception.InputException;
 import ua.foxminded.schoolapp.model.Course;
 import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
@@ -16,61 +16,65 @@ public class SchoolService implements Service {
     private CourseDao courseDao;
 
     public SchoolService(StudentDao studentDao, GroupDao groupDao, CourseDao courseDao) {
+        Objects.requireNonNull(studentDao);
+        Objects.requireNonNull(groupDao);
+        Objects.requireNonNull(courseDao);
         this.studentDao = studentDao;
         this.groupDao = groupDao;
         this.courseDao = courseDao;
     }
 
     public List<Group> getGroupsWithGivenNumberStudents(int amountOfStudents) {
-        List<Group> groups;
+        List<Group> groups = null;
 
         if (amountOfStudents >= 10 && amountOfStudents <= 30) {
             groups = groupDao.findGroupsWithGivenNumberStudents(amountOfStudents);
-        } else {
-            throw new InputException("The entered number of students is not correct."
-                    + "The number of students should be between 0 and 30 inclusive.");
-        }
+        } 
+
         return groups;
     }
 
     public List<Student> getStudentsRelatedToCourse(String courseName) {
-        List<Student> students;
+        List<Student> students = null;
         boolean courseExists = courseDao.findAllCourses().stream()
                                                          .map(Course::getCourseName)
                                                          .toList().contains(courseName);
         if (courseExists) {
             students = studentDao.findStudentsRelatedToCourse(courseName);
-        } else {
-            throw new InputException("A course with that name does not exist.");
-        }
+        } 
+
         return students;
     }
 
-    public void addNewStudent(String firstName, String lastName, int groupId) {
+    public boolean addNewStudent(String firstName, String lastName, int groupId) {
+        boolean newStudentIsAdded = false;
         boolean studentIsNotExists = !studentDao.findAllStudents().stream()
                                                                   .anyMatch(s -> firstName.equals(s.getFirstName()) && 
                                                                           lastName.equals(s.getLastName()));
 
         if(studentIsNotExists && (groupId >= 1 && groupId <= 10)) {
             studentDao.save(new Student(firstName, lastName, groupId));
-        } else {
-            throw new InputException("Error adding new student. Perhaps a student with such data is "
-                    + "already registered. Also check that the group ID is correct.");
-        }
+            newStudentIsAdded = true;
+        } 
+
+        return newStudentIsAdded;
     }
 
-    public void deleteStudentById(int studentId) {
+    public boolean deleteStudentById(int studentId) {
+        boolean studentIsdDeleted = false;
         boolean studentIdExists = studentDao.findAllStudents().stream()
                                                               .map(Student::getId)
                                                               .toList().contains(studentId);
         if (studentIdExists) {
             studentDao.deleteStudentById(studentId);
-        } else {
-            throw new InputException("There is no student with this ID.");
+            studentIsdDeleted = true;
         }
+
+        return studentIsdDeleted;
     }
 
-    public void addStudentToCourse(String firstName, String lastName, String courseName) {
+    public boolean addStudentToCourse(String firstName, String lastName, String courseName) {
+        boolean studentIsAddedToCourse = false;
         boolean studentExists = studentDao.findAllStudents().stream()
                                                             .anyMatch(s -> firstName.equals(s.getFirstName()) && 
                                                                     lastName.equals(s.getLastName()));
@@ -81,14 +85,14 @@ public class SchoolService implements Service {
 
         if (studentExists && coursesExist && studentIsNotOnCourse) {
             studentDao.addStudentToCourse(firstName, lastName, courseName);
-        } else {
-            throw new InputException("An error occurred when adding a student to the additional course. Perhaps "
-                    + "this student does not exist, or he is already registered for this course. Also, check "
-                    + "whether the name of the course is entered correctly.");
-        }
+            studentIsAddedToCourse = true;
+        } 
+
+        return studentIsAddedToCourse;
     }
 
-    public void deleteStudentFromCourse(String firstName, String lastName, String courseName) {
+    public boolean deleteStudentFromCourse(String firstName, String lastName, String courseName) {
+        boolean studentDeletedFromCourse = false;
         boolean studentExists = studentDao.findAllStudents().stream()
                                                             .anyMatch(s -> firstName.equals(s.getFirstName()) && 
                                                                     lastName.equals(s.getLastName()));
@@ -99,22 +103,22 @@ public class SchoolService implements Service {
 
         if (studentExists && coursesExist && studentOnCourse) {
             studentDao.deleteStudentFromCourse(firstName, lastName, courseName);
-        } else {
-            throw new InputException("An error occurred when removing a student from the course. Perhaps this "
-                    + "student does not exist or is not registered in the specified course. Also check the "
-                    + "correctness of the entered course name.");
+            studentDeletedFromCourse = true;
         }
+
+        return studentDeletedFromCourse;
     }
 
-    public Student findStudentById(int studentId) {
+    public Student getStudentById(int studentId) {
+        Student student = null;
         boolean studentIdExists = studentDao.findAllStudents().stream()
-                                                               .map(Student::getId)
-                                                               .toList().contains(studentId);
+                                                              .map(Student::getId)
+                                                              .toList().contains(studentId);
         if (studentIdExists) {
-            return studentDao.findStudentById(studentId);
-        } else {
-            throw new InputException("There is no student with this ID.");
+            student = studentDao.findStudentById(studentId);
         }
+
+        return student;
     }
 
     public List<Student> getAllStudents() {

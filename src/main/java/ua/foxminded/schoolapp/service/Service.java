@@ -10,15 +10,15 @@ public interface Service {
 
     List<Student> getStudentsRelatedToCourse(String courseName);
 
-    void addNewStudent(String firstName, String lastName, int groupId);
+    boolean addNewStudent(String firstName, String lastName, int groupId);
 
-    void deleteStudentById(int studentId);
+    boolean deleteStudentById(int studentId);
 
-    void addStudentToCourse(String firstName, String lastName, String courseName);
+    boolean addStudentToCourse(String firstName, String lastName, String courseName);
 
-    void deleteStudentFromCourse(String firstName, String lastName, String courseName);
+    boolean deleteStudentFromCourse(String firstName, String lastName, String courseName);
 
-    Student findStudentById(int studentId);
+    Student getStudentById(int studentId);
 
     List<Student> getAllStudents();
 
