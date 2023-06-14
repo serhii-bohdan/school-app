@@ -24,7 +24,7 @@ public class Main {
     private static Scanner scanner = new Scanner(System.in);
     private static Connectable connector = new Connector("application.properties");
     private static Reader reader = new ReaderImpl();
-    private static ExecutorDao executor = new SqlScriptsExecutorDao(connector);
+    private static ExecutorDao executorDao = new SqlScriptsExecutorDao(connector);
     private static Generatable<Group> groupsGenerator = new GroupsGenerator();
     private static Generatable<Student> studentsGenerator = new StudentsGenerator(reader);
     private static Generatable<Course> coursesGenerator = new CoursesGenerator(reader);
@@ -40,10 +40,30 @@ public class Main {
 
     public static void main(String[] args) {
         String tablesCreationScript = reader.readAllFileToString("sql/tables_creation.sql");
-        executor.executeSqlScript(tablesCreationScript);
+        executorDao.executeSqlScript(tablesCreationScript);
         initializer.initialize();
         controller.runSchoolApp();
         scanner.close();
+    }
+
+    public static void setScanner(Scanner scanner) {
+        Main.scanner = scanner;
+    }
+
+    public static void setReader(Reader reader) {
+        Main.reader = reader;
+    }
+
+    public static void setExecutorDao(ExecutorDao executorDao) {
+        Main.executorDao = executorDao;
+    }
+
+    public static void setInitializer(Initializable initializer) {
+        Main.initializer = initializer;
+    }
+
+    public static void setController(Controller controller) {
+        Main.controller = controller;
     }
 
 }
