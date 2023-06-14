@@ -14,8 +14,8 @@ import ua.foxminded.schoolapp.datasetup.Generatable;
 import ua.foxminded.schoolapp.datasetup.Initializable;
 import ua.foxminded.schoolapp.datasetup.Reader;
 import ua.foxminded.schoolapp.datasetup.impl.*;
-import ua.foxminded.schoolapp.cli.ConsoleController;
-import ua.foxminded.schoolapp.cli.ConsoleView;
+import ua.foxminded.schoolapp.cli.SchoolController;
+import ua.foxminded.schoolapp.cli.SchoolView;
 import ua.foxminded.schoolapp.cli.Controller;
 import ua.foxminded.schoolapp.cli.View;
 
@@ -35,14 +35,14 @@ public class Main {
     private static GroupDao groupDao = new GroupDaoImpl(connector);
     private static CourseDao courseDao = new CourseDaoImpl(connector);
     private static Service service = new SchoolService(studentDao, groupDao, courseDao);
-    private static View view = new ConsoleView(scanner);
-    private static Controller controller = new ConsoleController(service, view);
+    private static View view = new SchoolView(scanner);
+    private static Controller controller = new SchoolController(service, view);
 
     public static void main(String[] args) {
         String tablesCreationScript = reader.readAllFileToString("sql/tables_creation.sql");
         executor.executeSqlScript(tablesCreationScript);
         initializer.initialize();
-        controller.run();
+        controller.runSchoolApp();
         scanner.close();
     }
 

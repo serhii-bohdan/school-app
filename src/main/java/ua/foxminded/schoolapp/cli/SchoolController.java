@@ -6,17 +6,19 @@ import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
 import ua.foxminded.schoolapp.service.Service;
 
-public class ConsoleController implements Controller {
+public class SchoolController implements Controller {
 
     private Service service;
     private View view;
 
-    public ConsoleController(Service service, View view) {
+    public SchoolController(Service service, View view) {
+        Objects.requireNonNull(service);
+        Objects.requireNonNull(view);
         this.service = service;
         this.view = view;
     }
 
-    public void run() {
+    public void runSchoolApp() {
         boolean isRunning = true;
         view.showMenu();
 
@@ -136,7 +138,7 @@ public class ConsoleController implements Controller {
         String lastName = view.getWordFromUser("Enter the student's last name:\u00A0");
         String courseName = view.getWordFromUser("Enter the name of the course:\u00A0");
         boolean studentDeletedFromCourse = service.deleteStudentFromCourse(firstName, lastName, courseName);
-        
+
         if(studentDeletedFromCourse) {
             view.printMessage("The student has been successfully deleted from the course.\n");
         } else {

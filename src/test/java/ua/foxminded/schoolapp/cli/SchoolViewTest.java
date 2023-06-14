@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
 
-class ConsoleViewTest {
+class SchoolViewTest {
 
     View view;
     Scanner scannerMock;
@@ -24,7 +24,7 @@ class ConsoleViewTest {
     PrintStream printStreamMock;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         scannerMock = mock(Scanner.class);
         baos = new ByteArrayOutputStream();
         printStreamMock = new PrintStream(baos);
@@ -32,13 +32,13 @@ class ConsoleViewTest {
     }
 
     @Test
-    void consoleView_shouldNullPointerException_whenScannerIsNull() {
-        assertThrows(NullPointerException.class, () -> new ConsoleView(null));
+    void schoolView_shouldNullPointerException_whenScannerIsNull() {
+        assertThrows(NullPointerException.class, () -> new SchoolView(null));
     }
 
     @Test
     void showMenu_shouldDisplayedProgramMenu_whenInvokeShowMenu() {
-        view = new ConsoleView(scannerMock);
+        view = new SchoolView(scannerMock);
         String expectedOutput = """
                             **************************
                             -----   SCHOOL APP   -----
@@ -61,7 +61,7 @@ class ConsoleViewTest {
 
     @Test
     void printMessage_shouldPrintedNullWord_whenMessageIsNull() {
-        view = new ConsoleView(scannerMock);
+        view = new SchoolView(scannerMock);
         String expectedOutput = "null\r\n";
 
         view.printMessage(null);
@@ -72,7 +72,7 @@ class ConsoleViewTest {
 
     @Test
     void printMessage_shouldPrintedOnlyCRLF_whenMessageIsEmptyString() {
-        view = new ConsoleView(scannerMock);
+        view = new SchoolView(scannerMock);
         String expectedOutput = "\r\n";
 
         view.printMessage("");
@@ -83,7 +83,7 @@ class ConsoleViewTest {
 
     @Test
     void printMessage_shouldPrintedWord_whenMessageIsOnlyOneWord() {
-        view = new ConsoleView(scannerMock);
+        view = new SchoolView(scannerMock);
         String expectedOutput = "Word\r\n";
 
         view.printMessage("Word");
@@ -94,7 +94,7 @@ class ConsoleViewTest {
 
     @Test
     void getIntNumberFromUser_shouldReturnedIntegerNumberOnFirstAttempt_whenScannerMockReturnIntegerInput() {
-        view = new ConsoleView(scannerMock);
+        view = new SchoolView(scannerMock);
         int expectedIntFromUser = 4;
         when(scannerMock.hasNextInt()).thenReturn(true);
         when(scannerMock.nextInt()).thenReturn(expectedIntFromUser);
@@ -108,7 +108,7 @@ class ConsoleViewTest {
 
     @Test
     void getIntNumberFromUser_shouldReturnedIntegerNumberOnSecondAttempt_whenScannerMockReturnIncorrectValueOnFirstAttempt() {
-        view = new ConsoleView(scannerMock);
+        view = new SchoolView(scannerMock);
         int expectedIntFromUser = 3;
         when(scannerMock.hasNextInt()).thenReturn(false, true);
         when(scannerMock.next()).thenReturn("Not integer");
@@ -124,7 +124,7 @@ class ConsoleViewTest {
 
     @Test
     void getWordFromUser_shouldReturnedEmptyString_whenScannerMockReturEmptyString() {
-        view = new ConsoleView(scannerMock);
+        view = new SchoolView(scannerMock);
         String expectedReturnedWord = "";
         when(scannerMock.next()).thenReturn(expectedReturnedWord);
 
@@ -135,7 +135,7 @@ class ConsoleViewTest {
 
     @Test
     void getWordFromUser_shouldReturnedOnlySpaces_whenScannerMockReturnOnlySpaces() {
-        view = new ConsoleView(scannerMock);
+        view = new SchoolView(scannerMock);
         String expectedReturnedWord = "          ";
         when(scannerMock.next()).thenReturn(expectedReturnedWord);
 
@@ -146,7 +146,7 @@ class ConsoleViewTest {
 
     @Test
     void getWordFromUser_shouldReturnedSimpleWord_whenScannerMockReturnSimpleWord() {
-        view = new ConsoleView(scannerMock);
+        view = new SchoolView(scannerMock);
         String expectedReturnedWord = "Art";
         when(scannerMock.next()).thenReturn(expectedReturnedWord);
 
@@ -157,14 +157,14 @@ class ConsoleViewTest {
 
     @Test
     void getConfirmationFromUserAboutDeletingStudent_shouldNullPointerException_whenStudnetIsNull() {
-        view = new ConsoleView(scannerMock);
+        view = new SchoolView(scannerMock);
 
         assertThrows(NullPointerException.class, () -> view.getConfirmationFromUserAboutDeletingStudent(null));
     }
 
     @Test
     void getConfirmationFromUserAboutDeletingStudent_shouldConfirmationMessageWithNullAndNull_whenStudentFieldsNotInitialized() {
-        view = new ConsoleView(scannerMock);
+        view = new SchoolView(scannerMock);
         Student student = new Student();
         String expectedConfirmationMessage = "Are you sure you want to delete a student null null?\n"
                                            + "Please confirm your actions (enter Y or N): ";
@@ -178,7 +178,7 @@ class ConsoleViewTest {
 
     @Test
     void getConfirmationFromUserAboutDeletingStudent_shouldConfirmationMessageWithStudentFirstNameAndLastName_whenStudentHasInitializedFfirstAndLastNamesFields() {
-        view = new ConsoleView(scannerMock);
+        view = new SchoolView(scannerMock);
         Student student = new Student("FirstName", "LastName", 1);
         String expectedConfirmationMessage = "Are you sure you want to delete a student FirstName LastName?\n"
                                            + "Please confirm your actions (enter Y or N): ";
@@ -192,7 +192,7 @@ class ConsoleViewTest {
 
     @Test
     void getConfirmationFromUserAboutDeletingStudent_shouldReturnedOneCharacterConfirmation_whenScannerMockReturnOneCharacter() {
-        view = new ConsoleView(scannerMock);
+        view = new SchoolView(scannerMock);
         Student student = new Student("FirstName", "LastName", 1);
         String expectedConfirmationFromUser = "Y";
         when(scannerMock.next()).thenReturn(expectedConfirmationFromUser);
@@ -204,7 +204,7 @@ class ConsoleViewTest {
 
     @Test
     void getConfirmationFromUserAboutDeletingStudent_shouldReturnedNullConfirmation_whenScannerMockReturnNull() {
-        view = new ConsoleView(scannerMock);
+        view = new SchoolView(scannerMock);
         Student student = new Student("FirstName", "LastName", 1);
         String expectedConfirmationFromUser = null;
         when(scannerMock.next()).thenReturn(expectedConfirmationFromUser);
@@ -216,14 +216,14 @@ class ConsoleViewTest {
 
     @Test
     void displayGroups_shouldNullPointerException_whenGroupsListIsNull() {
-        view = new ConsoleView(scannerMock);
+        view = new SchoolView(scannerMock);
 
         assertThrows(NullPointerException.class, () -> view.displayGroups(null));
     }
 
     @Test
     void displayGroups_shouldNullPointerException_whenGroupsListContainsNull() {
-        view = new ConsoleView(scannerMock);
+        view = new SchoolView(scannerMock);
         List<Group> groups = new ArrayList<>();
         groups.add(null);
 
@@ -232,7 +232,7 @@ class ConsoleViewTest {
 
     @Test
     void displayGroups_shouldDisplayNothingBesidesGroupsWord_whenGroupsListEmpty() {
-        view = new ConsoleView(scannerMock);
+        view = new SchoolView(scannerMock);
         String expectedOutputMessage = "Groups:\n"
                                      + "\r\n";
         List<Group> groups = new ArrayList<>();
@@ -245,7 +245,7 @@ class ConsoleViewTest {
 
     @Test
     void displayGroups_shouldDisplayedGroupsList_whenGroupsListContainsThreeGroupsWithCorrectNames() {
-        view = new ConsoleView(scannerMock);
+        view = new SchoolView(scannerMock);
         List<Group> groups = new ArrayList<>();
         groups.add(new Group("JR-84"));
         groups.add(new Group("QL-03"));
@@ -264,7 +264,7 @@ class ConsoleViewTest {
 
     @Test
     void displayGroups_shouldDisplayedGroupsList_whenGroupsListContainsThreeGroupsWithNotInitializedNames() {
-        view = new ConsoleView(scannerMock);
+        view = new SchoolView(scannerMock);
         List<Group> groups = new ArrayList<>();
         groups.add(new Group());
         groups.add(new Group());
@@ -283,14 +283,14 @@ class ConsoleViewTest {
 
     @Test
     void displayStudents_shouldNullPointerException_whenStudentsListIsNull() {
-        view = new ConsoleView(scannerMock);
+        view = new SchoolView(scannerMock);
 
         assertThrows(NullPointerException.class, () -> view.displayStudents(null));
     }
 
     @Test
     void displayStudents_shouldNullPointerException_whenStudentsListContainsNull() {
-        view = new ConsoleView(scannerMock);
+        view = new SchoolView(scannerMock);
         List<Student> students = new ArrayList<>();
         students.add(null);
 
@@ -299,7 +299,7 @@ class ConsoleViewTest {
 
     @Test
     void displayStudents_shouldDisplayNothingBesidesStudentsWord_whenStudentsListEmpty() {
-        view = new ConsoleView(scannerMock);
+        view = new SchoolView(scannerMock);
         String expectedOutputMessage = "Students:\n"
                                      + "\r\n";
         List<Student> students = new ArrayList<>();
@@ -312,7 +312,7 @@ class ConsoleViewTest {
 
     @Test
     void displayStudents_shouldDisplayedStudentsList_whenStudentsListContainsThreeStudentsWithCorrectNames() {
-        view = new ConsoleView(scannerMock);
+        view = new SchoolView(scannerMock);
         List<Student> students = new ArrayList<>();
         students.add(new Student("FirstName_1", "LastName_1", 1));
         students.add(new Student("FirstName_2", "LastName_2", 1));
@@ -331,7 +331,7 @@ class ConsoleViewTest {
 
     @Test
     void displayStudents_shouldDisplayedStudentsList_whenStudentsListContainsThreeStudentsWithNotInitializedNames() {
-        view = new ConsoleView(scannerMock);
+        view = new SchoolView(scannerMock);
         List<Student> students = new ArrayList<>();
         students.add(new Student(null, null, 1));
         students.add(new Student(null, null, 1));

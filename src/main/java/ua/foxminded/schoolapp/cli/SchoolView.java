@@ -6,11 +6,11 @@ import java.util.Scanner;
 import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
 
-public class ConsoleView implements View {
+public class SchoolView implements View {
 
     private Scanner scanner;
 
-    public ConsoleView(Scanner scanner) {
+    public SchoolView(Scanner scanner) {
         Objects.requireNonNull(scanner);
         this.scanner = scanner;
     }
