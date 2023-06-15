@@ -1,13 +1,11 @@
 package ua.foxminded.schoolapp.datasetup.impl;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.io.FileUtils;
 import ua.foxminded.schoolapp.datasetup.Reader;
 import ua.foxminded.schoolapp.exception.FileReadingException;
 
@@ -29,16 +27,20 @@ public class ReaderImpl implements Reader {
     }
 
     public String readAllFileToString(String filePathInResources) {
-        String script = null;
+        StringBuilder content = new StringBuilder();
 
-        try {
-            ClassLoader classLoader = getClass().getClassLoader();
-            File scriptFile = new File(classLoader.getResource(filePathInResources).getFile());
-            script = FileUtils.readFileToString(scriptFile, StandardCharsets.UTF_8);
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePathInResources);
+             InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
+
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                content.append(line).append("\n");
+            }
         } catch (Exception e) {
             throw new FileReadingException("Failed to read file " + filePathInResources + ". Make sure this file exists.");
         }
-        return script.strip();
+        return content.toString().strip();
     }
 
 }

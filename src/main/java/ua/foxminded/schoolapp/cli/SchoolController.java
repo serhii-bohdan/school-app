@@ -47,13 +47,13 @@ public class SchoolController implements Controller {
 
     private void findAllGroupsWithLessOrEqualStudentsNumber() {
         view.printMessage("\nYou want to know groups with a given and smaller number of students.");
-        int numberOfStudents = view.getIntNumberFromUser("Enter the number of students:\u00A0");
+        int numberOfStudents = view.getIntNumberFromUser("Enter the number of students (from 10 to 30):\u00A0");
         List<Group> groups = service.getGroupsWithGivenNumberStudents(numberOfStudents);
 
         if (Objects.isNull(groups)) {
             view.printMessage("""
                     The entered number of students is not correct.
-                    The number of students should be between 0 and 30 inclusive.\n""");
+                    The number of students should be between 10 and 30 inclusive.\n""");
         } else if (groups.isEmpty()) {
             view.printMessage("The list of groups is empty.\n");
         } else {

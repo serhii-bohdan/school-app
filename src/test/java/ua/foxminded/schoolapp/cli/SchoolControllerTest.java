@@ -39,7 +39,7 @@ class SchoolControllerTest {
         controller = new SchoolController(serviceMock, viewMock);
         int numberGreaterThanMaximumStudentsCountInGroup = 34;
         when(viewMock.getIntNumberFromUser("Select an option: ")).thenReturn(1, 0);
-        when(viewMock.getIntNumberFromUser("Enter the number of students:\u00A0"))
+        when(viewMock.getIntNumberFromUser("Enter the number of students (from 10 to 30):\u00A0"))
                 .thenReturn(numberGreaterThanMaximumStudentsCountInGroup);
         when(serviceMock.getGroupsWithGivenNumberStudents(numberGreaterThanMaximumStudentsCountInGroup))
                 .thenReturn(null);
@@ -48,7 +48,7 @@ class SchoolControllerTest {
 
         verify(viewMock).printMessage("""
                 The entered number of students is not correct.
-                The number of students should be between 0 and 30 inclusive.\n""");
+                The number of students should be between 10 and 30 inclusive.\n""");
     }
 
     @Test
@@ -73,7 +73,7 @@ class SchoolControllerTest {
         groups.add(new Group("LK-62"));
         groups.add(new Group("QW-62"));
         when(viewMock.getIntNumberFromUser("Select an option: ")).thenReturn(1, 0);
-        when(viewMock.getIntNumberFromUser("Enter the number of students:\u00A0")).thenReturn(verySmallStudentsNumber);
+        when(viewMock.getIntNumberFromUser("Enter the number of students (from 10 to 30):\u00A0")).thenReturn(verySmallStudentsNumber);
         when(serviceMock.getGroupsWithGivenNumberStudents(verySmallStudentsNumber)).thenReturn(groups);
 
         controller.runSchoolApp();
