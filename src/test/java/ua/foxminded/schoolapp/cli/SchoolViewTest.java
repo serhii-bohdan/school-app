@@ -51,7 +51,7 @@ class SchoolViewTest {
                 6. Remove the student from one of their courses.
 
                 Enter 0 to exit the program.
-                \r\n""";
+                """;
 
         view.showMenu();
         String actualOutput = baos.toString();
@@ -62,7 +62,7 @@ class SchoolViewTest {
     @Test
     void printMessage_shouldPrintedNullWord_whenMessageIsNull() {
         view = new SchoolView(scannerMock);
-        String expectedOutput = "null\r\n";
+        String expectedOutput = "null";
 
         view.printMessage(null);
         String actualOutput = baos.toString();
@@ -73,7 +73,7 @@ class SchoolViewTest {
     @Test
     void printMessage_shouldPrintedOnlyCRLF_whenMessageIsEmptyString() {
         view = new SchoolView(scannerMock);
-        String expectedOutput = "\r\n";
+        String expectedOutput = "";
 
         view.printMessage("");
         String actualOutput = baos.toString();
@@ -84,7 +84,7 @@ class SchoolViewTest {
     @Test
     void printMessage_shouldPrintedWord_whenMessageIsOnlyOneWord() {
         view = new SchoolView(scannerMock);
-        String expectedOutput = "Word\r\n";
+        String expectedOutput = "Word";
 
         view.printMessage("Word");
         String actualOutput = baos.toString();
@@ -233,8 +233,7 @@ class SchoolViewTest {
     @Test
     void displayGroups_shouldDisplayNothingBesidesGroupsWord_whenGroupsListEmpty() {
         view = new SchoolView(scannerMock);
-        String expectedOutputMessage = "Groups:\n"
-                                     + "\r\n";
+        String expectedOutputMessage = "Groups:\n";
         List<Group> groups = new ArrayList<>();
 
         view.displayGroups(groups);
@@ -253,8 +252,7 @@ class SchoolViewTest {
         String expectedDisplayedGroups = "Groups:\n"
                                        + "       JR-84\n"
                                        + "       QL-03\n"
-                                       + "       VA-72\n"
-                                       + "\r\n";
+                                       + "       VA-72\n";
 
         view.displayGroups(groups);
         String actualDisplayedGroups = baos.toString();
@@ -272,8 +270,7 @@ class SchoolViewTest {
         String expectedDisplayedGroups = "Groups:\n"
                                        + "       null\n"
                                        + "       null\n"
-                                       + "       null\n"
-                                       + "\r\n";
+                                       + "       null\n";
 
         view.displayGroups(groups);
         String actualDisplayedGroups = baos.toString();
@@ -300,8 +297,7 @@ class SchoolViewTest {
     @Test
     void displayStudents_shouldDisplayNothingBesidesStudentsWord_whenStudentsListEmpty() {
         view = new SchoolView(scannerMock);
-        String expectedOutputMessage = "Students:\n"
-                                     + "\r\n";
+        String expectedOutputMessage = "Students:\n";
         List<Student> students = new ArrayList<>();
 
         view.displayStudents(students);
@@ -320,8 +316,7 @@ class SchoolViewTest {
         String expectedDisplayedStudents = "Students:\n"
                                          + "         FirstName_1 LastName_1\n"
                                          + "         FirstName_2 LastName_2\n"
-                                         + "         FirstName_3 LastName_3\n"
-                                         + "\r\n";
+                                         + "         FirstName_3 LastName_3\n";
 
         view.displayStudents(students);
         String actualDisplayedStudents = baos.toString();
@@ -339,8 +334,7 @@ class SchoolViewTest {
         String expectedDisplayedStudents = "Students:\n"
                                          + "         null null\n"
                                          + "         null null\n"
-                                         + "         null null\n"
-                                         + "\r\n";
+                                         + "         null null\n";
 
         view.displayStudents(students);
         String actualDisplayedStudents = baos.toString();

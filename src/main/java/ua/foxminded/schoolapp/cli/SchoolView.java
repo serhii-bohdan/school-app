@@ -16,7 +16,7 @@ public class SchoolView implements View {
     }
 
     public void showMenu() {
-        System.out.println("""
+        System.out.print("""
                             **************************
                             -----   SCHOOL APP   -----
                             **************************
@@ -32,7 +32,7 @@ public class SchoolView implements View {
     }
 
     public void printMessage(String message) {
-        System.out.println(message);
+        System.out.print(message);
     }
 
     public int getIntNumberFromUser(String message) {
@@ -58,7 +58,7 @@ public class SchoolView implements View {
         for (Group group : groups) {
             formattedGroups.append(String.format("\n%-6s %s", "", group.getGroupName()));
         }
-        System.out.println(formattedGroups + "\n");
+        System.out.print(formattedGroups + "\n");
     }
 
     public void displayStudents(List<Student> students) {
@@ -67,7 +67,7 @@ public class SchoolView implements View {
         for (Student student : students) {
             sformatedStuentes.append(String.format("\n%-8s %s %s", "", student.getFirstName(), student.getLastName()));
         }
-        System.out.println(sformatedStuentes + "\n");
+        System.out.print(sformatedStuentes + "\n");
     }
 
     private int getIntInput() {
