@@ -14,7 +14,7 @@ before_script:
 stages:
   - build
   - test
-  - install
+  - deploy
 
 .default_rules:
   rules:
@@ -31,7 +31,7 @@ test:
   script:
     - docker run --rm $CI_REGISTRY_IMAGE mvn test
 
-install:
-  stage: install
+deploy:
+  stage: deploy
   script:
     - docker run --rm $CI_REGISTRY_IMAGE mvn install
