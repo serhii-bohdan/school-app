@@ -34,4 +34,4 @@ test:
 deploy:
   stage: deploy
   script:
-    - docker run --rm $CI_REGISTRY_IMAGE mvn install
+    - docker-compose run -it app
