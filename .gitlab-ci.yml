@@ -34,4 +34,4 @@ test:
 deploy:
   stage: deploy
   script:
-    - docker-compose run -it app
+    - docker-compose run app
