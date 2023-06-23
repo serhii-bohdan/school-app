@@ -43,4 +43,4 @@ deploy-job:
   - docker
   script:
     - echo "Deploy job started..."
-    - docker-compose run -it app
+    - docker-compose run app
