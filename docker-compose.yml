@@ -14,5 +14,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      - INPUT_DATA=0
     depends_on:
       - postgresqldb
