@@ -14,7 +14,7 @@ before_script:
 stages:
   - build
   - test
-  - deploy
+  - package
 
 .default_rules:
   rules:
@@ -37,10 +37,10 @@ test-job:
     - echo "Test job started..."
     - docker run --rm $CI_REGISTRY_IMAGE mvn test
 
-deploy-job:
-  stage: deploy
+package-job:
+  stage: package
   tags:
   - docker
   script:
-    - echo "Deploy job started..."
-    - docker-compose run app
+    - echo "Package job started..."
+    - docker run --rm $CI_REGISTRY_IMAGE mvn package
