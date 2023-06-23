@@ -20,18 +20,27 @@ stages:
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
 
-build:
+build-job:
   stage: build
+  tags:
+  - docker
   script:
+    - echo "Build job started..."
     - docker build -t $CI_REGISTRY_IMAGE .
     - docker push $CI_REGISTRY_IMAGE
 
-test:
+test-job:
   stage: test
+  tags:
+  - docker
   script:
+    - echo "Test job started..."
     - docker run --rm $CI_REGISTRY_IMAGE mvn test
 
-deploy:
+deploy-job:
   stage: deploy
+  tags:
+  - docker
   script:
-    - docker-compose run -e INPUT_DATA=0 app
+    - echo "Deploy job started..."
+    - docker-compose run -it app

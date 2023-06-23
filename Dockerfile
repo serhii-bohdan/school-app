@@ -6,6 +6,6 @@ COPY pom.xml ./
 COPY src ./src
 
 RUN mvn -B dependency:resolve dependency:resolve-plugins
-RUN mvn package
+RUN mvn package -DskipTests
 
-CMD sleep 10 && java -jar target/school-app-0.0.1-SNAPSHOT-jar-with-dependencies.jar
+CMD ["java", "-jar", "target/school-app-0.0.1-SNAPSHOT-jar-with-dependencies.jar"]
