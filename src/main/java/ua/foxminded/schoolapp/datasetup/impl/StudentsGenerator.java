@@ -12,19 +12,42 @@ import ua.foxminded.schoolapp.datasetup.Generatable;
 import ua.foxminded.schoolapp.datasetup.Reader;
 import ua.foxminded.schoolapp.exception.DataSetUpException;
 
+/**
+ * Generates a list of randomly generated student objects.
+ *
+ * @author Serhii Bohdan
+ */
 public class StudentsGenerator implements Generatable<Student> {
 
+    /**
+     * The Random object used for generating random values.
+     */
     private Random random = new Random();
+
+    /**
+     * The Reader object used for reading data.
+     */
     private Reader reader;
 
+    /**
+     * Constructs a StudentsGenerator object with the specified Reader.
+     *
+     * @param reader the Reader object used to read data.
+     * @throws NullPointerException if the reader is null.
+     */
     public StudentsGenerator(Reader reader) {
         Objects.requireNonNull(reader);
         this.reader = reader;
     }
 
+    /**
+     * Generates a list of randomly generated Student objects.
+     *
+     * @return a list of randomly generated Student objects.
+     */
     public List<Student> toGenerate() {
-        List<String[]> studentsNames = generateStudentsFullName();
-        List<Integer> randomGroupIds = generateRandomGroupIds();
+        List<String[]> studentsNames = getStudentsFullName();
+        List<Integer> randomGroupIds = getRandomGroupIds();
 
         return IntStream.rangeClosed(0, 199)
                         .mapToObj(i -> {
@@ -35,9 +58,16 @@ public class StudentsGenerator implements Generatable<Student> {
                         .toList();
     }
 
-    private List<String[]> generateStudentsFullName() {
-        List<String> firstNames = reader.readFileAndPopulateList("students/first_names.txt");
-        List<String> lastNames = reader.readFileAndPopulateList("students/last_names.txt");
+    /**
+     * Generates a list of arrays containing randomly generated student names.
+     *
+     * @return a list of arrays containing randomly generated student names.
+     * @throws DataSetUpException if the number of names of students is less than twenty, or the 
+     *                            number of first names is not equal to the number of last names.
+     */
+    private List<String[]> getStudentsFullName() {
+        List<String> firstNames = reader.readFileAndPopulateListWithLines("students/first_names.txt");
+        List<String> lastNames = reader.readFileAndPopulateListWithLines("students/last_names.txt");
 
         if (firstNames.size() >= 20 && firstNames.size() == lastNames.size()) {
             return Stream.generate(() -> firstNames.get(random.nextInt(20)) + " " + lastNames.get(random.nextInt(20)))
@@ -51,7 +81,12 @@ public class StudentsGenerator implements Generatable<Student> {
         }
     }
 
-    private List<Integer> generateRandomGroupIds() {
+    /**
+     * Generates a list of random group IDs.
+     *
+     * @return a list of random group IDs.
+     */
+    private List<Integer> getRandomGroupIds() {
         List<Integer> randomGroupIds = new ArrayList<>();
         int maxCountStudentsInGroup = 30;
         int minCountStudentsInGroup = 10;
@@ -62,6 +97,7 @@ public class StudentsGenerator implements Generatable<Student> {
             if(Collections.frequency(randomGroupIds, randomGroupId) < maxCountStudentsInGroup) {
                 randomGroupIds.add(randomGroupId);
             }
+
             if((Collections.frequency(randomGroupIds, randomGroupId) < minCountStudentsInGroup)) {
                 randomGroupIds.add(randomGroupId);
             }

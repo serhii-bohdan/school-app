@@ -42,8 +42,8 @@ class StudentsGeneratorTest {
         List<String> testFirstNames = helper.getTestListOf("first_names", 20);
         List<String> testLastNames = helper.getTestListOf("last_names", 20);
         studentsGenerator = new StudentsGenerator(readerMock);
-        when(readerMock.readFileAndPopulateList("students/first_names.txt")).thenReturn(testFirstNames);
-        when(readerMock.readFileAndPopulateList("students/last_names.txt")).thenReturn(testLastNames);
+        when(readerMock.readFileAndPopulateListWithLines("students/first_names.txt")).thenReturn(testFirstNames);
+        when(readerMock.readFileAndPopulateListWithLines("students/last_names.txt")).thenReturn(testLastNames);
 
         List<Student> actualStudents = studentsGenerator.toGenerate();
 
@@ -60,8 +60,8 @@ class StudentsGeneratorTest {
         List<String> testFirstNames = helper.getTestListOf("first_names", 20);
         List<String> testLastNames = helper.getTestListOf("last_names", 20);
         studentsGenerator = new StudentsGenerator(readerMock);
-        when(readerMock.readFileAndPopulateList("students/first_names.txt")).thenReturn(testFirstNames);
-        when(readerMock.readFileAndPopulateList("students/last_names.txt")).thenReturn(testLastNames);
+        when(readerMock.readFileAndPopulateListWithLines("students/first_names.txt")).thenReturn(testFirstNames);
+        when(readerMock.readFileAndPopulateListWithLines("students/last_names.txt")).thenReturn(testLastNames);
 
         int actualSize = studentsGenerator.toGenerate().size();
 
@@ -73,8 +73,8 @@ class StudentsGeneratorTest {
         List<String> testFirstNames = helper.getTestListOf("first_names", 50);
         List<String> testLastNames = helper.getTestListOf("last_names", 50);
         studentsGenerator = new StudentsGenerator(readerMock);
-        when(readerMock.readFileAndPopulateList("students/first_names.txt")).thenReturn(testFirstNames);
-        when(readerMock.readFileAndPopulateList("students/last_names.txt")).thenReturn(testLastNames);
+        when(readerMock.readFileAndPopulateListWithLines("students/first_names.txt")).thenReturn(testFirstNames);
+        when(readerMock.readFileAndPopulateListWithLines("students/last_names.txt")).thenReturn(testLastNames);
 
         List<Student> actualStudents = studentsGenerator.toGenerate();
 
@@ -90,8 +90,8 @@ class StudentsGeneratorTest {
         List<String> testFirstNames = new ArrayList<>();
         List<String> testLastNames = helper.getTestListOf("last_names", 20);
         studentsGenerator = new StudentsGenerator(readerMock);
-        when(readerMock.readFileAndPopulateList("students/first_names.txt")).thenReturn(testFirstNames);
-        when(readerMock.readFileAndPopulateList("students/last_names.txt")).thenReturn(testLastNames);
+        when(readerMock.readFileAndPopulateListWithLines("students/first_names.txt")).thenReturn(testFirstNames);
+        when(readerMock.readFileAndPopulateListWithLines("students/last_names.txt")).thenReturn(testLastNames);
 
         assertThrows(DataSetUpException.class, () -> {
             studentsGenerator.toGenerate();
@@ -103,8 +103,8 @@ class StudentsGeneratorTest {
         List<String> testFirstNames = helper.getTestListOf("first_names", 10);
         List<String> testLastNames = helper.getTestListOf("last_names", 10);
         studentsGenerator = new StudentsGenerator(readerMock);
-        when(readerMock.readFileAndPopulateList("students/first_names.txt")).thenReturn(testFirstNames);
-        when(readerMock.readFileAndPopulateList("students/last_names.txt")).thenReturn(testLastNames);
+        when(readerMock.readFileAndPopulateListWithLines("students/first_names.txt")).thenReturn(testFirstNames);
+        when(readerMock.readFileAndPopulateListWithLines("students/last_names.txt")).thenReturn(testLastNames);
 
         assertThrows(DataSetUpException.class, () -> {
             studentsGenerator.toGenerate();
@@ -115,8 +115,8 @@ class StudentsGeneratorTest {
     void toGenerate_shouldFileReadingException_whenReaderThrowsFileReadingException() {
         List<String> testFirstNames = helper.getTestListOf("first_names", 10);
         studentsGenerator = new StudentsGenerator(readerMock);
-        when(readerMock.readFileAndPopulateList("students/first_names.txt")).thenReturn(testFirstNames);
-        when(readerMock.readFileAndPopulateList("students/last_names.txt")).thenThrow(FileReadingException.class);
+        when(readerMock.readFileAndPopulateListWithLines("students/first_names.txt")).thenReturn(testFirstNames);
+        when(readerMock.readFileAndPopulateListWithLines("students/last_names.txt")).thenThrow(FileReadingException.class);
 
         assertThrows(FileReadingException.class, () -> {
             studentsGenerator.toGenerate();
@@ -124,15 +124,15 @@ class StudentsGeneratorTest {
     }
 
     @Test
-    void generateStudentsFullName_shouldGeneratedStudentsFullName_whenReaderReturnTwentyStudentsNames()
+    void getStudentsFullName_shouldGeneratedStudentsFullName_whenReaderReturnTwentyStudentsNames()
             throws Exception {
         Method method = StudentsGenerator.class.getDeclaredMethod("generateStudentsFullName");
         method.setAccessible(true);
         List<String> testFirstNames = helper.getTestListOf("first_names", 20);
         List<String> testLastNames = helper.getTestListOf("last_names", 20);
         studentsGenerator = new StudentsGenerator(readerMock);
-        when(readerMock.readFileAndPopulateList("students/first_names.txt")).thenReturn(testFirstNames);
-        when(readerMock.readFileAndPopulateList("students/last_names.txt")).thenReturn(testLastNames);
+        when(readerMock.readFileAndPopulateListWithLines("students/first_names.txt")).thenReturn(testFirstNames);
+        when(readerMock.readFileAndPopulateListWithLines("students/last_names.txt")).thenReturn(testLastNames);
 
         @SuppressWarnings("unchecked")
         List<String[]> studentsFullName = (List<String[]>) method.invoke(studentsGenerator);
@@ -144,15 +144,15 @@ class StudentsGeneratorTest {
     }
 
     @Test
-    void generateStudentsFullName_shouldGeneratedStudentsFullName_whenReaderReturnMoreThanTwentyStudentsNames()
+    void getStudentsFullName_shouldGeneratedStudentsFullName_whenReaderReturnMoreThanTwentyStudentsNames()
             throws Exception {
         Method method = StudentsGenerator.class.getDeclaredMethod("generateStudentsFullName");
         method.setAccessible(true);
         List<String> testFirstNames = helper.getTestListOf("first_names", 40);
         List<String> testLastNames = helper.getTestListOf("last_names", 40);
         studentsGenerator = new StudentsGenerator(readerMock);
-        when(readerMock.readFileAndPopulateList("students/first_names.txt")).thenReturn(testFirstNames);
-        when(readerMock.readFileAndPopulateList("students/last_names.txt")).thenReturn(testLastNames);
+        when(readerMock.readFileAndPopulateListWithLines("students/first_names.txt")).thenReturn(testFirstNames);
+        when(readerMock.readFileAndPopulateListWithLines("students/last_names.txt")).thenReturn(testLastNames);
 
         @SuppressWarnings("unchecked")
         List<String[]> studentsFullName = (List<String[]>) method.invoke(studentsGenerator);
@@ -164,7 +164,7 @@ class StudentsGeneratorTest {
     }
 
     @Test
-    void generateStudentsFullName_shouldTwoHundredGeneratedStudentsFullName_whenwhenReaderReturnTwentyStudentsNames()
+    void getStudentsFullName_shouldTwoHundredGeneratedStudentsFullName_whenwhenReaderReturnTwentyStudentsNames()
             throws Exception {
         int expectedFullNamesCount = 200;
         Method method = StudentsGenerator.class.getDeclaredMethod("generateStudentsFullName");
@@ -172,8 +172,8 @@ class StudentsGeneratorTest {
         List<String> testFirstNames = helper.getTestListOf("first_names", 20);
         List<String> testLastNames = helper.getTestListOf("last_names", 20);
         studentsGenerator = new StudentsGenerator(readerMock);
-        when(readerMock.readFileAndPopulateList("students/first_names.txt")).thenReturn(testFirstNames);
-        when(readerMock.readFileAndPopulateList("students/last_names.txt")).thenReturn(testLastNames);
+        when(readerMock.readFileAndPopulateListWithLines("students/first_names.txt")).thenReturn(testFirstNames);
+        when(readerMock.readFileAndPopulateListWithLines("students/last_names.txt")).thenReturn(testLastNames);
 
         @SuppressWarnings("unchecked")
         List<String[]> studentsFullName = (List<String[]>) method.invoke(studentsGenerator);
@@ -183,15 +183,15 @@ class StudentsGeneratorTest {
     }
 
     @Test
-    void generateStudentsFullName_shouldInvocationTargetException_whenReaderReturnsUnequalNumberFirstAndLastNamesStudents()
+    void getStudentsFullName_shouldInvocationTargetException_whenReaderReturnsUnequalNumberFirstAndLastNamesStudents()
             throws Exception {
         Method method = StudentsGenerator.class.getDeclaredMethod("generateStudentsFullName");
         method.setAccessible(true);
         List<String> testFirstNames = helper.getTestListOf("first_names", 25);
         List<String> testLastNames = helper.getTestListOf("last_names", 20);
         studentsGenerator = new StudentsGenerator(readerMock);
-        when(readerMock.readFileAndPopulateList("students/first_names.txt")).thenReturn(testFirstNames);
-        when(readerMock.readFileAndPopulateList("students/last_names.txt")).thenReturn(testLastNames);
+        when(readerMock.readFileAndPopulateListWithLines("students/first_names.txt")).thenReturn(testFirstNames);
+        when(readerMock.readFileAndPopulateListWithLines("students/last_names.txt")).thenReturn(testLastNames);
 
         assertThrows(InvocationTargetException.class, () -> {
             method.invoke(studentsGenerator);
@@ -199,15 +199,15 @@ class StudentsGeneratorTest {
     }
 
     @Test
-    void generateStudentsFullName_shouldInvocationTargetException_whenReaderReturnLessThanTwentyStudentsNames()
+    void getStudentsFullName_shouldInvocationTargetException_whenReaderReturnLessThanTwentyStudentsNames()
             throws Exception {
         Method method = StudentsGenerator.class.getDeclaredMethod("generateStudentsFullName");
         method.setAccessible(true);
         List<String> testFirstNames = helper.getTestListOf("first_names", 5);
         List<String> testLastNames = helper.getTestListOf("last_names", 5);
         studentsGenerator = new StudentsGenerator(readerMock);
-        when(readerMock.readFileAndPopulateList("students/first_names.txt")).thenReturn(testFirstNames);
-        when(readerMock.readFileAndPopulateList("students/last_names.txt")).thenReturn(testLastNames);
+        when(readerMock.readFileAndPopulateListWithLines("students/first_names.txt")).thenReturn(testFirstNames);
+        when(readerMock.readFileAndPopulateListWithLines("students/last_names.txt")).thenReturn(testLastNames);
 
         assertThrows(InvocationTargetException.class, () -> {
             method.invoke(studentsGenerator);
@@ -215,15 +215,15 @@ class StudentsGeneratorTest {
     }
 
     @Test
-    void generateRandomGroupIds_shouldListOfRandomNumbersFromOneToTen_whenInvokeGenerateRandomGroupIds()
+    void getRandomGroupIds_shouldListOfRandomNumbersFromOneToTen_whenInvokeGenerateRandomGroupIds()
             throws Exception {
         Method method = StudentsGenerator.class.getDeclaredMethod("generateRandomGroupIds");
         method.setAccessible(true);
         List<String> testFirstNames = helper.getTestListOf("first_names", 20);
         List<String> testLastNames = helper.getTestListOf("last_names", 20);
         studentsGenerator = new StudentsGenerator(readerMock);
-        when(readerMock.readFileAndPopulateList("students/first_names.txt")).thenReturn(testFirstNames);
-        when(readerMock.readFileAndPopulateList("students/last_names.txt")).thenReturn(testLastNames);
+        when(readerMock.readFileAndPopulateListWithLines("students/first_names.txt")).thenReturn(testFirstNames);
+        when(readerMock.readFileAndPopulateListWithLines("students/last_names.txt")).thenReturn(testLastNames);
 
         @SuppressWarnings("unchecked")
         List<Integer> randomGroupIds = (List<Integer>) method.invoke(studentsGenerator);
@@ -234,15 +234,15 @@ class StudentsGeneratorTest {
     }
 
     @Test
-    void generateRandomGroupIds_shouldListOfRandomNumbersWhereEachNumberRepeatedAtLeastTenAndNotMoreThanThirtyTimes_whenInvokeGenerateRandomGroupIds()
+    void getRandomGroupIds_shouldListOfRandomNumbersWhereEachNumberRepeatedAtLeastTenAndNotMoreThanThirtyTimes_whenInvokeGenerateRandomGroupIds()
             throws Exception {
         Method method = StudentsGenerator.class.getDeclaredMethod("generateRandomGroupIds");
         method.setAccessible(true);
         List<String> testFirstNames = helper.getTestListOf("first_names", 20);
         List<String> testLastNames = helper.getTestListOf("last_names", 20);
         studentsGenerator = new StudentsGenerator(readerMock);
-        when(readerMock.readFileAndPopulateList("students/first_names.txt")).thenReturn(testFirstNames);
-        when(readerMock.readFileAndPopulateList("students/last_names.txt")).thenReturn(testLastNames);
+        when(readerMock.readFileAndPopulateListWithLines("students/first_names.txt")).thenReturn(testFirstNames);
+        when(readerMock.readFileAndPopulateListWithLines("students/last_names.txt")).thenReturn(testLastNames);
 
         @SuppressWarnings("unchecked")
         List<Integer> randomGroupIds = (List<Integer>) method.invoke(studentsGenerator);
@@ -254,15 +254,15 @@ class StudentsGeneratorTest {
     }
 
     @Test
-    void generateRandomGroupIds_shouldTwoHundredRandomGroupIds_whenInvokeGenerateRandomGroupIds() throws Exception {
+    void getRandomGroupIds_shouldTwoHundredRandomGroupIds_whenInvokeGenerateRandomGroupIds() throws Exception {
         int expectedRandomNumbersCount = 200;
         Method method = StudentsGenerator.class.getDeclaredMethod("generateRandomGroupIds");
         method.setAccessible(true);
         List<String> testFirstNames = helper.getTestListOf("first_names", 20);
         List<String> testLastNames = helper.getTestListOf("last_names", 20);
         studentsGenerator = new StudentsGenerator(readerMock);
-        when(readerMock.readFileAndPopulateList("students/first_names.txt")).thenReturn(testFirstNames);
-        when(readerMock.readFileAndPopulateList("students/last_names.txt")).thenReturn(testLastNames);
+        when(readerMock.readFileAndPopulateListWithLines("students/first_names.txt")).thenReturn(testFirstNames);
+        when(readerMock.readFileAndPopulateListWithLines("students/last_names.txt")).thenReturn(testLastNames);
 
         @SuppressWarnings("unchecked")
         List<Integer> randomGroupIds = (List<Integer>) method.invoke(studentsGenerator);

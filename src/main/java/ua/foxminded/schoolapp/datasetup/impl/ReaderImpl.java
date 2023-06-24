@@ -9,9 +9,20 @@ import java.util.List;
 import ua.foxminded.schoolapp.datasetup.Reader;
 import ua.foxminded.schoolapp.exception.FileReadingException;
 
+/**
+ * Implementation of the Reader interface for reading file contents.
+ *
+ * @author Serhii Bohdan
+ */
 public class ReaderImpl implements Reader {
 
-    public List<String> readFileAndPopulateList(String filePathInResources) {
+    /**
+     * {@inheritDoc}
+     *
+     * @throws FileReadingException if an error occurs while reading the file, such as file not found or invalid format.
+     */
+    @Override
+    public List<String> readFileAndPopulateListWithLines(String filePathInResources) {
         List<String> lines = new ArrayList<>();
 
         try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePathInResources);
@@ -26,6 +37,12 @@ public class ReaderImpl implements Reader {
         return lines;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws FileReadingException if an error occurs while reading the file, such as file not found or invalid format.
+     */
+    @Override
     public String readAllFileToString(String filePathInResources) {
         StringBuilder content = new StringBuilder();
 

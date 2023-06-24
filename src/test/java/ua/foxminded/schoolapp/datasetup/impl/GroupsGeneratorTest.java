@@ -38,7 +38,7 @@ class GroupsGeneratorTest {
     }
 
     @Test
-    void createRandomInitials_shouldRandomInitials_whenInvokeCreateRandomInitials() throws Exception {
+    void getRandomInitials_shouldRandomInitials_whenInvokeGetRandomInitials() throws Exception {
         String groupNameRegex = "^[A-Z]{2}$";
         Method method = GroupsGenerator.class.getDeclaredMethod("createRandomInitials");
         method.setAccessible(true);
@@ -49,7 +49,7 @@ class GroupsGeneratorTest {
     }
 
     @Test
-    void createTwoRandomDigits_should_when() throws Exception {
+    void getTwoRandomDigits_shouldTwoRandomDigitsFromZeroToNineInclusive_whenInvokeGetTwoRandomDigits() throws Exception {
         String randomDigitsRegex = "^[0-9]{2}$";
         Method method = GroupsGenerator.class.getDeclaredMethod("createTwoRandomDigits");
         method.setAccessible(true);

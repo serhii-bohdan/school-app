@@ -18,66 +18,66 @@ class ReaderImplTest {
     }
 
     @Test
-    void readFileAndPopulateList_shouldFileReadingException_whenFileNotExist() {
+    void readFileAndPopulateListWithLines_shouldFileReadingException_whenFileNotExist() {
 
         assertThrows(FileReadingException.class, () -> {
-            reader.readFileAndPopulateList("non-existent-file.txt");
+            reader.readFileAndPopulateListWithLines("non-existent-file.txt");
         });
     }
 
     @Test
-    void readFileAndPopulateList_shouldEmptyList_whenFileIsEmpty() {
+    void readFileAndPopulateListWithLines_shouldEmptyList_whenFileIsEmpty() {
         List<String> expectedFileLinesList = new ArrayList<>();
 
-        List<String> actualFileLinesList = reader.readFileAndPopulateList("readingtest/empty_test.txt");
+        List<String> actualFileLinesList = reader.readFileAndPopulateListWithLines("readingtest/empty_test.txt");
 
         assertEquals(expectedFileLinesList, actualFileLinesList);
     }
 
     @Test
-    void readFileAndPopulateList_shouldListOfLines_whenFileContainsFirstNamesAndLinesWithOnlySpaces() {
+    void readFileAndPopulateListWithLines_shouldListOfLines_whenFileContainsFirstNamesAndLinesWithOnlySpaces() {
         List<String> expectedFileLinesList = new ArrayList<>();
         expectedFileLinesList.add("First_Name_1");
         expectedFileLinesList.add("First_Name_2");
         expectedFileLinesList.add("First_Name_3");
 
-        List<String> actualFileLinesList = reader.readFileAndPopulateList("readingtest/first_names_test.txt");
+        List<String> actualFileLinesList = reader.readFileAndPopulateListWithLines("readingtest/first_names_test.txt");
 
         assertEquals(expectedFileLinesList, actualFileLinesList);
     }
 
     @Test
-    void readFileAndPopulateList_shouldListOfLines_whenFileContainsLastNamesAndEmptyLines() {
+    void readFileAndPopulateListWithLines_shouldListOfLines_whenFileContainsLastNamesAndEmptyLines() {
         List<String> expectedFileLinesList = new ArrayList<>();
         expectedFileLinesList.add("Last Name 1");
         expectedFileLinesList.add("Last Name 2");
         expectedFileLinesList.add("Last Name 3");
 
-        List<String> actualFileLinesList = reader.readFileAndPopulateList("readingtest/last_names_test.txt");
+        List<String> actualFileLinesList = reader.readFileAndPopulateListWithLines("readingtest/last_names_test.txt");
 
         assertEquals(expectedFileLinesList, actualFileLinesList);
     }
 
     @Test
-    void readFileAndPopulateList_shouldListOfLines_whenFileContainsCoursesNamesWithSpacesAtBeginningAndEnd() {
+    void readFileAndPopulateListWithLines_shouldListOfLines_whenFileContainsCoursesNamesWithSpacesAtBeginningAndEnd() {
         List<String> expectedFileLinesList = new ArrayList<>();
         expectedFileLinesList.add("Course_1");
         expectedFileLinesList.add("Course_2");
         expectedFileLinesList.add("Course_3");
 
-        List<String> actualFileLinesList = reader.readFileAndPopulateList("readingtest/courses_test.txt");
+        List<String> actualFileLinesList = reader.readFileAndPopulateListWithLines("readingtest/courses_test.txt");
 
         assertEquals(expectedFileLinesList, actualFileLinesList);
     }
 
     @Test
-    void readFileAndPopulateList_shouldListOfLines_whenFileContainsCoursesDscriptionsWithSpacesAndEmptyLines() {
+    void readFileAndPopulateListWithLines_shouldListOfLines_whenFileContainsCoursesDscriptionsWithSpacesAndEmptyLines() {
         List<String> expectedFileLinesList = new ArrayList<>();
         expectedFileLinesList.add("Description One");
         expectedFileLinesList.add("Description Two");
         expectedFileLinesList.add("Description Three");
 
-        List<String> actualFileLinesList = reader.readFileAndPopulateList("readingtest/descriptions_test.txt");
+        List<String> actualFileLinesList = reader.readFileAndPopulateListWithLines("readingtest/descriptions_test.txt");
 
         assertEquals(expectedFileLinesList, actualFileLinesList);
     }

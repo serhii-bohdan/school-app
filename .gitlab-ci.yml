@@ -23,7 +23,7 @@ stages:
 build-job:
   stage: build
   tags:
-  - docker
+    - docker
   script:
     - echo "Build job started..."
     - docker build -t $CI_REGISTRY_IMAGE .
@@ -32,7 +32,7 @@ build-job:
 test-job:
   stage: test
   tags:
-  - docker
+    - docker
   script:
     - echo "Test job started..."
     - docker run --rm $CI_REGISTRY_IMAGE mvn test
@@ -40,7 +40,7 @@ test-job:
 package-job:
   stage: package
   tags:
-  - docker
+    - docker
   script:
     - echo "Package job started..."
     - docker run --rm $CI_REGISTRY_IMAGE mvn package
