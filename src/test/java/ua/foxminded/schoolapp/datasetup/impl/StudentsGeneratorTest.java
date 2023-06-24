@@ -126,7 +126,7 @@ class StudentsGeneratorTest {
     @Test
     void getStudentsFullName_shouldGeneratedStudentsFullName_whenReaderReturnTwentyStudentsNames()
             throws Exception {
-        Method method = StudentsGenerator.class.getDeclaredMethod("generateStudentsFullName");
+        Method method = StudentsGenerator.class.getDeclaredMethod("getStudentsFullName");
         method.setAccessible(true);
         List<String> testFirstNames = helper.getTestListOf("first_names", 20);
         List<String> testLastNames = helper.getTestListOf("last_names", 20);
@@ -146,7 +146,7 @@ class StudentsGeneratorTest {
     @Test
     void getStudentsFullName_shouldGeneratedStudentsFullName_whenReaderReturnMoreThanTwentyStudentsNames()
             throws Exception {
-        Method method = StudentsGenerator.class.getDeclaredMethod("generateStudentsFullName");
+        Method method = StudentsGenerator.class.getDeclaredMethod("getStudentsFullName");
         method.setAccessible(true);
         List<String> testFirstNames = helper.getTestListOf("first_names", 40);
         List<String> testLastNames = helper.getTestListOf("last_names", 40);
@@ -167,7 +167,7 @@ class StudentsGeneratorTest {
     void getStudentsFullName_shouldTwoHundredGeneratedStudentsFullName_whenwhenReaderReturnTwentyStudentsNames()
             throws Exception {
         int expectedFullNamesCount = 200;
-        Method method = StudentsGenerator.class.getDeclaredMethod("generateStudentsFullName");
+        Method method = StudentsGenerator.class.getDeclaredMethod("getStudentsFullName");
         method.setAccessible(true);
         List<String> testFirstNames = helper.getTestListOf("first_names", 20);
         List<String> testLastNames = helper.getTestListOf("last_names", 20);
@@ -185,7 +185,7 @@ class StudentsGeneratorTest {
     @Test
     void getStudentsFullName_shouldInvocationTargetException_whenReaderReturnsUnequalNumberFirstAndLastNamesStudents()
             throws Exception {
-        Method method = StudentsGenerator.class.getDeclaredMethod("generateStudentsFullName");
+        Method method = StudentsGenerator.class.getDeclaredMethod("getStudentsFullName");
         method.setAccessible(true);
         List<String> testFirstNames = helper.getTestListOf("first_names", 25);
         List<String> testLastNames = helper.getTestListOf("last_names", 20);
@@ -201,7 +201,7 @@ class StudentsGeneratorTest {
     @Test
     void getStudentsFullName_shouldInvocationTargetException_whenReaderReturnLessThanTwentyStudentsNames()
             throws Exception {
-        Method method = StudentsGenerator.class.getDeclaredMethod("generateStudentsFullName");
+        Method method = StudentsGenerator.class.getDeclaredMethod("getStudentsFullName");
         method.setAccessible(true);
         List<String> testFirstNames = helper.getTestListOf("first_names", 5);
         List<String> testLastNames = helper.getTestListOf("last_names", 5);
@@ -217,7 +217,7 @@ class StudentsGeneratorTest {
     @Test
     void getRandomGroupIds_shouldListOfRandomNumbersFromOneToTen_whenInvokeGenerateRandomGroupIds()
             throws Exception {
-        Method method = StudentsGenerator.class.getDeclaredMethod("generateRandomGroupIds");
+        Method method = StudentsGenerator.class.getDeclaredMethod("getRandomGroupIds");
         method.setAccessible(true);
         List<String> testFirstNames = helper.getTestListOf("first_names", 20);
         List<String> testLastNames = helper.getTestListOf("last_names", 20);
@@ -236,7 +236,7 @@ class StudentsGeneratorTest {
     @Test
     void getRandomGroupIds_shouldListOfRandomNumbersWhereEachNumberRepeatedAtLeastTenAndNotMoreThanThirtyTimes_whenInvokeGenerateRandomGroupIds()
             throws Exception {
-        Method method = StudentsGenerator.class.getDeclaredMethod("generateRandomGroupIds");
+        Method method = StudentsGenerator.class.getDeclaredMethod("getRandomGroupIds");
         method.setAccessible(true);
         List<String> testFirstNames = helper.getTestListOf("first_names", 20);
         List<String> testLastNames = helper.getTestListOf("last_names", 20);
@@ -256,7 +256,7 @@ class StudentsGeneratorTest {
     @Test
     void getRandomGroupIds_shouldTwoHundredRandomGroupIds_whenInvokeGenerateRandomGroupIds() throws Exception {
         int expectedRandomNumbersCount = 200;
-        Method method = StudentsGenerator.class.getDeclaredMethod("generateRandomGroupIds");
+        Method method = StudentsGenerator.class.getDeclaredMethod("getRandomGroupIds");
         method.setAccessible(true);
         List<String> testFirstNames = helper.getTestListOf("first_names", 20);
         List<String> testLastNames = helper.getTestListOf("last_names", 20);
