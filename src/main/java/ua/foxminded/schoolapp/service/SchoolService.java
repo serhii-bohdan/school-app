@@ -9,12 +9,25 @@ import ua.foxminded.schoolapp.model.Course;
 import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
 
+/**
+ * The SchoolService class implements the {@link Service} interface and provides
+ * methods for managing school-related operations.
+ * 
+ * @author Serhii Bohdan
+ */
 public class SchoolService implements Service {
 
     private StudentDao studentDao;
     private GroupDao groupDao;
     private CourseDao courseDao;
 
+    /**
+     * Constructs a SchoolService instance with the specified Daos.
+     *
+     * @param studentDao the DAO for student operations
+     * @param groupDao the DAO for group operations
+     * @param courseDao the DAO for course operations
+     */
     public SchoolService(StudentDao studentDao, GroupDao groupDao, CourseDao courseDao) {
         Objects.requireNonNull(studentDao);
         Objects.requireNonNull(groupDao);
@@ -24,6 +37,10 @@ public class SchoolService implements Service {
         this.courseDao = courseDao;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public List<Group> getGroupsWithGivenNumberStudents(int amountOfStudents) {
         List<Group> groups = null;
 
@@ -34,6 +51,10 @@ public class SchoolService implements Service {
         return groups;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public List<Student> getStudentsRelatedToCourse(String courseName) {
         List<Student> students = null;
         boolean courseExists = courseDao.findAllCourses().stream()
@@ -46,6 +67,10 @@ public class SchoolService implements Service {
         return students;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public boolean addNewStudent(String firstName, String lastName, int groupId) {
         boolean newStudentIsAdded = false;
         boolean studentIsNotExists = !studentDao.findAllStudents().stream()
@@ -60,6 +85,10 @@ public class SchoolService implements Service {
         return newStudentIsAdded;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public boolean deleteStudentById(int studentId) {
         boolean studentIsdDeleted = false;
         boolean studentIdExists = studentDao.findAllStudents().stream()
@@ -73,6 +102,10 @@ public class SchoolService implements Service {
         return studentIsdDeleted;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public boolean addStudentToCourse(String firstName, String lastName, String courseName) {
         boolean studentIsAddedToCourse = false;
         boolean studentExists = studentDao.findAllStudents().stream()
@@ -91,6 +124,10 @@ public class SchoolService implements Service {
         return studentIsAddedToCourse;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public boolean deleteStudentFromCourse(String firstName, String lastName, String courseName) {
         boolean studentDeletedFromCourse = false;
         boolean studentExists = studentDao.findAllStudents().stream()
@@ -109,6 +146,10 @@ public class SchoolService implements Service {
         return studentDeletedFromCourse;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Student getStudentById(int studentId) {
         Student student = null;
         boolean studentIdExists = studentDao.findAllStudents().stream()
@@ -121,6 +162,10 @@ public class SchoolService implements Service {
         return student;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public List<Student> getAllStudents() {
         return studentDao.findAllStudents();
     }

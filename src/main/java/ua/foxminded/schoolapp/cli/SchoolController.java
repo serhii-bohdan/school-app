@@ -6,13 +6,34 @@ import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
 import ua.foxminded.schoolapp.service.Service;
 
+/**
+ * The SchoolController class implements the {@link Controller} interface and provides
+ * the functionality to run the School App and handle user interactions.
+ *
+ * @author Serhii Bohdan
+ */
 public class SchoolController implements Controller {
 
-    private static final String NEW_LINE = "\n";
+    /**
+     * A constant representing a new line character.
+     */
+    public static final String NEW_LINE = "\n";
+
+    /**
+     * A constant representing a non-breaking space character.
+     */
+    public static final String NON_BREAKING_SPACE = "\u00A0";
 
     private Service service;
     private View view;
 
+    /**
+     * Constructs a new SchoolController with the specified service and view.
+     *
+     * @param service the service to be used for handling business logic
+     * @param view    the view to be used for displaying information and interacting
+     *                with the user
+     */
     public SchoolController(Service service, View view) {
         Objects.requireNonNull(service);
         Objects.requireNonNull(view);
@@ -20,6 +41,10 @@ public class SchoolController implements Controller {
         this.view = view;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void runSchoolApp() {
         boolean isRunning = true;
         view.showMenu();
@@ -49,7 +74,8 @@ public class SchoolController implements Controller {
 
     private void findAllGroupsWithLessOrEqualStudentsNumber() {
         view.printMessage(NEW_LINE + "You want to know groups with a given and smaller number of students.");
-        int numberOfStudents = view.getIntNumberFromUser(NEW_LINE + "Enter the number of students (from 10 to 30):\u00A0");
+        int numberOfStudents = view
+                .getIntNumberFromUser(NEW_LINE + "Enter the number of students (from 10 to 30):" + NON_BREAKING_SPACE);
         List<Group> groups = service.getGroupsWithGivenNumberStudents(numberOfStudents);
 
         if (Objects.isNull(groups)) {
@@ -65,7 +91,7 @@ public class SchoolController implements Controller {
 
     private void findAllStudentsRelatedToCourseWithGivenName() {
         view.printMessage(NEW_LINE + "You want to know the list of students related to the course.");
-        String courseName = view.getWordFromUser(NEW_LINE + "Enter the name of the course:\u00A0");
+        String courseName = view.getWordFromUser(NEW_LINE + "Enter the name of the course:" + NON_BREAKING_SPACE);
         List<Student> students = service.getStudentsRelatedToCourse(courseName);
 
         if (Objects.isNull(students)) {
@@ -79,10 +105,10 @@ public class SchoolController implements Controller {
 
     private void addNewStudent() {
         view.printMessage(NEW_LINE + "You want to add a new student.");
-        String firstName = view.getWordFromUser(NEW_LINE + "Enter the student's first name:\u00A0");
-        String lastName = view.getWordFromUser("Enter the student's last name:\u00A0");
+        String firstName = view.getWordFromUser(NEW_LINE + "Enter the student's first name:" + NON_BREAKING_SPACE);
+        String lastName = view.getWordFromUser("Enter the student's last name:" + NON_BREAKING_SPACE);
         int groupId = view.getIntNumberFromUser(
-                "Enter the ID of the group to which the student should belong (from 1 to 10):\u00A0");
+                "Enter the ID of the group to which the student should belong (from 1 to 10):" + NON_BREAKING_SPACE);
         boolean newStudentIsAdded = service.addNewStudent(firstName, lastName, groupId);
 
         if (newStudentIsAdded) {
@@ -96,7 +122,7 @@ public class SchoolController implements Controller {
 
     private void deleteStudent() {
         view.printMessage(NEW_LINE + "You want to delete a student by their ID.");
-        int studentId = view.getIntNumberFromUser(NEW_LINE + "Enter your student ID:\u00A0");
+        int studentId = view.getIntNumberFromUser(NEW_LINE + "Enter your student ID:" + NON_BREAKING_SPACE);
         Student student = service.getStudentById(studentId);
 
         if (Objects.nonNull(student)) {
@@ -118,9 +144,9 @@ public class SchoolController implements Controller {
     private void addStudentToCourse() {
         view.printMessage(NEW_LINE + "You want to add a student (from the list) to the course." + NEW_LINE);
         view.displayStudents(service.getAllStudents());
-        String firstName = view.getWordFromUser(NEW_LINE + "Enter the student's first name:\u00A0");
-        String lastName = view.getWordFromUser("Enter the student's last name:\u00A0");
-        String courseName = view.getWordFromUser("Enter the name of the course:\u00A0");
+        String firstName = view.getWordFromUser(NEW_LINE + "Enter the student's first name:" + NON_BREAKING_SPACE);
+        String lastName = view.getWordFromUser("Enter the student's last name:" + NON_BREAKING_SPACE);
+        String courseName = view.getWordFromUser("Enter the name of the course:" + NON_BREAKING_SPACE);
         boolean studentIsAddedToCourse = service.addStudentToCourse(firstName, lastName, courseName);
 
         if (studentIsAddedToCourse) {
@@ -136,9 +162,9 @@ public class SchoolController implements Controller {
     private void deleteStudentFromOneOfTheirCourses() {
         view.printMessage(NEW_LINE + "You want to delete a student from a course." + NEW_LINE);
         view.displayStudents(service.getAllStudents());
-        String firstName = view.getWordFromUser(NEW_LINE + "Enter the student's first name:\u00A0");
-        String lastName = view.getWordFromUser("Enter the student's last name:\u00A0");
-        String courseName = view.getWordFromUser("Enter the name of the course:\u00A0");
+        String firstName = view.getWordFromUser(NEW_LINE + "Enter the student's first name:" + NON_BREAKING_SPACE);
+        String lastName = view.getWordFromUser("Enter the student's last name:" + NON_BREAKING_SPACE);
+        String courseName = view.getWordFromUser("Enter the name of the course:" + NON_BREAKING_SPACE);
         boolean studentDeletedFromCourse = service.deleteStudentFromCourse(firstName, lastName, courseName);
 
         if (studentDeletedFromCourse) {

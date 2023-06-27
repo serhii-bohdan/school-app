@@ -1,7 +1,6 @@
 package ua.foxminded.schoolapp.datasetup.impl;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.Random;
@@ -18,13 +17,29 @@ import ua.foxminded.schoolapp.model.Course;
 import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
 
+/**
+ * The DatabaseTableInitializer class is responsible for initializing the
+ * database tables by populating them with groups, students, courses, and their
+ * relationships. DatabaseTableInitializer implements {@link Initializable}
+ * interface.
+ *
+ * @author Serhii Bohdan
+ */
 public class DatabaseTableInitializer implements Initializable {
 
-    private final Connectable connector;
-    private final Generatable<Group> groupsGenerator;
-    private final Generatable<Student> studentsGenerator;
-    private final Generatable<Course> coursesGenerator;
+    private Connectable connector;
+    private Generatable<Group> groupsGenerator;
+    private Generatable<Student> studentsGenerator;
+    private Generatable<Course> coursesGenerator;
 
+    /**
+     * Constructs a new DatabaseTableInitializer with the specified dependencies.
+     *
+     * @param connector         the database connector
+     * @param groupsGenerator   the generator for creating groups
+     * @param studentsGenerator the generator for creating students
+     * @param coursesGenerator  the generator for creating courses
+     */
     public DatabaseTableInitializer(Connectable connector, Generatable<Group> groupsGenerator,
             Generatable<Student> studentsGenerator, Generatable<Course> coursesGenerator) {
         Objects.requireNonNull(connector);
@@ -37,6 +52,11 @@ public class DatabaseTableInitializer implements Initializable {
         this.coursesGenerator = coursesGenerator;
     }
 
+    /**
+     * Initializes the database tables by populating them with groups, students,
+     * courses, and their relationships.
+     */
+    @Override
     public void initialize() {
         fillGroupsTable();
         fillStudentsTable();
@@ -44,37 +64,41 @@ public class DatabaseTableInitializer implements Initializable {
         fillStudentsCoursesTable();
     }
 
+    /**
+     * Fills the groups table in the database with the generated groups.
+     */
     private void fillGroupsTable() {
         GroupDao groupDao = new GroupDaoImpl(connector);
-        List<Group> groups = groupsGenerator.toGenerate();
-
-        for (Group group : groups) {
-            groupDao.save(group);
-        }
+        groupsGenerator.toGenerate().stream()
+                                    .forEach(groupDao::save);
     }
 
+    /**
+     * Fills the students table in the database with the generated students.
+     */
     private void fillStudentsTable() {
         StudentDao studentDao = new StudentDaoImpl(connector);
-        List<Student> students = studentsGenerator.toGenerate();
-
-        for (Student student : students) {
-            studentDao.save(student);
-        }
+        studentsGenerator.toGenerate().stream()
+                                      .forEach(studentDao::save);
     }
 
+    /**
+     * Fills the courses table in the database with the generated courses.
+     */
     private void fillCoursesTable() {
         CourseDao courseDao = new CourseDaoImpl(connector);
-        List<Course> courses = coursesGenerator.toGenerate();
-
-        for (Course course : courses) {
-            courseDao.save(course);
-        }
+        coursesGenerator.toGenerate().stream()
+                                     .forEach(courseDao::save);
     }
 
+    /**
+     * Fills the students_courses table in the database with the relationships
+     * between students and courses.
+     */
     private void fillStudentsCoursesTable() {
+        Random random = new Random();
         StudentDao studentDao = new StudentDaoImpl(connector);
         int studentsNumberPresentInDatabase = studentDao.findAllStudents().size();
-        Random random = new Random();
 
         for (int studentId = 1; studentId <= studentsNumberPresentInDatabase; studentId++) {
             int coursesNumberForStudent = random.nextInt(3) + 1;

@@ -13,15 +13,36 @@ import ua.foxminded.schoolapp.dao.CourseDao;
 import ua.foxminded.schoolapp.exception.DaoException;
 import ua.foxminded.schoolapp.model.Course;
 
+/**
+ * The CourseDaoImpl class is an implementation of the {@link CourseDao} interface. It
+ * provides methods for accessing and manipulating Course entities in the
+ * database.
+ *
+ * @author Serhii Bohdan
+ */
 public class CourseDaoImpl implements CourseDao {
-    
+
     private Connectable connector;
 
+    /**
+     * Constructs a CourseDaoImpl object with the specified Connectable connector.
+     *
+     * @param connector the Connectable object used for obtaining a database
+     *                  connection
+     */
     public CourseDaoImpl(Connectable connector) {
         Objects.requireNonNull(connector);
         this.connector = connector;
     }
 
+    /**
+     * Saves the Course entity to the database and returns the number of affected
+     * rows.
+     *
+     * @param course the Course entity to save
+     * @return the number of affected rows
+     */
+    @Override
     public int save(Course course) {
         int rowsInserted;
 
@@ -38,6 +59,12 @@ public class CourseDaoImpl implements CourseDao {
         return rowsInserted;
     }
 
+    /**
+     * Retrieves all courses from the database.
+     *
+     * @return a list of all Course objects
+     */
+    @Override
     public List<Course> findAllCourses() {
         List<Course> courses = new ArrayList<>();
 

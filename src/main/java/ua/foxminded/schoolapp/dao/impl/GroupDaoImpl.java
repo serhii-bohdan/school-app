@@ -12,21 +12,43 @@ import ua.foxminded.schoolapp.dao.GroupDao;
 import ua.foxminded.schoolapp.exception.DaoException;
 import ua.foxminded.schoolapp.model.Group;
 
+/**
+ * The GroupDaoImpl class is an implementation of the {@link GroupDao} interface. It
+ * provides methods for accessing and manipulating Group entities in the
+ * database.
+ *
+ * @author Serhii Bohdan
+ */
 public class GroupDaoImpl implements GroupDao {
 
     private Connectable connector;
 
+    /**
+     * Constructs a GroupDaoImpl object with the specified Connectable connector.
+     *
+     * @param connector the Connectable object used for obtaining a database
+     *                  connection
+     */
     public GroupDaoImpl(Connectable connector) {
         Objects.requireNonNull(connector);
         this.connector = connector;
     }
 
+    /**
+     * Saves the Group entity to the database and returns the number of affected
+     * rows.
+     *
+     * @param group the Group entity to save
+     * @return the number of affected rows
+     */
+    @Override
     public int save(Group group) {
         int rowsInserted;
 
         try (Connection connection = connector.getConnection()) {
-            PreparedStatement statement = connection.prepareStatement("INSERT INTO groups (group_name)\n"
-                                                                    + "VALUES(?)");
+            PreparedStatement statement = connection
+                    .prepareStatement("INSERT INTO groups (group_name)\n"
+                                    + "VALUES(?)");
             statement.setString(1, group.getGroupName());
             rowsInserted = statement.executeUpdate();
 
@@ -36,6 +58,13 @@ public class GroupDaoImpl implements GroupDao {
         return rowsInserted;
     }
 
+    /**
+     * Finds groups with the specified number of students.
+     *
+     * @param amountOfStudents the number of students
+     * @return a list of Group objects that match the specified criteria
+     */
+    @Override
     public List<Group> findGroupsWithGivenNumberStudents(int amountOfStudents) {
         List<Group> groups = new ArrayList<>();
 

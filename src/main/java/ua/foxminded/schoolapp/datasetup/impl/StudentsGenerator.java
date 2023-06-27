@@ -13,7 +13,8 @@ import ua.foxminded.schoolapp.datasetup.Reader;
 import ua.foxminded.schoolapp.exception.DataSetUpException;
 
 /**
- * Generates a list of randomly generated student objects.
+ * Generates a list of randomly generated student objects. The StudentsGenerator
+ * class is an implementation of the {@link Generatable} interface.
  *
  * @author Serhii Bohdan
  */
@@ -23,17 +24,12 @@ public class StudentsGenerator implements Generatable<Student> {
      * The Random object used for generating random values.
      */
     private Random random = new Random();
-
-    /**
-     * The Reader object used for reading data.
-     */
     private Reader reader;
 
     /**
      * Constructs a StudentsGenerator object with the specified Reader.
      *
      * @param reader the Reader object used to read data.
-     * @throws NullPointerException if the reader is null.
      */
     public StudentsGenerator(Reader reader) {
         Objects.requireNonNull(reader);
@@ -62,8 +58,6 @@ public class StudentsGenerator implements Generatable<Student> {
      * Generates a list of arrays containing randomly generated student names.
      *
      * @return a list of arrays containing randomly generated student names.
-     * @throws DataSetUpException if the number of names of students is less than twenty, or the 
-     *                            number of first names is not equal to the number of last names.
      */
     private List<String[]> getStudentsFullName() {
         List<String> firstNames = reader.readFileAndPopulateListWithLines("students/first_names.txt");

@@ -9,10 +9,11 @@ import ua.foxminded.schoolapp.exception.DataSetUpException;
 import ua.foxminded.schoolapp.model.Course;
 
 /**
- * The CoursesGenerator class is responsible for generating a list of course objects
- * with names and descriptions.
+ * The CoursesGenerator class is responsible for generating a list of course
+ * objects with names and descriptions. CoursesGenerator class is an
+ * implementation of the {@link Generatable} interface.
  *
- *@author Serhii Bohdan
+ * @author Serhii Bohdan
  */
 public class CoursesGenerator implements Generatable<Course> {
 
@@ -22,7 +23,6 @@ public class CoursesGenerator implements Generatable<Course> {
      * Constructs a CoursesGenerator object with the specified reader.
      *
      * @param reader the reader used to read course names and descriptions.
-     * @throws NullPointerException if the reader is null.
      */
     public CoursesGenerator(Reader reader) {
         Objects.requireNonNull(reader);
@@ -30,17 +30,17 @@ public class CoursesGenerator implements Generatable<Course> {
     }
 
     /**
-     * Generates a list of course objects with readed from files names and descriptions.
+     * Generates a list of course objects with readed from files names and
+     * descriptions.
      *
      * @return a list of course objects.
-     * @throws DataSetUpException if the number of courses is less than ten, or the number
-     *                            of courses is not equal to the number of descriptions.
      */
+    @Override
     public List<Course> toGenerate() {
         List<String> coursesNames = reader.readFileAndPopulateListWithLines("courses/courses.txt");
         List<String> coursesDescriptions = reader.readFileAndPopulateListWithLines("courses/descriptions.txt");
 
-        if(coursesNames.size() >= 10 && coursesNames.size() == coursesDescriptions.size()) {
+        if (coursesNames.size() >= 10 && coursesNames.size() == coursesDescriptions.size()) {
             return IntStream.rangeClosed(0, 9)
                             .mapToObj(i -> new Course(coursesNames.get(i), coursesDescriptions.get(i)))
                             .toList();
