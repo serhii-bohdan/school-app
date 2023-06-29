@@ -113,7 +113,7 @@ There are two ways to **run** the application. Let's consider both.
 
    After running this command you should see something like this (yours will be slightly different since this is the first time you're running this container):
    (image)<br>
-   >Note: Do not try to start the container with the application with the command: 
+   >**Note:** Do not try to start the container with the application with the command: 
    ```
    >docker compose up
    ```
@@ -121,6 +121,7 @@ There are two ways to **run** the application. Let's consider both.
    ```
    Exception in thread "main" ua.foxminded.schoolapp. exception.DaoException: An error occurred during the execution of the transferred SQL script.Connection to postgresqldb:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
    ```
+   >**Note:** When you're done with the application in the container, don't forget to stop the database container (the application container will stop itself). You can also delete these containers if you no longer plan to use them. 
 2) Maven command<br>
    This path requires more settings and services. This path requires more settings and services. You must have installed:
    * Java 17 (JDK)
@@ -134,7 +135,7 @@ There are two ways to **run** the application. Let's consider both.
            b) replace the user 'serhii' with the name of the user to whom you have assigned all privileges to the `school` database;<br>
            c) finally replace `pass` with the password you use to connect to your local database. 
 
-    At the end of these settings, you should get the following application.properties content:
+    At the end of these settings, you should get the following [application.properties](src/main/resources/application.properties) content:
     ```
     db.url=jdbc:postgresql://localhost:5432/school
     db.user=your-user-name
@@ -149,3 +150,17 @@ There are two ways to **run** the application. Let's consider both.
     (image)<br>
 
 Thus, after installation and launch, you will be able to use the application for the management of the educational institution.
+
+## Test
+The application has a set of unit tests that you can also run and verify that they pass successfully. This can also be done in two ways, they are in many ways similar to the two ways to run the application.<br>
+1) Look at the first point of the [install & run](#install-&-run) section, which is located above. Do not execute the command specified in it. To run the tests, do this:
+    ```
+    >docker compose run --rm app mvn test
+    ```
+     You will see something similar to this:
+     (image)
+2) In this case, you do not need to perform all the settings that are specified in the second point of the [install & run](#install-&-run) section. You just need to have `Java 17 (JDK)` and `Maven 3.8.6` downloaded. Go to the root of the project and execute the command:
+    ```
+    >mvn test
+    ```
+    She will do the tests.
