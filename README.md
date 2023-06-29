@@ -92,7 +92,7 @@ As mentioned earlier, one of the goals was the desire to create something useful
 - *`PostgreSQL`*, *`JDBC`*;
 - *`JUnit 5`*, *`Mockito`*, *`H2`*;
 - *`Maven`*, *`Git`*;
-- *`Docker`*, *`Docker Compose*`, *`GitLab CI`*.
+- *`Docker`*, *`Docker Compose`*, *`GitLab CI`*.
 
 ## Install & Run
 To **install** this project, you must have Git version control installed on your device. It would also be nice to have a basic knowledge of using Git. You can download and learn how to use the version control system [here](https://git-scm.com/book/en/v2). Go to the folder where you want to install the project. Open Git Bash in it and enter the command:
@@ -110,9 +110,6 @@ There are two ways to **run** the application. Let's consider both.
    ```
    >docker compose run -it app
    ```
-
-   After running this command you should see something like this (yours will be slightly different since this is the first time you're running this container):
-   (image)<br>
    >**Note:** Do not try to start the container with the application with the command: 
    ```
    >docker compose up
@@ -123,13 +120,13 @@ There are two ways to **run** the application. Let's consider both.
    ```
    >**Note:** When you're done with the application in the container, don't forget to stop the database container (the application container will stop itself). You can also delete these containers if you no longer plan to use them. 
 2) Maven command<br>
-   This path requires more settings and services. This path requires more settings and services. You must have installed:
+   This path requires more settings and services. You must have installed:
    * Java 17 (JDK)
    * Maven 3.8.6
    * PostgreSQL
 
    You should make the following settings:
-      1) Create a database, name it "school". Assign all database privileges to the user. 
+      1) Create a database, name it `school`. Assign all database privileges to the user. 
       2) Next, you should change some settings in the [application.properties](src/main/resources/application.properties) file:<br>
            a) replace `jdbc:postgresql://postgresqldb:5432/school` with `jdbc:postgresql://localhost:5432/school`;<br>
            b) replace the user 'serhii' with the name of the user to whom you have assigned all privileges to the `school` database;<br>
@@ -146,8 +143,6 @@ There are two ways to **run** the application. Let's consider both.
     >mvn package
     >java -jar target\school-app-0.0.1-SNAPSHOT-jar-with-dependencies.jar
     ```
-    You will see the following output in the console:<br>
-    (image)<br>
 
 Thus, after installation and launch, you will be able to use the application for the management of the educational institution.
 
@@ -157,8 +152,7 @@ The application has a set of unit tests that you can also run and verify that th
     ```
     >docker compose run --rm app mvn test
     ```
-     You will see something similar to this:
-     (image)
+
 2) In this case, you do not need to perform all the settings that are specified in the second point of the [install & run](#install-&-run) section. You just need to have `Java 17 (JDK)` and `Maven 3.8.6` downloaded. Go to the root of the project and execute the command:
     ```
     >mvn test
