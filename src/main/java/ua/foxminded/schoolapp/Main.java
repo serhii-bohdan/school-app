@@ -30,7 +30,6 @@ public class Main {
     private static Generatable<Course> coursesGenerator = new CoursesGenerator(reader);
     private static Initializable initializer = new DatabaseTableInitializer(connector, groupsGenerator,
             studentsGenerator, coursesGenerator);
-
     private static StudentDao studentDao = new StudentDaoImpl(connector);
     private static GroupDao groupDao = new GroupDaoImpl(connector);
     private static CourseDao courseDao = new CourseDaoImpl(connector);
