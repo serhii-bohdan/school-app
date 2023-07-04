@@ -1,0 +1,46 @@
+image: docker:latest
+
+services:
+  - docker:dind 
+
+variables:
+  DOCKER_DRIVER: overlay2
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+
+before_script:
+  - docker info
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+stages:
+  - build
+  - test
+  - package
+
+.default_rules:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+
+build-job:
+  stage: build
+  tags:
+    - docker
+  script:
+    - echo "Build job started..."
+    - docker build -t $CI_REGISTRY_IMAGE .
+    - docker push $CI_REGISTRY_IMAGE
+
+test-job:
+  stage: test
+  tags:
+    - docker
+  script:
+    - echo "Test job started..."
+    - docker run --rm $CI_REGISTRY_IMAGE mvn test
+
+package-job:
+  stage: package
+  tags:
+    - docker
+  script:
+    - echo "Package job started..."
+    - docker run --rm $CI_REGISTRY_IMAGE mvn package
