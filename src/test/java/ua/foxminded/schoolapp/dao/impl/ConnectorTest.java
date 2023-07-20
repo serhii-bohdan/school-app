@@ -67,4 +67,5 @@ class ConnectorTest {
 
         assertThrows(java.sql.SQLException.class, () -> connector.getConnection());
     }
+
 }

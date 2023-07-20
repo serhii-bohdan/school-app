@@ -1,10 +1,12 @@
 package ua.foxminded.schoolapp.cli;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import ua.foxminded.schoolapp.model.Course;
 import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
-import ua.foxminded.schoolapp.service.Service;
+import ua.foxminded.schoolapp.service.ServiceFacade;
 
 /**
  * The SchoolController class implements the {@link Controller} interface and provides
@@ -24,20 +26,20 @@ public class SchoolController implements Controller {
      */
     public static final String NON_BREAKING_SPACE = "\u00A0";
 
-    private Service service;
+    private ServiceFacade serviceFacade;
     private View view;
 
     /**
-     * Constructs a new SchoolController with the specified service and view.
+     * Constructs a SchoolController with the specified ServiceFacade and View.
      *
-     * @param service the service to be used for handling business logic
-     * @param view    the view to be used for displaying information and interacting
-     *                with the user
+     * @param serviceFacade the ServiceFacade to be used
+     * @param view          the View to be used
+     * @throws NullPointerException if the serviceFacade or view is null
      */
-    public SchoolController(Service service, View view) {
-        Objects.requireNonNull(service);
-        Objects.requireNonNull(view);
-        this.service = service;
+    public SchoolController(ServiceFacade serviceFacade, View view) {
+        Objects.requireNonNull(serviceFacade, "serviceFacade must not be null");
+        Objects.requireNonNull(view, "view must not be null");
+        this.serviceFacade = serviceFacade;
         this.view = view;
     }
 
@@ -74,32 +76,32 @@ public class SchoolController implements Controller {
 
     private void findAllGroupsWithLessOrEqualStudentsNumber() {
         view.printMessage(NEW_LINE + "You want to know groups with a given and smaller number of students.");
-        int numberOfStudents = view
-                .getIntNumberFromUser(NEW_LINE + "Enter the number of students (from 10 to 30):" + NON_BREAKING_SPACE);
-        List<Group> groups = service.getGroupsWithGivenNumberStudents(numberOfStudents);
+        int numberOfStudents = view.getIntNumberFromUser(NEW_LINE + "Enter the number of students (from 10 to 30):" + NON_BREAKING_SPACE);
+        Map<Group, Integer> groupsWithTheirNumberOfStudents = serviceFacade.getGroupsWithGivenNumberOfStudents(numberOfStudents);
 
-        if (Objects.isNull(groups)) {
+        if (Objects.isNull(groupsWithTheirNumberOfStudents)) {
             view.printMessage("""
                     The entered number of students is not correct.
                     The number of students should be between 10 and 30 inclusive.""" + NEW_LINE);
-        } else if (groups.isEmpty()) {
+        } else if (groupsWithTheirNumberOfStudents.isEmpty()) {
             view.printMessage("The list of groups is empty." + NEW_LINE);
         } else {
-            view.displayGroups(groups);
+            view.displayGroupsWithTheirNumberOfStudents(groupsWithTheirNumberOfStudents);
         }
     }
 
     private void findAllStudentsRelatedToCourseWithGivenName() {
-        view.printMessage(NEW_LINE + "You want to know the list of students related to the course.");
+        view.printMessage(NEW_LINE + "You want to know the list of students related to the course." + NEW_LINE);
+        view.displayCourses(serviceFacade.getAllCourses());
         String courseName = view.getWordFromUser(NEW_LINE + "Enter the name of the course:" + NON_BREAKING_SPACE);
-        List<Student> students = service.getStudentsRelatedToCourse(courseName);
+        Map<Student, List<Course>> studentsWithTheirCourses = serviceFacade.getStudentsWithCoursesByCourseName(courseName);
 
-        if (Objects.isNull(students)) {
+        if (Objects.isNull(studentsWithTheirCourses)) {
             view.printMessage("A course with that name does not exist." + NEW_LINE);
-        } else if (students.isEmpty()) {
+        } else if (studentsWithTheirCourses.isEmpty()) {
             view.printMessage("The list of students is empty." + NEW_LINE);
         } else {
-            view.displayStudents(students);
+            view.displayStudentsWithTheirCourses(studentsWithTheirCourses);
         }
     }
 
@@ -109,7 +111,7 @@ public class SchoolController implements Controller {
         String lastName = view.getWordFromUser("Enter the student's last name:" + NON_BREAKING_SPACE);
         int groupId = view.getIntNumberFromUser(
                 "Enter the ID of the group to which the student should belong (from 1 to 10):" + NON_BREAKING_SPACE);
-        boolean newStudentIsAdded = service.addNewStudent(firstName, lastName, groupId);
+        boolean newStudentIsAdded = serviceFacade.addNewStudent(firstName, lastName, groupId);
 
         if (newStudentIsAdded) {
             view.printMessage("The student has been successfully added." + NEW_LINE);
@@ -123,13 +125,13 @@ public class SchoolController implements Controller {
     private void deleteStudent() {
         view.printMessage(NEW_LINE + "You want to delete a student by their ID.");
         int studentId = view.getIntNumberFromUser(NEW_LINE + "Enter your student ID:" + NON_BREAKING_SPACE);
-        Student student = service.getStudentById(studentId);
+        Student student = serviceFacade.getStudentById(studentId);
 
         if (Objects.nonNull(student)) {
             String confirmationFromUser = view.getConfirmationFromUserAboutDeletingStudent(student);
 
             if ("Y".equals(confirmationFromUser)) {
-                service.deleteStudentById(studentId);
+                serviceFacade.deleteStudentById(studentId);
                 view.printMessage("The student was successfully deleted." + NEW_LINE);
             } else if ("N".equals(confirmationFromUser)) {
                 view.printMessage("The student was not deleted." + NEW_LINE);
@@ -143,11 +145,11 @@ public class SchoolController implements Controller {
 
     private void addStudentToCourse() {
         view.printMessage(NEW_LINE + "You want to add a student (from the list) to the course." + NEW_LINE);
-        view.displayStudents(service.getAllStudents());
+        view.displayStudentsWithTheirCourses(serviceFacade.getAllStudentsWithTheirCourses());
         String firstName = view.getWordFromUser(NEW_LINE + "Enter the student's first name:" + NON_BREAKING_SPACE);
         String lastName = view.getWordFromUser("Enter the student's last name:" + NON_BREAKING_SPACE);
         String courseName = view.getWordFromUser("Enter the name of the course:" + NON_BREAKING_SPACE);
-        boolean studentIsAddedToCourse = service.addStudentToCourse(firstName, lastName, courseName);
+        boolean studentIsAddedToCourse = serviceFacade.addStudentToCourse(firstName, lastName, courseName);
 
         if (studentIsAddedToCourse) {
             view.printMessage("The student has been successfully added to the course." + NEW_LINE);
@@ -161,11 +163,11 @@ public class SchoolController implements Controller {
 
     private void deleteStudentFromOneOfTheirCourses() {
         view.printMessage(NEW_LINE + "You want to delete a student from a course." + NEW_LINE);
-        view.displayStudents(service.getAllStudents());
+        view.displayStudentsWithTheirCourses(serviceFacade.getAllStudentsWithTheirCourses());
         String firstName = view.getWordFromUser(NEW_LINE + "Enter the student's first name:" + NON_BREAKING_SPACE);
         String lastName = view.getWordFromUser("Enter the student's last name:" + NON_BREAKING_SPACE);
         String courseName = view.getWordFromUser("Enter the name of the course:" + NON_BREAKING_SPACE);
-        boolean studentDeletedFromCourse = service.deleteStudentFromCourse(firstName, lastName, courseName);
+        boolean studentDeletedFromCourse = serviceFacade.deleteStudentFromCourse(firstName, lastName, courseName);
 
         if (studentDeletedFromCourse) {
             view.printMessage("The student has been successfully deleted from the course." + NEW_LINE);

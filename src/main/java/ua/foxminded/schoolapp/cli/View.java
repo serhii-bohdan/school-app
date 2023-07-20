@@ -1,6 +1,7 @@
 package ua.foxminded.schoolapp.cli;
 
 import java.util.List;
+import java.util.Map;
 import ua.foxminded.schoolapp.model.*;
 
 /**
@@ -48,17 +49,24 @@ public interface View {
     String getConfirmationFromUserAboutDeletingStudent(Student student);
 
     /**
-     * Displays a list of groups.
+     * Displays the groups with their corresponding number of students.
      *
-     * @param groups the list of groups to be displayed
+     * @param groupsWithTheirNumberOfStudents a map of groups with their number of students
      */
-    void displayGroups(List<Group> groups);
+    void displayGroupsWithTheirNumberOfStudents(Map<Group, Integer> groupsWithTheirNumberOfStudents);
 
     /**
-     * Displays a list of students.
+     * Displays the students with their corresponding courses.
      *
-     * @param students the list of students to be displayed
+     * @param studentsWithTheirCourses a map of students with their courses
      */
-    void displayStudents(List<Student> students);
+    void displayStudentsWithTheirCourses(Map<Student, List<Course>> studentsWithTheirCourses);
+
+    /**
+     * Displays a list of courses.
+     *
+     * @param courses a list of courses
+     */
+    void displayCourses(List<Course> courses);
 
 }

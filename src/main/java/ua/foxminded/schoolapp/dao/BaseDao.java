@@ -1,5 +1,7 @@
 package ua.foxminded.schoolapp.dao;
 
+import java.util.List;
+
 /**
  * The BaseDao interface defines the common operations for data access objects.
  *
@@ -15,5 +17,12 @@ public interface BaseDao<T> {
      * @return the number of affected rows
      */
     int save(T entity);
+
+    /**
+     * Retrieves all entities of the specified type from the database.
+     *
+     * @return a list of all entities
+     */
+    List<T> findAll();
 
 }

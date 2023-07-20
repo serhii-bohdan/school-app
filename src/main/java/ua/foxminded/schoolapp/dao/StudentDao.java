@@ -12,13 +12,6 @@ import ua.foxminded.schoolapp.model.Student;
 public interface StudentDao extends BaseDao<Student> {
 
     /**
-     * Retrieves all students from the database.
-     *
-     * @return a list of all Student objects
-     */
-    List<Student> findAllStudents();
-
-    /**
      * Retrieves all students related to a specific course from the database.
      *
      * @param courseName the name of the course

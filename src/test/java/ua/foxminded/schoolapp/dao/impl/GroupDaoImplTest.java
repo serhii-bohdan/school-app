@@ -5,7 +5,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -77,7 +80,7 @@ class GroupDaoImplTest {
     }
 
     @Test
-    void save_shouldDAOException_whenGroupNameNotInitialized() {
+    void save_shouldDaoException_whenGroupNameNotInitialized() {
         groupDao = new GroupDaoImpl(connectorMock);
         Group group = new Group();
 
@@ -91,7 +94,7 @@ class GroupDaoImplTest {
     }
 
     @Test
-    void save_shouldDAOException_whenGroupNameContainsMoreThanFiveCharacters() {
+    void save_shouldDaoException_whenGroupNameContainsMoreThanFiveCharacters() {
         String expectedGroupName = "LKJ-576";
         Group group = new Group(expectedGroupName);
         groupDao = new GroupDaoImpl(connectorMock);
@@ -210,8 +213,6 @@ class GroupDaoImplTest {
 
         try {
             when(connectorMock.getConnection()).thenReturn(getTestConnection());
-        } catch (SQLException e) {
-            e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -221,7 +222,67 @@ class GroupDaoImplTest {
     }
 
     @Test
-    void findGroupsWithGivenNumberStudents_shouldDAOException_whenConnectorThrowSQLException() {
+    void findAll_shouldDaoException_whenConnectorThrowSQLException() {
+        groupDao = new GroupDaoImpl(connectorMock);
+
+        try {
+            when(connectorMock.getConnection()).thenThrow(SQLException.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        assertThrows(DaoException.class, () -> groupDao.findAll());
+    }
+
+    @Test
+    void findAll_shouldEmptyGroupsList_whenGroupsTableEmpty() {
+        groupDao = new GroupDaoImpl(connectorMock);
+        List<Group> exceptAllAvailableGroups = new ArrayList<>();
+        List<Group> actualAllAvailableGroups = null;
+
+        try {
+            when(connectorMock.getConnection()).thenReturn(getTestConnection());
+            actualAllAvailableGroups = groupDao.findAll();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        assertEquals(exceptAllAvailableGroups, actualAllAvailableGroups);
+    }
+
+    @Test
+    void findAll_shouldAllAvailableGroups_whenGroupsTableContainGroups() {
+        groupDao = new GroupDaoImpl(connectorMock);
+        List<Group> exceptAllAvailableGroups = new ArrayList<>();
+        List<Group> actualAllAvailableGroups = null;
+        String sqlScript = """
+                INSERT INTO groups (group_name)
+                VALUES ('GH-10'),
+                       ('GH-10'),
+                       ('GH-10');
+                """;
+
+        for (int i = 1; i < 4; i++) {
+            Group group = new Group("GH-10");
+            group.setId(i);
+            exceptAllAvailableGroups.add(group);
+        }
+
+        try (Connection connection = getTestConnection()) {
+            Statement statement = connection.createStatement();
+            statement.execute(sqlScript);
+
+            when(connectorMock.getConnection()).thenReturn(getTestConnection());
+            actualAllAvailableGroups = groupDao.findAll();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        assertEquals(exceptAllAvailableGroups, actualAllAvailableGroups);
+    }
+
+    @Test
+    void findGroupsWithGivenNumberStudents_shouldDaoException_whenConnectorThrowSQLException() {
         groupDao = new GroupDaoImpl(connectorMock);
 
         try {
@@ -236,7 +297,7 @@ class GroupDaoImplTest {
 
     @Test
     void findGroupsWithGivenNumberStudents_shouldEmptyGroupsList_whenNegativeNumberOfStudents() {
-        List<Group> groups = new ArrayList<>();
+        Map<Group, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
         String sqlScript = """
                 INSERT INTO groups (group_name)
                 VALUES('XZ-21'),
@@ -267,17 +328,17 @@ class GroupDaoImplTest {
         try {
             groupDao = new GroupDaoImpl(connectorMock);
             when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            groups = groupDao.findGroupsWithGivenNumberStudents(-1);
+            groupsWithTheirNumberOfStudents = groupDao.findGroupsWithGivenNumberStudents(-1);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        assertTrue(groups.isEmpty());
+        assertTrue(groupsWithTheirNumberOfStudents.isEmpty());
     }
 
     @Test
     void findGroupsWithGivenNumberStudents_shouldEmptyGroupsList_whenNumberOfStudentsIsZero() {
-        List<Group> groups = new ArrayList<>();
+        Map<Group, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
         String sqlScript = """
                 INSERT INTO groups (group_name)
                 VALUES('XZ-21'),
@@ -308,17 +369,17 @@ class GroupDaoImplTest {
         try {
             groupDao = new GroupDaoImpl(connectorMock);
             when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            groups = groupDao.findGroupsWithGivenNumberStudents(0);
+            groupsWithTheirNumberOfStudents = groupDao.findGroupsWithGivenNumberStudents(0);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        assertTrue(groups.isEmpty());
+        assertTrue(groupsWithTheirNumberOfStudents.isEmpty());
     }
 
     @Test
     void findGroupsWithGivenNumberStudents_shouldEmptyGroupsList_whenThereNoGroupWithGivenNumberOfStudents() {
-        List<Group> groups = new ArrayList<>();
+        Map<Group, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
         String sqlScript = """
                 INSERT INTO groups (group_name)
                 VALUES('XZ-21'),
@@ -349,17 +410,17 @@ class GroupDaoImplTest {
         try {
             groupDao = new GroupDaoImpl(connectorMock);
             when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            groups = groupDao.findGroupsWithGivenNumberStudents(2);
+            groupsWithTheirNumberOfStudents = groupDao.findGroupsWithGivenNumberStudents(2);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        assertTrue(groups.isEmpty());
+        assertTrue(groupsWithTheirNumberOfStudents.isEmpty());
     }
 
     @Test
     void findGroupsWithGivenNumberStudents_shouldOneGroup_whenOneGroupWithGivenAndSmallerNumberOfStudents() {
-        List<Group> groups = new ArrayList<>();
+        Map<Group, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
         String sqlScript = """
                 INSERT INTO groups (group_name)
                 VALUES('XZ-21'),
@@ -390,17 +451,19 @@ class GroupDaoImplTest {
         try {
             groupDao = new GroupDaoImpl(connectorMock);
             when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            groups = groupDao.findGroupsWithGivenNumberStudents(3);
+            groupsWithTheirNumberOfStudents = groupDao.findGroupsWithGivenNumberStudents(3);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        assertEquals("DF-86", groups.get(0).getGroupName());
+        Entry<Group, Integer> groupWithStudentsNumber = groupsWithTheirNumberOfStudents.entrySet().iterator().next();
+        assertEquals("DF-86", groupWithStudentsNumber.getKey().getGroupName());
+        assertEquals(3, groupWithStudentsNumber.getValue());
     }
 
     @Test
     void findGroupsWithGivenNumberOfStudents_shouldTwoGroups_whenTwoGroupsWithGivenAndSmallerNumberOfStudents() {
-        List<Group> groups = new ArrayList<>();
+        Map<Group, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
         String sqlScript = """
                 INSERT INTO groups (group_name)
                 VALUES('XZ-21'),
@@ -431,18 +494,24 @@ class GroupDaoImplTest {
         try {
             groupDao = new GroupDaoImpl(connectorMock);
             when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            groups = groupDao.findGroupsWithGivenNumberStudents(4);
+            groupsWithTheirNumberOfStudents = groupDao.findGroupsWithGivenNumberStudents(4);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        assertEquals("XZ-21", groups.get(0).getGroupName());
-        assertEquals("DF-86", groups.get(1).getGroupName());
+        Group firstGroup = new Group("XZ-21");
+        Group secondGroup = new Group("DF-86");
+        firstGroup.setId(1);
+        secondGroup.setId(2);
+        assertTrue(groupsWithTheirNumberOfStudents.containsKey(firstGroup));
+        assertTrue(groupsWithTheirNumberOfStudents.containsKey(secondGroup));
+        assertTrue(groupsWithTheirNumberOfStudents.containsValue(4));
+        assertTrue(groupsWithTheirNumberOfStudents.containsValue(3));
     }
 
     @Test
     void findGroupsWithGivenNumberStudents_shouldAllExistingGroups_whenGivenNumberOfStudentsIsMuchLargerThanWhatInEachOfAvailableGroups() {
-        List<Group> groups = new ArrayList<>();
+        Map<Group, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
         String sqlScript = """
                 INSERT INTO groups (group_name)
                 VALUES('XZ-21'),
@@ -473,14 +542,23 @@ class GroupDaoImplTest {
         try {
             groupDao = new GroupDaoImpl(connectorMock);
             when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            groups = groupDao.findGroupsWithGivenNumberStudents(100);
+            groupsWithTheirNumberOfStudents = groupDao.findGroupsWithGivenNumberStudents(100);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        assertEquals("PO-37", groups.get(0).getGroupName());
-        assertEquals("XZ-21", groups.get(1).getGroupName());
-        assertEquals("DF-86", groups.get(2).getGroupName());
+        Group firstGroup = new Group("XZ-21");
+        Group secondGroup = new Group("DF-86");
+        Group thirdGroup = new Group("PO-37");
+        firstGroup.setId(1);
+        secondGroup.setId(2);
+        thirdGroup.setId(3);
+        assertTrue(groupsWithTheirNumberOfStudents.containsKey(firstGroup));
+        assertTrue(groupsWithTheirNumberOfStudents.containsKey(secondGroup));
+        assertTrue(groupsWithTheirNumberOfStudents.containsKey(thirdGroup));
+        assertTrue(groupsWithTheirNumberOfStudents.containsValue(4));
+        assertTrue(groupsWithTheirNumberOfStudents.containsValue(3));
+        assertTrue(groupsWithTheirNumberOfStudents.containsValue(5));
     }
 
     @AfterEach

@@ -25,7 +25,7 @@ public class CoursesGenerator implements Generatable<Course> {
      * @param reader the reader used to read course names and descriptions.
      */
     public CoursesGenerator(Reader reader) {
-        Objects.requireNonNull(reader);
+        Objects.requireNonNull(reader, "reader must not be null");
         this.reader = reader;
     }
 

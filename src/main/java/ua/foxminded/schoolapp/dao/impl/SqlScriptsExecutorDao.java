@@ -16,6 +16,11 @@ import ua.foxminded.schoolapp.dao.ExecutorDao;
  */
 public class SqlScriptsExecutorDao implements ExecutorDao {
 
+    /**
+     * A constant representing a new line character.
+     */
+    public static final String NEW_LINE = "\n";
+
     private Connectable connector;
 
     /**
@@ -26,7 +31,7 @@ public class SqlScriptsExecutorDao implements ExecutorDao {
      *                  connection
      */
     public SqlScriptsExecutorDao(Connectable connector) {
-        Objects.requireNonNull(connector);
+        Objects.requireNonNull(connector, "connector must not be null");
         this.connector = connector;
     }
 
@@ -43,7 +48,7 @@ public class SqlScriptsExecutorDao implements ExecutorDao {
             statement.execute(sqlScript);
         } catch (SQLException e) {
             throw new DaoException(
-                    "An error occurred during the execution of the transferred SQL script.\n" + e.getMessage());
+                    "An error occurred during the execution of the transferred SQL script." + NEW_LINE + e.getMessage());
         }
     }
 

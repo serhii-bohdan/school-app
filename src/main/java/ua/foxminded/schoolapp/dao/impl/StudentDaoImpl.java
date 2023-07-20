@@ -13,13 +13,18 @@ import ua.foxminded.schoolapp.exception.DaoException;
 import ua.foxminded.schoolapp.model.Student;
 
 /**
- * The StudentDaoImpl class is an implementation of the {@link StudentDao} interface. It
- * provides methods for accessing and manipulating Student entities in the
- * database.
+ * The StudentDaoImpl class is an implementation of the {@link StudentDao}
+ * interface. It provides methods for accessing and manipulating Student
+ * entities in the database.
  *
  * @author Serhii Bohdan
  */
 public class StudentDaoImpl implements StudentDao {
+
+    /**
+     * A constant representing a new line character.
+     */
+    public static final String NEW_LINE = "\n";
 
     private Connectable connector;
 
@@ -30,47 +35,46 @@ public class StudentDaoImpl implements StudentDao {
      *                  connection
      */
     public StudentDaoImpl(Connectable connector) {
-        Objects.requireNonNull(connector);
+        Objects.requireNonNull(connector, "connector must not be null");
         this.connector = connector;
     }
 
     /**
-     * Saves the Student entity to the database and returns the number of affected
-     * rows.
-     *
-     * @param student the Student entity to save
-     * @return the number of affected rows
+     * {@inheritDoc}
      */
     @Override
     public int save(Student student) {
         int rowsInserted;
 
         try (Connection connection = connector.getConnection()) {
-            PreparedStatement statement = connection.prepareStatement("INSERT INTO students (first_name, last_name, group_id)\n"
-                                                                    + "VALUES(?, ?, ?);");
+            PreparedStatement statement = connection.prepareStatement("""
+                    INSERT INTO students (first_name, last_name, group_id)
+                    VALUES(?, ?, ?);
+                    """);
             statement.setString(1, student.getFirstName());
             statement.setString(2, student.getLastName());
             statement.setInt(3, student.getGroupId());
             rowsInserted = statement.executeUpdate();
 
         } catch (SQLException e) {
-            throw new DaoException("An error occurred when saving student data to the database.\n" + e.getMessage());
+            throw new DaoException(
+                    "An error occurred when saving student data to the database." + NEW_LINE + e.getMessage());
         }
         return rowsInserted;
     }
 
     /**
-     * Retrieves all students from the database.
-     *
-     * @return a list of all Student objects
+     * {@inheritDoc}
      */
     @Override
-    public List<Student> findAllStudents() {
+    public List<Student> findAll() {
         List<Student> students = new ArrayList<>();
 
         try (Connection connection = connector.getConnection()) {
-            PreparedStatement statement = connection.prepareStatement("SELECT student_id, first_name, last_name, group_id\n"
-                                                                    + "FROM students;");
+            PreparedStatement statement = connection.prepareStatement("""
+                    SELECT student_id, first_name, last_name, group_id
+                    FROM students;
+                    """);
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
@@ -83,16 +87,14 @@ public class StudentDaoImpl implements StudentDao {
             }
 
         } catch (SQLException e) {
-            throw new DaoException("An error occurred when searching for all students' data.\n" + e.getMessage());
+            throw new DaoException(
+                    "An error occurred when searching for all students' data." + NEW_LINE + e.getMessage());
         }
         return students;
     }
 
     /**
-     * Retrieves a student by their ID from the database.
-     *
-     * @param studentId the ID of the student
-     * @return the Student object with the specified ID, or null if not found
+     * {@inheritDoc}
      */
     @Override
     public Student findStudentById(int studentId) {
@@ -115,16 +117,14 @@ public class StudentDaoImpl implements StudentDao {
             }
 
         } catch (SQLException e) {
-            throw new DaoException("An error occurred when searching for student data by ID.\n" + e.getMessage());
+            throw new DaoException(
+                    "An error occurred when searching for student data by ID." + NEW_LINE + e.getMessage());
         }
         return student;
     }
 
     /**
-     * Retrieves all students related to a specific course from the database.
-     *
-     * @param courseName the name of the course
-     * @return a list of Student objects related to the course
+     * {@inheritDoc}
      */
     @Override
     public List<Student> findStudentsRelatedToCourse(String courseName) {
@@ -152,41 +152,34 @@ public class StudentDaoImpl implements StudentDao {
 
         } catch (SQLException e) {
             throw new DaoException("An error occurred when searching for the data of "
-                    + "students attending the course.\n" + e.getMessage());
+                    + "students attending the course." + NEW_LINE + e.getMessage());
         }
         return students;
     }
 
     /**
-     * Deletes a student by their ID from the database.
-     *
-     * @param studentId the ID of the student to delete
-     * @return the number of rows deleted
+     * {@inheritDoc}
      */
     @Override
     public int deleteStudentById(int studentId) {
         int rowsDeleted;
 
         try (Connection connection = connector.getConnection()) {
-            PreparedStatement statement = connection
-                    .prepareStatement("DELETE FROM students\n"
-                                    + "WHERE student_id = ?;");
+            PreparedStatement statement = connection.prepareStatement("""
+                    DELETE FROM students
+                    WHERE student_id = ?;
+                    """);
             statement.setInt(1, studentId);
             rowsDeleted = statement.executeUpdate();
 
         } catch (SQLException e) {
-            throw new DaoException("Error deleting student by ID.\n" + e.getMessage());
+            throw new DaoException("Error deleting student by ID." + NEW_LINE + e.getMessage());
         }
         return rowsDeleted;
     }
 
     /**
-     * Checks if a student is enrolled in a specific course.
-     *
-     * @param firstName  the first name of the student
-     * @param lastName   the last name of the student
-     * @param courseName the name of the course
-     * @return true if the student is enrolled in the course, false otherwise
+     * {@inheritDoc}
      */
     @Override
     public boolean isStudentOnCourse(String firstName, String lastName, String courseName) {
@@ -211,20 +204,14 @@ public class StudentDaoImpl implements StudentDao {
             }
 
         } catch (SQLException e) {
-            throw new DaoException(
-                    "An error occurred when checking the student's presence on the course.\n" + e.getMessage());
+            throw new DaoException("An error occurred when checking the student's presence on the course." + NEW_LINE
+                    + e.getMessage());
         }
         return exists;
     }
 
     /**
-     * Adds a student to a specific course by their first name, last name, and
-     * course name.
-     *
-     * @param firstName  the first name of the student
-     * @param lastName   the last name of the student
-     * @param courseName the name of the course
-     * @return the number of rows inserted
+     * {@inheritDoc}
      */
     @Override
     public int addStudentToCourse(String firstName, String lastName, String courseName) {
@@ -242,17 +229,13 @@ public class StudentDaoImpl implements StudentDao {
             rowsInserted = statement.executeUpdate();
 
         } catch (SQLException e) {
-            throw new DaoException("Error adding student to course.\n" + e.getMessage());
+            throw new DaoException("Error adding student to course." + NEW_LINE + e.getMessage());
         }
         return rowsInserted;
     }
 
     /**
-     * Adds a student to a specific course by their ID and course ID.
-     *
-     * @param studentId the ID of the student
-     * @param courseId  the ID of the course
-     * @return the number of rows inserted
+     * {@inheritDoc}
      */
     @Override
     public int addStudentToCourse(int studentId, int courseId) {
@@ -268,19 +251,13 @@ public class StudentDaoImpl implements StudentDao {
             rowsInserted = statement.executeUpdate();
 
         } catch (SQLException e) {
-            throw new DaoException("Error adding student to course.\n" + e.getMessage());
+            throw new DaoException("Error adding student to course." + NEW_LINE + e.getMessage());
         }
         return rowsInserted;
     }
 
     /**
-     * Deletes a student from a specific course by their first name, last name, and
-     * course name.
-     *
-     * @param firstName  the first name of the student
-     * @param lastName   the last name of the student
-     * @param courseName the name of the course
-     * @return the number of rows deleted
+     * {@inheritDoc}
      */
     @Override
     public int deleteStudentFromCourse(String firstName, String lastName, String courseName) {
@@ -299,7 +276,8 @@ public class StudentDaoImpl implements StudentDao {
             rowsDeleted = statement.executeUpdate();
 
         } catch (SQLException e) {
-            throw new DaoException("An error occurred when deleting a student from the course.\n" + e.getMessage());
+            throw new DaoException(
+                    "An error occurred when deleting a student from the course." + NEW_LINE + e.getMessage());
         }
         return rowsDeleted;
     }

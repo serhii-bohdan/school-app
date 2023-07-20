@@ -49,7 +49,8 @@ class GroupsGeneratorTest {
     }
 
     @Test
-    void getTwoRandomDigits_shouldTwoRandomDigitsFromZeroToNineInclusive_whenInvokeGetTwoRandomDigits() throws Exception {
+    void getTwoRandomDigits_shouldTwoRandomDigitsFromZeroToNineInclusive_whenInvokeGetTwoRandomDigits()
+            throws Exception {
         String randomDigitsRegex = "^[0-9]{2}$";
         Method method = GroupsGenerator.class.getDeclaredMethod("getTwoRandomDigits");
         method.setAccessible(true);

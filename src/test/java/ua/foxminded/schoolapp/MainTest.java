@@ -3,6 +3,7 @@ package ua.foxminded.schoolapp;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.util.Scanner;
@@ -10,19 +11,22 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ua.foxminded.schoolapp.cli.Controller;
 import ua.foxminded.schoolapp.dao.ExecutorDao;
-import ua.foxminded.schoolapp.datasetup.Initializable;
 import ua.foxminded.schoolapp.datasetup.Reader;
 import ua.foxminded.schoolapp.exception.DaoException;
 import ua.foxminded.schoolapp.exception.FileReadingException;
+import ua.foxminded.schoolapp.service.CourseService;
+import ua.foxminded.schoolapp.service.GroupService;
+import ua.foxminded.schoolapp.service.StudentService;
 
 class MainTest {
 
     Scanner scannerMock;
     Reader readerMock;
     ExecutorDao executorDaoMock;
-    Initializable initializerMock;
+    GroupService groupServiceMock;
+    StudentService studentServiceMock;
+    CourseService courseServiceMock;
     Controller controllerMock;
-
     String tablesCreationSqlScript = """
             DROP TABLE IF EXISTS groups CASCADE;
             DROP TABLE IF EXISTS students CASCADE;
@@ -58,7 +62,9 @@ class MainTest {
         scannerMock = mock(Scanner.class);
         readerMock = mock(Reader.class);
         executorDaoMock = mock(ExecutorDao.class);
-        initializerMock = mock(Initializable.class);
+        groupServiceMock = mock(GroupService.class);
+        studentServiceMock = mock(StudentService.class);
+        courseServiceMock = mock(CourseService.class);
         controllerMock = mock(Controller.class);
     }
 
@@ -66,16 +72,21 @@ class MainTest {
     void main_shouldInvokedAllMethodsInMainMethod_whenTheseMethodsWorkCorrectly() {
         Main.setScanner(scannerMock);
         Main.setReader(readerMock);
-        Main.setInitializer(initializerMock);
         Main.setExecutorDao(executorDaoMock);
+        Main.setGroupService(groupServiceMock);
+        Main.setStudentService(studentServiceMock);
+        Main.setCourseService(courseServiceMock);
         Main.setController(controllerMock);
         when(readerMock.readAllFileToString("sql/tables_creation.sql")).thenReturn(tablesCreationSqlScript);
 
         Main.main(new String[] {});
 
-        verify(readerMock).readAllFileToString("sql/tables_creation.sql");
+        verify(readerMock, times(1)).readAllFileToString("sql/tables_creation.sql");
         verify(executorDaoMock).executeSqlScript(tablesCreationSqlScript);
-        verify(initializerMock).initialize();
+        verify(groupServiceMock, times(1)).initGroups();
+        verify(studentServiceMock, times(1)).initStudents();
+        verify(courseServiceMock, times(1)).initCourses();
+        verify(studentServiceMock, times(1)).initStudentsCoursesTable();
         verify(controllerMock).runSchoolApp();
         verify(scannerMock).close();
     }

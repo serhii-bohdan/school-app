@@ -1,10 +1,10 @@
-Mathematics is a course that delves into the study of numbers, shapes, and patterns, with a focus on concepts, theories, and problem-solving techniques.
-Biology is a course that explores the study of living organisms and their interactions with their environment, covering topics such as cellular structure, genetics, evolution, and ecology.
-Physics is a course that delves into the fundamental principles that govern the behavior of matter and energy in the universe, covering topics such as motion, forces, energy, waves, and electromagnetism.
-Art is a course that delves into the world of creativity, aesthetics, and expression through various forms of visual, auditory, and tactile media.
-History is a course that explores the past to understand the present and shape the future, examining significant events, cultures, and societies that have shaped human civilization throughout time.
-Explore the world of Chemistry - the study of matter, atoms, and molecules. Discover the principles and applications of chemical reactions, compounds, and more in this fascinating course!
-Improve your English skills with our comprehensive English course. Enhance your speaking, listening, reading, and writing abilities for personal or professional success.
-Explore the world of literature through our engaging course. Discover classic and contemporary works of fiction, poetry, and drama, and gain insights into their cultural and historical significance.
-Dive into the world of music with our dynamic course. Learn about various genres, styles, and techniques, and develop your musical skills through practical exercises and creative projects.
-Discover the world of Computer Science through programming, algorithms, data structures, and cutting-edge technologies. Develop problem-solving and critical-thinking skills for the digital age.
+Study numbers, shapes, and patterns, focusing on concepts, theories, and problem-solving.
+Explore living organisms, their environment, covering cellular structure, genetics, evolution, ecology.
+Study principles governing matter, energy behavior in the universe, covering motion, forces, energy, waves, electromagnetism.
+Express creativity, aesthetics through visual, auditory, tactile media.
+Explore past to understand present, shape future, examine significant events, cultures, societies shaping human civilization.
+Study matter, atoms, molecules. Discover principles, applications of chemical reactions, compounds, and more.
+Enhance speaking, listening, reading, writing abilities for personal or professional success.
+Discover classic, contemporary fiction, poetry, drama, gain insights into cultural, historical significance.
+Learn genres, styles, techniques, develop skills through practical exercises, creative projects.
+Informatics studies computer systems and information technologies, applying technology to solve problems in various industries.

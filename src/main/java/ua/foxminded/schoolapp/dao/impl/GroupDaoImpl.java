@@ -4,8 +4,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import ua.foxminded.schoolapp.dao.Connectable;
 import ua.foxminded.schoolapp.dao.GroupDao;
@@ -13,13 +16,18 @@ import ua.foxminded.schoolapp.exception.DaoException;
 import ua.foxminded.schoolapp.model.Group;
 
 /**
- * The GroupDaoImpl class is an implementation of the {@link GroupDao} interface. It
- * provides methods for accessing and manipulating Group entities in the
- * database.
+ * The GroupDaoImpl class is an implementation of the {@link GroupDao}
+ * interface. It provides methods for accessing and manipulating Group entities
+ * in the database.
  *
  * @author Serhii Bohdan
  */
 public class GroupDaoImpl implements GroupDao {
+
+    /**
+     * A constant representing a new line character.
+     */
+    public static final String NEW_LINE = "\n";
 
     private Connectable connector;
 
@@ -30,47 +38,69 @@ public class GroupDaoImpl implements GroupDao {
      *                  connection
      */
     public GroupDaoImpl(Connectable connector) {
-        Objects.requireNonNull(connector);
+        Objects.requireNonNull(connector, "connector must not be null");
         this.connector = connector;
     }
 
     /**
-     * Saves the Group entity to the database and returns the number of affected
-     * rows.
-     *
-     * @param group the Group entity to save
-     * @return the number of affected rows
+     * {@inheritDoc}
      */
     @Override
     public int save(Group group) {
         int rowsInserted;
 
         try (Connection connection = connector.getConnection()) {
-            PreparedStatement statement = connection
-                    .prepareStatement("INSERT INTO groups (group_name)\n"
-                                    + "VALUES(?)");
+            PreparedStatement statement = connection.prepareStatement("""
+                    INSERT INTO groups (group_name)
+                    VALUES(?);
+                    """);
             statement.setString(1, group.getGroupName());
             rowsInserted = statement.executeUpdate();
 
         } catch (SQLException e) {
-            throw new DaoException("Error saving group data to database.\n" + e.getMessage());
+            throw new DaoException("Error saving group data to database." + NEW_LINE + e.getMessage());
         }
         return rowsInserted;
     }
 
     /**
-     * Finds groups with the specified number of students.
-     *
-     * @param amountOfStudents the number of students
-     * @return a list of Group objects that match the specified criteria
+     * {@inheritDoc}
      */
     @Override
-    public List<Group> findGroupsWithGivenNumberStudents(int amountOfStudents) {
+    public List<Group> findAll() {
         List<Group> groups = new ArrayList<>();
 
         try (Connection connection = connector.getConnection()) {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("""
+                    SELECT group_id, group_name
+                    FROM groups;
+                    """);
+
+            while (resultSet.next()) {
+                Group group = new Group();
+                group.setId(resultSet.getInt("group_id"));
+                group.setGroupName(resultSet.getString("group_name"));
+                groups.add(group);
+            }
+
+        } catch (SQLException e) {
+            throw new DaoException(
+                    "An error occurred while searching for data about all groups." + NEW_LINE + e.getMessage());
+        }
+        return groups;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map<Group, Integer> findGroupsWithGivenNumberStudents(int amountOfStudents) {
+        Map<Group, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
+
+        try (Connection connection = connector.getConnection()) {
             PreparedStatement statement = connection.prepareStatement("""
-                    SELECT groups.group_id, group_name, COUNT(student_id)
+                    SELECT groups.group_id, group_name, COUNT(student_id) AS students_count
                     FROM students
                     LEFT JOIN groups USING(group_id)
                     GROUP BY groups.group_id
@@ -84,14 +114,14 @@ public class GroupDaoImpl implements GroupDao {
                 Group group = new Group();
                 group.setId(resultSet.getInt("group_id"));
                 group.setGroupName(resultSet.getString("group_name"));
-                groups.add(group);
+                groupsWithTheirNumberOfStudents.put(group, resultSet.getInt("students_count"));
             }
 
         } catch (SQLException e) {
             throw new DaoException("An error occurred when searching for groups "
-                    + "with the specified number of students.\n" + e.getMessage());
+                    + "with the specified number of students." + NEW_LINE + e.getMessage());
         }
-        return groups;
+        return groupsWithTheirNumberOfStudents;
     }
 
 }

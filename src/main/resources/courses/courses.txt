@@ -7,4 +7,4 @@ Chemistry
 English
 Literature
 Music
-Computer Science
+Informatics

@@ -38,11 +38,6 @@ public class GroupsGenerator implements Generatable<Group> {
                      .toList();
     }
 
-    /**
-     * Creates random initials for the group name.
-     *
-     * @return a string containing random initials.
-     */
     private String getRandomInitials() {
         StringBuilder initials = new StringBuilder();
         initials.append((char) (random.nextInt(26) + 'A'));
@@ -50,11 +45,6 @@ public class GroupsGenerator implements Generatable<Group> {
         return initials.toString();
     }
 
-    /**
-     * Creates two random digits for the group name.
-     *
-     * @return a string containing two random digits.
-     */
     private String getTwoRandomDigits() {
         StringBuilder twoRandomDigits = new StringBuilder();
         twoRandomDigits.append(random.nextInt(10));
