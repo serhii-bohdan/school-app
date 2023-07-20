@@ -116,7 +116,8 @@ class StudentsGeneratorTest {
         List<String> testFirstNames = helper.getTestListOf("first_names", 10);
         studentsGenerator = new StudentsGenerator(readerMock);
         when(readerMock.readFileAndPopulateListWithLines("students/first_names.txt")).thenReturn(testFirstNames);
-        when(readerMock.readFileAndPopulateListWithLines("students/last_names.txt")).thenThrow(FileReadingException.class);
+        when(readerMock.readFileAndPopulateListWithLines("students/last_names.txt"))
+                .thenThrow(FileReadingException.class);
 
         assertThrows(FileReadingException.class, () -> {
             studentsGenerator.toGenerate();
@@ -124,8 +125,7 @@ class StudentsGeneratorTest {
     }
 
     @Test
-    void getStudentsFullName_shouldGeneratedStudentsFullName_whenReaderReturnTwentyStudentsNames()
-            throws Exception {
+    void getStudentsFullName_shouldGeneratedStudentsFullName_whenReaderReturnTwentyStudentsNames() throws Exception {
         Method method = StudentsGenerator.class.getDeclaredMethod("getStudentsFullName");
         method.setAccessible(true);
         List<String> testFirstNames = helper.getTestListOf("first_names", 20);
@@ -215,8 +215,7 @@ class StudentsGeneratorTest {
     }
 
     @Test
-    void getRandomGroupIds_shouldListOfRandomNumbersFromOneToTen_whenInvokeGenerateRandomGroupIds()
-            throws Exception {
+    void getRandomGroupIds_shouldListOfRandomNumbersFromOneToTen_whenInvokeGenerateRandomGroupIds() throws Exception {
         Method method = StudentsGenerator.class.getDeclaredMethod("getRandomGroupIds");
         method.setAccessible(true);
         List<String> testFirstNames = helper.getTestListOf("first_names", 20);

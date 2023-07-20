@@ -89,7 +89,7 @@ class StudentDaoImplTest {
     }
 
     @Test
-    void save_shouldDAOException_whenStudentFieldsNotInitialized() {
+    void save_shouldDaoException_whenStudentFieldsNotInitialized() {
         studentDao = new StudentDaoImpl(connectorMock);
         Student student = new Student();
 
@@ -103,7 +103,7 @@ class StudentDaoImplTest {
     }
 
     @Test
-    void save_shouldDAOException_whenNoGroupWithSpecifiedGroupIdInGroupsTable() {
+    void save_shouldDaoException_whenNoGroupWithSpecifiedGroupIdInGroupsTable() {
         studentDao = new StudentDaoImpl(connectorMock);
         Student student = new Student("FirstName", "LastName", 2);
         String fillingGroupsTableSqlScript = """
@@ -273,7 +273,7 @@ class StudentDaoImplTest {
     }
 
     @Test
-    void findAllStudents_shouldDAOException_whenThrownSQLException() {
+    void findAll_shouldDaoException_whenThrownSQLException() {
         studentDao = new StudentDaoImpl(connectorMock);
 
         try {
@@ -282,11 +282,11 @@ class StudentDaoImplTest {
             e.printStackTrace();
         }
 
-        assertThrows(DaoException.class, () -> studentDao.findAllStudents());
+        assertThrows(DaoException.class, () -> studentDao.findAll());
     }
 
     @Test
-    void findAllStudents_shouldStudentsList_whenStudentsTableContainsStudnets() {
+    void findAll_shouldStudentsList_whenStudentsTableContainsStudnets() {
         studentDao = new StudentDaoImpl(connectorMock);
         List<Student> exceptAllAvailableStudnts = new ArrayList<>();
         List<Student> actualAllAvailableStudnts = new ArrayList<>();
@@ -313,7 +313,7 @@ class StudentDaoImplTest {
             statement.execute(fillingGroupsAndStudentsTablesSqlScript);
 
             when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            actualAllAvailableStudnts = studentDao.findAllStudents();
+            actualAllAvailableStudnts = studentDao.findAll();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -322,14 +322,14 @@ class StudentDaoImplTest {
     }
 
     @Test
-    void findAllStudents_shouldEmptyStudentsList_whenStudentsTableEmpty() {
+    void findAll_shouldEmptyStudentsList_whenStudentsTableEmpty() {
         studentDao = new StudentDaoImpl(connectorMock);
         List<Student> exceptAllAvailableStudnts = new ArrayList<>();
         List<Student> actualAllAvailableStudnts = null;
 
         try {
             when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            actualAllAvailableStudnts = studentDao.findAllStudents();
+            actualAllAvailableStudnts = studentDao.findAll();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -338,7 +338,7 @@ class StudentDaoImplTest {
     }
 
     @Test
-    void findStudentById_shouldDAOException_whenThrownSQLException() {
+    void findStudentById_shouldDaoException_whenThrownSQLException() {
         studentDao = new StudentDaoImpl(connectorMock);
 
         try (Connection connection = getTestConnection()) {
@@ -445,7 +445,7 @@ class StudentDaoImplTest {
     }
 
     @Test
-    void findStudentsRelatedToCourse_shouldDAOException_whenThrownSQLException() {
+    void findStudentsRelatedToCourse_shouldDaoException_whenThrownSQLException() {
         studentDao = new StudentDaoImpl(connectorMock);
 
         try (Connection connection = getTestConnection()) {
@@ -603,7 +603,7 @@ class StudentDaoImplTest {
     }
 
     @Test
-    void deleteStudentById_shouldDAOException_whenThrownSQLException() {
+    void deleteStudentById_shouldDaoException_whenThrownSQLException() {
         studentDao = new StudentDaoImpl(connectorMock);
 
         try (Connection connection = getTestConnection()) {
@@ -744,7 +744,7 @@ class StudentDaoImplTest {
     }
 
     @Test
-    void isStudentOnCourse_shouldDAOException_whenThrownSQLException() {
+    void isStudentOnCourse_shouldDaoException_whenThrownSQLException() {
         studentDao = new StudentDaoImpl(connectorMock);
 
         try (Connection connection = getTestConnection()) {
@@ -940,7 +940,7 @@ class StudentDaoImplTest {
     }
 
     @Test
-    void addStudentToCourse_shouldDAOException_whenThrownSQLException() {
+    void addStudentToCourse_shouldDaoException_whenThrownSQLException() {
         studentDao = new StudentDaoImpl(connectorMock);
 
         try (Connection connection = getTestConnection()) {
@@ -1008,7 +1008,58 @@ class StudentDaoImplTest {
     }
 
     @Test
-    void addStudentToCourse_shouldDAOException_whenNotExistsStudentWithGivenLastName() {
+    void addStudentToCourse_shouldAgainAddStudentToCourse_whenStudentAlreadyRegisteredOnCourse() {
+        studentDao = new StudentDaoImpl(connectorMock);
+        int numberOfRecordsExtractedFromTable = 0;
+        String fillingTablesSqlScript = """
+                INSERT INTO groups (group_name)
+                VALUES ('MQ-90');
+
+                INSERT INTO students (first_name, last_name, group_id)
+                VALUES ('FirstName', 'LastName', 1);
+
+                INSERT INTO courses (course_name, course_description)
+                VALUES ('CourseName', 'Description');
+
+                INSERT INTO students_courses (student_id, course_id)
+                VALUES (1, 1);
+                """;
+
+        String selectingTestDataSqlScript = """
+                SELECT first_name, last_name, course_name FROM students
+                JOIN students_courses ON students.student_id = students_courses.student_id
+                JOIN courses ON courses.course_id = students_courses.course_id
+                WHERE students.first_name = 'FirstName'
+                AND students.last_name = 'LastName'
+                AND courses.course_name = 'CourseName';
+                """;
+
+        try (Connection connection = getTestConnection()) {
+            Statement statement = connection.createStatement();
+            statement.execute(fillingTablesSqlScript);
+
+            when(connectorMock.getConnection()).thenReturn(getTestConnection());
+            studentDao.addStudentToCourse("FirstName", "LastName", "CourseName");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try (Connection connection = getTestConnection()) {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(selectingTestDataSqlScript);
+
+            while (resultSet.next()) {
+                numberOfRecordsExtractedFromTable++;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        assertEquals(2, numberOfRecordsExtractedFromTable);
+    }
+
+    @Test
+    void addStudentToCourse_shouldDaoException_whenNotExistsStudentWithGivenLastName() {
         studentDao = new StudentDaoImpl(connectorMock);
         String fillingTablesSqlScript = """
                 INSERT INTO groups (group_name)
@@ -1034,7 +1085,7 @@ class StudentDaoImplTest {
     }
 
     @Test
-    void addStudentToCourse_shouldDAOException_whenNotExistsCourseWithGivenName() {
+    void addStudentToCourse_shouldDaoException_whenNotExistsCourseWithGivenName() {
         studentDao = new StudentDaoImpl(connectorMock);
         String fillingTablesSqlScript = """
                 INSERT INTO groups (group_name)
@@ -1060,7 +1111,7 @@ class StudentDaoImplTest {
     }
 
     @Test
-    void addStudentToCourse_shouldDAOException_whenStudentLastNameIsIsNull() {
+    void addStudentToCourse_shouldDaoException_whenStudentLastNameIsNull() {
         studentDao = new StudentDaoImpl(connectorMock);
         String fillingTablesSqlScript = """
                 INSERT INTO groups (group_name)
@@ -1086,7 +1137,7 @@ class StudentDaoImplTest {
     }
 
     @Test
-    void addStudentToCourse_shouldDAOException_whenCourseNameIsNull() {
+    void addStudentToCourse_shouldDaoException_whenCourseNameIsNull() {
         studentDao = new StudentDaoImpl(connectorMock);
         String fillingTablesSqlScript = """
                 INSERT INTO groups (group_name)
@@ -1112,7 +1163,178 @@ class StudentDaoImplTest {
     }
 
     @Test
-    void deleteStudentFromCourse_shouldDAOException_whenThrownSQLException() {
+    void addStudentToCourseCongested_shouldDaoException_whenThrownSQLException() {
+        studentDao = new StudentDaoImpl(connectorMock);
+
+        try (Connection connection = getTestConnection()) {
+            when(connectorMock.getConnection()).thenThrow(SQLException.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        assertThrows(DaoException.class, () -> studentDao.addStudentToCourse(1, 1));
+    }
+
+    @Test
+    void addStudentToCourseCongested_shouldAddedStudentToCourse_whenExistsStudentWithGivenStudentIdAndExistCourseWithGivenCourseId() {
+        studentDao = new StudentDaoImpl(connectorMock);
+        String actudalStudentFirstNameAddedToCourse = null;
+        String actudalStudentLastNameAddedToCourse = null;
+        String actudalCourseNameToWhichStudentAdded = null;
+        int studentsNumberAddedToCourse = 0;
+        String fillingTablesSqlScript = """
+                INSERT INTO groups (group_name)
+                VALUES ('MQ-90');
+
+                INSERT INTO students (first_name, last_name, group_id)
+                VALUES ('FirstName', 'LastName', 1);
+
+                INSERT INTO courses (course_name, course_description)
+                VALUES ('CourseName', 'Description');
+                """;
+        String selectingTestDataSqlScript = """
+                SELECT first_name, last_name, course_name FROM students
+                JOIN students_courses ON students.student_id = students_courses.student_id
+                JOIN courses ON courses.course_id = students_courses.course_id
+                WHERE students.student_id = 1
+                AND courses.course_id = 1;
+                """;
+
+        try (Connection connection = getTestConnection()) {
+            Statement statement = connection.createStatement();
+            statement.execute(fillingTablesSqlScript);
+
+            when(connectorMock.getConnection()).thenReturn(getTestConnection());
+            studentsNumberAddedToCourse = studentDao.addStudentToCourse(1, 1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try (Connection connection = getTestConnection()) {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(selectingTestDataSqlScript);
+
+            while (resultSet.next()) {
+                actudalStudentFirstNameAddedToCourse = resultSet.getString("first_name");
+                actudalStudentLastNameAddedToCourse = resultSet.getString("last_name");
+                actudalCourseNameToWhichStudentAdded = resultSet.getString("course_name");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        assertEquals("FirstName", actudalStudentFirstNameAddedToCourse);
+        assertEquals("LastName", actudalStudentLastNameAddedToCourse);
+        assertEquals("CourseName", actudalCourseNameToWhichStudentAdded);
+        assertEquals(1, studentsNumberAddedToCourse);
+    }
+
+    @Test
+    void addStudentToCourseCongested_shouldAgainAddStudentToCourse_whenStudentAlreadyRegisteredOnCourse() {
+        studentDao = new StudentDaoImpl(connectorMock);
+        int numberOfRecordsExtractedFromTable = 0;
+        String fillingTablesSqlScript = """
+                INSERT INTO groups (group_name)
+                VALUES ('MQ-90');
+
+                INSERT INTO students (first_name, last_name, group_id)
+                VALUES ('FirstName', 'LastName', 1);
+
+                INSERT INTO courses (course_name, course_description)
+                VALUES ('CourseName', 'Description');
+
+                INSERT INTO students_courses (student_id, course_id)
+                VALUES (1, 1);
+                """;
+
+        String selectingTestDataSqlScript = """
+                SELECT first_name, last_name, course_name FROM students
+                JOIN students_courses ON students.student_id = students_courses.student_id
+                JOIN courses ON courses.course_id = students_courses.course_id
+                WHERE students.student_id = 1
+                AND courses.course_id = 1;
+                """;
+
+        try (Connection connection = getTestConnection()) {
+            Statement statement = connection.createStatement();
+            statement.execute(fillingTablesSqlScript);
+
+            when(connectorMock.getConnection()).thenReturn(getTestConnection());
+            studentDao.addStudentToCourse(1, 1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try (Connection connection = getTestConnection()) {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(selectingTestDataSqlScript);
+
+            while (resultSet.next()) {
+                numberOfRecordsExtractedFromTable++;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        assertEquals(2, numberOfRecordsExtractedFromTable);
+    }
+
+    @Test
+    void addStudentToCourseCongested_shouldDaoException_whenNotExistsStudentWithGivenStudentId() {
+        studentDao = new StudentDaoImpl(connectorMock);
+        int notExistentStudentId = 2;
+        String fillingTablesSqlScript = """
+                INSERT INTO groups (group_name)
+                VALUES ('MQ-90');
+
+                INSERT INTO students (first_name, last_name, group_id)
+                VALUES ('FirstName', 'LastName', 1);
+
+                INSERT INTO courses (course_name, course_description)
+                VALUES ('CourseName', 'Description');
+                """;
+
+        try (Connection connection = getTestConnection()) {
+            Statement statement = connection.createStatement();
+            statement.execute(fillingTablesSqlScript);
+
+            when(connectorMock.getConnection()).thenReturn(getTestConnection());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        assertThrows(DaoException.class, () -> studentDao.addStudentToCourse(notExistentStudentId, 1));
+    }
+
+    @Test
+    void addStudentToCourseCongested_shouldDaoException_whenNotExistsCourseWithGivenCoursetId() {
+        studentDao = new StudentDaoImpl(connectorMock);
+        int notExistentCourseId = 2;
+        String fillingTablesSqlScript = """
+                INSERT INTO groups (group_name)
+                VALUES ('MQ-90');
+
+                INSERT INTO students (first_name, last_name, group_id)
+                VALUES ('FirstName', 'LastName', 1);
+
+                INSERT INTO courses (course_name, course_description)
+                VALUES ('CourseName', 'Description');
+                """;
+
+        try (Connection connection = getTestConnection()) {
+            Statement statement = connection.createStatement();
+            statement.execute(fillingTablesSqlScript);
+
+            when(connectorMock.getConnection()).thenReturn(getTestConnection());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        assertThrows(DaoException.class, () -> studentDao.addStudentToCourse(1, notExistentCourseId));
+    }
+
+    @Test
+    void deleteStudentFromCourse_shouldDaoException_whenThrownSQLException() {
         studentDao = new StudentDaoImpl(connectorMock);
 
         try (Connection connection = getTestConnection()) {

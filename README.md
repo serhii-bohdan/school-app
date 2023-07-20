@@ -70,8 +70,7 @@ From the very beginning, the main motivation for writing this project was:
 2. I also wanted to create something useful that could automate some process and make life easier for other people.
 3. On the other hand, the task was to complete a task that belongs to the Java Spring Development course.
 
-If you are reading this file, it means that I managed to write a program that works and meets the basic requirements :). But I see some shortcomings that I plan to correct in the future: 
-- improve the interface for more convenient use; 
+If you are reading this file, it means that I managed to write a program that works and meets the basic requirements :). But I see some shortcomings that I plan to correct in the future:
 - make changes to the structure of the program itself; 
 - finally I will perform the following tasks from the previously mentioned course, and this means that technologies such as Spring will gradually be added to the program `Boot JDBC Api`, `Hibernate`, `Spring Data JPA`.
 

@@ -1,8 +1,14 @@
 package ua.foxminded.schoolapp.cli;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Scanner;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.ArrayList;
+import java.util.Comparator;
+import ua.foxminded.schoolapp.model.Course;
 import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
 
@@ -34,7 +40,7 @@ public class SchoolView implements View {
      * @throws NullPointerException if the scanner is null
      */
     public SchoolView(Scanner scanner) {
-        Objects.requireNonNull(scanner);
+        Objects.requireNonNull(scanner, "scanner must not be null");
         this.scanner = scanner;
     }
 
@@ -91,7 +97,8 @@ public class SchoolView implements View {
     public String getConfirmationFromUserAboutDeletingStudent(Student student) {
         String confirmationQuestion = String.format("Are you sure you want to delete a student %s %s?",
                 student.getFirstName(), student.getLastName());
-        System.out.print(confirmationQuestion + NEW_LINE + "Please confirm your actions (enter Y or N):" + NON_BREAKING_SPACE);
+        System.out.print(
+                confirmationQuestion + NEW_LINE + "Please confirm your actions (enter Y or N):" + NON_BREAKING_SPACE);
         return scanner.next();
     }
 
@@ -99,12 +106,22 @@ public class SchoolView implements View {
      * {@inheritDoc}
      */
     @Override
-    public void displayGroups(List<Group> groups) {
-        StringBuilder formattedGroups = new StringBuilder("Groups:");
+    public void displayGroupsWithTheirNumberOfStudents(Map<Group, Integer> groupsWithTheirNumberOfStudents) {
+        StringBuilder formattedGroups = new StringBuilder("Groups with their number of students:");
+        String lineBetweenRows = "";
 
-        for (Group group : groups) {
-            formattedGroups.append(String.format(NEW_LINE + "%-6s %s", "", group.getGroupName()));
+        for (Map.Entry<Group, Integer> entry : groupsWithTheirNumberOfStudents.entrySet()) {
+            Group group = entry.getKey();
+            String tableRow = String.format("| %s | %d |", group.getGroupName(), entry.getValue());
+            String lineBetweenRowsWithoutPluses = makeCharacterSequence(tableRow.length(), '-');
+            lineBetweenRows = formatLineWithPluses(lineBetweenRowsWithoutPluses, 3 + group.getGroupName().length());
+            tableRow = String.format(NEW_LINE + "%-23s%s", "", tableRow);
+            lineBetweenRows = String.format(NEW_LINE + "%-23s%s", "", lineBetweenRows);
+            formattedGroups.append(tableRow);
+            formattedGroups.append(lineBetweenRows);
         }
+
+        formattedGroups.insert(37, lineBetweenRows);
         System.out.print(formattedGroups + NEW_LINE);
     }
 
@@ -112,20 +129,62 @@ public class SchoolView implements View {
      * {@inheritDoc}
      */
     @Override
-    public void displayStudents(List<Student> students) {
-        StringBuilder sformatedStuentes = new StringBuilder("Students:");
+    public void displayStudentsWithTheirCourses(Map<Student, List<Course>> studentsWithTheirCourses) {
+        StringBuilder formattedStudents = new StringBuilder("Students with their courses:");
+        List<String> studentsFullNames = new ArrayList<>();
+        List<String> coursesNamesEnumerationForEachStudent = new ArrayList<>();
+        String lineBetweenRows = "";
 
-        for (Student student : students) {
-            sformatedStuentes.append(String.format(NEW_LINE + "%-8s %s %s", "", student.getFirstName(), student.getLastName()));
+        for (Map.Entry<Student, List<Course>> entry : studentsWithTheirCourses.entrySet()) {
+            studentsFullNames.add(getStudentFullName(entry.getKey()));
+            coursesNamesEnumerationForEachStudent.add(getCoursesEnumeration(entry.getValue()));
         }
-        System.out.print(sformatedStuentes + NEW_LINE);
+
+        String maxStudentFullName = getStringWithMaxLength(studentsFullNames);
+        String maxCoursesNamesEnumeration = getStringWithMaxLength(coursesNamesEnumerationForEachStudent);
+
+        for (int i = 0; i < studentsFullNames.size(); i++) {
+            String studentFullName = studentsFullNames.get(i);
+            String coursesNamesEnumeration = coursesNamesEnumerationForEachStudent.get(i);
+            String spacesAfterStudentFullName = makeCharacterSequence(maxStudentFullName.length() - studentFullName.length(), ' ');
+            String spacesAfterCoursesNamesEnumeration = makeCharacterSequence(maxCoursesNamesEnumeration.length() - coursesNamesEnumeration.length(), ' ');
+            String tableRow = String.format(NEW_LINE + "| %s%s | %s%s |", studentFullName, spacesAfterStudentFullName,
+                    coursesNamesEnumeration, spacesAfterCoursesNamesEnumeration);
+            String lineBetweenRowsWithoutPluses = makeCharacterSequence(tableRow.length() - 1, '-');
+            lineBetweenRows = NEW_LINE + formatLineWithPluses(lineBetweenRowsWithoutPluses, 3 + maxStudentFullName.length());
+            formattedStudents.append(tableRow);
+            formattedStudents.append(lineBetweenRows);
+        }
+
+        formattedStudents.insert(28, lineBetweenRows);
+        System.out.print(formattedStudents + NEW_LINE);
     }
 
     /**
-     * Gets an integer input from the scanner.
-     *
-     * @return the integer input from the scanner
+     * {@inheritDoc}
      */
+    @Override
+    public void displayCourses(List<Course> courses) {
+        StringBuilder formattedCourses = new StringBuilder("Courses with descriptions:");
+        String lineBetweenRows = "";
+        String maxCourseName = getMaxCousrse("Name", courses);
+        String maxCourseDescription = getMaxCousrse("Description", courses);
+
+        for(Course course : courses) {
+            String spacesAfterCourseName = makeCharacterSequence(maxCourseName.length() - course.getCourseName().length(), ' ');
+            String spacesAfterCourseDescription = makeCharacterSequence(maxCourseDescription.length() - course.getDescription().length(), ' ');
+            String tableRow = String.format(NEW_LINE + "| %s%s | %s%s |", course.getCourseName(), spacesAfterCourseName,
+                    course.getDescription(), spacesAfterCourseDescription);
+            String lineBetweenRowsWithoutPluses = makeCharacterSequence(tableRow.length() - 1, '-');
+            lineBetweenRows = NEW_LINE + formatLineWithPluses(lineBetweenRowsWithoutPluses, 3 + maxCourseName.length());
+            formattedCourses.append(tableRow);
+            formattedCourses.append(lineBetweenRows);
+        }
+
+        formattedCourses.insert(26, lineBetweenRows);
+        System.out.print(formattedCourses);
+    }
+
     private int getIntInput() {
         while (true) {
 
@@ -136,6 +195,50 @@ public class SchoolView implements View {
                 scanner.next();
             }
         }
+    }
+
+    private String makeCharacterSequence(Integer count, Character character) {
+        return String.valueOf(character).repeat(Math.max(0, count));
+    }
+
+    private String getStudentFullName(Student student) {
+        return student.getFirstName() + " " + student.getLastName();
+    }
+
+    private String getCoursesEnumeration(List<Course> coursesForStudent) {
+        return coursesForStudent.stream()
+                                .map(Course::getCourseName)
+                                .collect(Collectors.joining(", "));
+    }
+
+    private String getStringWithMaxLength(List<String> stringsList) {
+        return stringsList.stream()
+                          .max(Comparator.comparingInt(String::length))
+                          .orElse("");
+    }
+
+    private String getMaxCousrse(String identifier, List<Course> courses) {
+        Stream<String> coursesNamesOrDescriptions = null;
+
+        if("Name".equals(identifier)) {
+            coursesNamesOrDescriptions = courses.stream()
+                                                .map(Course::getCourseName);
+        } else if("Description".equals(identifier)) {
+            coursesNamesOrDescriptions = courses.stream()
+                                                .map(Course::getDescription);
+        } else {
+            throw new RuntimeException("An instance of the Course type does not contain this field: " + identifier);
+        }
+
+        return getStringWithMaxLength(coursesNamesOrDescriptions.toList());
+    }
+
+    private String formatLineWithPluses(String line, Integer plusIndexInsideLine) {
+        StringBuilder lineWithPluses = new StringBuilder(line);
+        lineWithPluses.setCharAt(0, '+');
+        lineWithPluses.setCharAt(plusIndexInsideLine, '+');
+        lineWithPluses.setCharAt(line.length() - 1, '+');
+        return lineWithPluses.toString();
     }
 
 }

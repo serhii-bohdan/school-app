@@ -82,7 +82,7 @@ class SqlScriptsExecutorDaoTest {
     }
 
     @Test
-    void sqlscriptsexecutordao_shouldDAOException_whenSQLScriptNotCorrect() {
+    void sqlscriptsexecutordao_shouldDaoException_whenSQLScriptNotCorrect() {
         String sqlScript = """
                 CRE TABLE IF NOT EXISTS groups (
                   group_id SERIAL PRIMARY KEY,

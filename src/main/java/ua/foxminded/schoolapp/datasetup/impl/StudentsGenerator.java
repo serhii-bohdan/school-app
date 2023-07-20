@@ -32,7 +32,7 @@ public class StudentsGenerator implements Generatable<Student> {
      * @param reader the Reader object used to read data.
      */
     public StudentsGenerator(Reader reader) {
-        Objects.requireNonNull(reader);
+        Objects.requireNonNull(reader, "reader must not be null");
         this.reader = reader;
     }
 
@@ -54,11 +54,6 @@ public class StudentsGenerator implements Generatable<Student> {
                         .toList();
     }
 
-    /**
-     * Generates a list of arrays containing randomly generated student names.
-     *
-     * @return a list of arrays containing randomly generated student names.
-     */
     private List<String[]> getStudentsFullName() {
         List<String> firstNames = reader.readFileAndPopulateListWithLines("students/first_names.txt");
         List<String> lastNames = reader.readFileAndPopulateListWithLines("students/last_names.txt");
@@ -75,11 +70,6 @@ public class StudentsGenerator implements Generatable<Student> {
         }
     }
 
-    /**
-     * Generates a list of random group IDs.
-     *
-     * @return a list of random group IDs.
-     */
     private List<Integer> getRandomGroupIds() {
         List<Integer> randomGroupIds = new ArrayList<>();
         int maxCountStudentsInGroup = 30;
