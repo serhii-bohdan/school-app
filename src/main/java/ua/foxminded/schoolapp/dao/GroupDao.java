@@ -1,6 +1,6 @@
 package ua.foxminded.schoolapp.dao;
 
-import java.util.Map;
+import java.util.List;
 import ua.foxminded.schoolapp.model.Group;
 
 /**
@@ -17,6 +17,14 @@ public interface GroupDao extends BaseDao<Group> {
      * @param amountOfStudents the number of students
      * @return a list of Group objects that match the specified criteria
      */
-    Map<Group, Integer> findGroupsWithGivenNumberStudents(int amountOfStudents);
+    List<Group> findGroupsWithGivenNumberStudents(int amountOfStudents);
+
+    /**
+     * Finds the number of students in a specific group.
+     *
+     * @param group the group for which to find the number of students
+     * @return the number of students in the group, or -1 if the group is not found
+     */
+    int findNumberOfStudentsForGroup(Group group);
 
 }

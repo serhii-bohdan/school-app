@@ -3,15 +3,24 @@ package ua.foxminded.schoolapp.datasetup.impl;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Stream;
+import org.springframework.stereotype.Component;
 import ua.foxminded.schoolapp.datasetup.Generatable;
 import ua.foxminded.schoolapp.model.Group;
 
 /**
  * Generates a list of randomly generated group objects. The GroupsGenerator
  * class is an implementation of the {@link Generatable} interface.
+ * <p>
+ * This class is annotated with {@code @Component} to indicate that it is a
+ * Spring component, and it can be automatically discovered and registered as a
+ * bean in the Spring context. The GroupsGenerator generates a list of
+ * {@link Group} objects, where each group has a randomly generated name
+ * consisting of two uppercase letters as initials and two random digits,
+ * separated by a {@link #SEPARATOR}.
  *
  * @author Serhii Bohdan
  */
+@Component
 public class GroupsGenerator implements Generatable<Group> {
 
     /**
@@ -23,7 +32,7 @@ public class GroupsGenerator implements Generatable<Group> {
     /**
      * The Random object used for generating random values.
      */
-    private Random random = new Random();
+    private final Random random = new Random();
 
     /**
      * Generates a list of randomly generated Group objects.
@@ -33,9 +42,9 @@ public class GroupsGenerator implements Generatable<Group> {
     @Override
     public List<Group> toGenerate() {
         return Stream.generate(() -> getRandomInitials() + SEPARATOR + getTwoRandomDigits())
-                     .distinct().limit(10)
-                     .map(Group::new)
-                     .toList();
+                .distinct().limit(10)
+                .map(Group::new)
+                .toList();
     }
 
     private String getRandomInitials() {

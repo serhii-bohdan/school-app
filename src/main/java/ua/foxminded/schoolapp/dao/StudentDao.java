@@ -20,22 +20,6 @@ public interface StudentDao extends BaseDao<Student> {
     List<Student> findStudentsRelatedToCourse(String courseName);
 
     /**
-     * Retrieves a student by their ID from the database.
-     *
-     * @param studentId the ID of the student
-     * @return the Student object with the specified ID, or null if not found
-     */
-    Student findStudentById(int studentId);
-
-    /**
-     * Deletes a student by their ID from the database.
-     *
-     * @param studentId the ID of the student to delete
-     * @return the number of rows deleted
-     */
-    int deleteStudentById(int studentId);
-
-    /**
      * Checks if a student is enrolled in a specific course.
      *
      * @param firstName  the first name of the student

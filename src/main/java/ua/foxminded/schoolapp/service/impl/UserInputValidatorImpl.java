@@ -1,6 +1,7 @@
 package ua.foxminded.schoolapp.service.impl;
 
 import java.util.Objects;
+import org.springframework.stereotype.Service;
 import ua.foxminded.schoolapp.dao.CourseDao;
 import ua.foxminded.schoolapp.dao.GroupDao;
 import ua.foxminded.schoolapp.dao.StudentDao;
@@ -12,10 +13,18 @@ import ua.foxminded.schoolapp.service.UserInputValidator;
 /**
  * The UserInputValidatorImpl class is an implementation of the
  * {@link UserInputValidator} interface. It provides methods for validating user
- * input in the school application.
+ * input in the school application, including checking the amount of students,
+ * validating course names, student names, group IDs, and student IDs.
+ * <p>
+ * The class is annotated with {@code @Service} to indicate that it is a Spring
+ * service, and it can be automatically discovered and registered as a bean in
+ * the Spring context. The UserInputValidatorImpl requires instances of
+ * {@link GroupDao}, {@link StudentDao}, and {@link CourseDao} for data access
+ * to perform its validation operations.
  *
  * @author Serhii Bohdan
  */
+@Service
 public class UserInputValidatorImpl implements UserInputValidator {
 
     private GroupDao groupDao;

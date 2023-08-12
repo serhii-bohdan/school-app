@@ -1,21 +1,22 @@
 package ua.foxminded.schoolapp.datasetup.impl;
 
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import ua.foxminded.schoolapp.TestAppConfig;
 import ua.foxminded.schoolapp.datasetup.Generatable;
 import ua.foxminded.schoolapp.model.Group;
 import java.lang.reflect.Method;
 import java.util.List;
 
+@SpringBootTest
+@ContextConfiguration(classes = TestAppConfig.class)
 class GroupsGeneratorTest {
 
+    @Autowired
     Generatable<Group> groupsGenerator;
-
-    @BeforeEach
-    void setUp() {
-        groupsGenerator = new GroupsGenerator();
-    }
 
     @Test
     void toGenerate_shouldListWithRandomGroups_whenInvokeToGenerate() {

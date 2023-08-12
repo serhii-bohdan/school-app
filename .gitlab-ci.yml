@@ -1,20 +1,19 @@
 image: docker:latest
 
 services:
-  - docker:dind 
+  - docker:dind
 
 variables:
   DOCKER_DRIVER: overlay2
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
 
-before_script:
-  - docker info
-  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-
 stages:
   - build
   - test
   - package
+
+before_script:
+  - apk add maven
 
 .default_rules:
   rules:
@@ -26,8 +25,7 @@ build-job:
     - docker
   script:
     - echo "Build job started..."
-    - docker build -t $CI_REGISTRY_IMAGE .
-    - docker push $CI_REGISTRY_IMAGE
+    - mvn compile
 
 test-job:
   stage: test
@@ -35,7 +33,7 @@ test-job:
     - docker
   script:
     - echo "Test job started..."
-    - docker run --rm $CI_REGISTRY_IMAGE mvn test
+    - mvn test
 
 package-job:
   stage: package
@@ -43,4 +41,4 @@ package-job:
     - docker
   script:
     - echo "Package job started..."
-    - docker run --rm $CI_REGISTRY_IMAGE mvn package
+    - mvn package

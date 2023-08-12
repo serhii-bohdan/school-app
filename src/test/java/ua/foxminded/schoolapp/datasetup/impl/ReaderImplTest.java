@@ -3,26 +3,24 @@ package ua.foxminded.schoolapp.datasetup.impl;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import ua.foxminded.schoolapp.TestAppConfig;
 import ua.foxminded.schoolapp.datasetup.Reader;
 import ua.foxminded.schoolapp.exception.*;
 
+@SpringBootTest
+@ContextConfiguration(classes = TestAppConfig.class)
 class ReaderImplTest {
 
+    @Autowired
     Reader reader;
-
-    @BeforeEach
-    void setUp() {
-        reader = new ReaderImpl();
-    }
 
     @Test
     void readFileAndPopulateListWithLines_shouldFileReadingException_whenFileNotExist() {
-
-        assertThrows(FileReadingException.class, () -> {
-            reader.readFileAndPopulateListWithLines("non-existent-file.txt");
-        });
+        assertThrows(FileReadingException.class, () -> reader.readFileAndPopulateListWithLines("non-existent-file.txt"));
     }
 
     @Test
@@ -85,9 +83,7 @@ class ReaderImplTest {
     @Test
     void readAllFileToString_shouldFileReadingException_whenwhenFileNotExist() {
 
-        assertThrows(FileReadingException.class, () -> {
-            reader.readAllFileToString("non-existent-file.txt");
-        });
+        assertThrows(FileReadingException.class, () -> reader.readAllFileToString("non-existent-file.txt"));
     }
 
     @Test

@@ -1,7 +1,6 @@
-package ua.foxminded.schoolapp.cli;
+package ua.foxminded.schoolapp.cli.impl;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,33 +16,43 @@ import java.util.Scanner;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import ua.foxminded.schoolapp.TestAppConfig;
 import ua.foxminded.schoolapp.model.Course;
 import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
 
-class SchoolViewTest {
+@SpringBootTest
+@ContextConfiguration(classes = TestAppConfig.class)
+class SchoolViewImplTest {
 
-    View view;
-    Scanner scannerMock;
     ByteArrayOutputStream baos;
     PrintStream printStreamMock;
 
+    @Mock
+    Scanner scannerMock;
+
+    @InjectMocks
+    SchoolViewImpl view;
+
     @BeforeEach
     void setUp() {
-        scannerMock = mock(Scanner.class);
         baos = new ByteArrayOutputStream();
         printStreamMock = new PrintStream(baos);
         System.setOut(printStreamMock);
     }
 
     @Test
-    void schoolView_shouldNullPointerException_whenScannerIsNull() {
-        assertThrows(NullPointerException.class, () -> new SchoolView(null));
+    void SchoolViewImpl_shouldNullPointerException_whenScannerIsNull() {
+        assertThrows(NullPointerException.class, () -> new SchoolViewImpl(null));
     }
 
     @Test
     void showMenu_shouldDisplayedProgramMenu_whenInvokeShowMenu() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         String expectedOutput = """
                             **************************
                             -----   SCHOOL APP   -----
@@ -66,7 +75,7 @@ class SchoolViewTest {
 
     @Test
     void printMessage_shouldPrintedNullWord_whenMessageIsNull() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         String expectedOutput = "null";
 
         view.printMessage(null);
@@ -77,7 +86,7 @@ class SchoolViewTest {
 
     @Test
     void printMessage_shouldPrintedOnlyCRLF_whenMessageIsEmptyString() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         String expectedOutput = "";
 
         view.printMessage("");
@@ -88,7 +97,7 @@ class SchoolViewTest {
 
     @Test
     void printMessage_shouldPrintedWord_whenMessageIsOnlyOneWord() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         String expectedOutput = "Word";
 
         view.printMessage("Word");
@@ -99,7 +108,7 @@ class SchoolViewTest {
 
     @Test
     void getIntNumberFromUser_shouldReturnedIntegerNumberOnFirstAttempt_whenScannerMockReturnIntegerInput() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         int expectedIntFromUser = 4;
         when(scannerMock.hasNextInt()).thenReturn(true);
         when(scannerMock.nextInt()).thenReturn(expectedIntFromUser);
@@ -113,7 +122,7 @@ class SchoolViewTest {
 
     @Test
     void getIntNumberFromUser_shouldReturnedIntegerNumberOnSecondAttempt_whenScannerMockReturnIncorrectValueOnFirstAttempt() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         int expectedIntFromUser = 3;
         when(scannerMock.hasNextInt()).thenReturn(false, true);
         when(scannerMock.next()).thenReturn("Not integer");
@@ -129,7 +138,7 @@ class SchoolViewTest {
 
     @Test
     void getWordFromUser_shouldReturnedEmptyString_whenScannerMockReturEmptyString() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         String expectedReturnedWord = "";
         when(scannerMock.next()).thenReturn(expectedReturnedWord);
 
@@ -140,7 +149,7 @@ class SchoolViewTest {
 
     @Test
     void getWordFromUser_shouldReturnedOnlySpaces_whenScannerMockReturnOnlySpaces() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         String expectedReturnedWord = "          ";
         when(scannerMock.next()).thenReturn(expectedReturnedWord);
 
@@ -151,7 +160,7 @@ class SchoolViewTest {
 
     @Test
     void getWordFromUser_shouldReturnedSimpleWord_whenScannerMockReturnSimpleWord() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         String expectedReturnedWord = "Art";
         when(scannerMock.next()).thenReturn(expectedReturnedWord);
 
@@ -162,14 +171,14 @@ class SchoolViewTest {
 
     @Test
     void getConfirmationFromUserAboutDeletingStudent_shouldNullPointerException_whenStudnetIsNull() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
 
         assertThrows(NullPointerException.class, () -> view.getConfirmationFromUserAboutDeletingStudent(null));
     }
 
     @Test
     void getConfirmationFromUserAboutDeletingStudent_shouldConfirmationMessageWithNullAndNull_whenStudentFieldsNotInitialized() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         Student student = new Student();
         String expectedConfirmationMessage = "Are you sure you want to delete a student null null?\n"
                 + "Please confirm your actions (enter Y or N): ";
@@ -183,7 +192,7 @@ class SchoolViewTest {
 
     @Test
     void getConfirmationFromUserAboutDeletingStudent_shouldConfirmationMessageWithStudentFirstNameAndLastName_whenStudentHasInitializedFfirstAndLastNamesFields() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         Student student = new Student("FirstName", "LastName", 1);
         String expectedConfirmationMessage = "Are you sure you want to delete a student FirstName LastName?\n"
                 + "Please confirm your actions (enter Y or N): ";
@@ -197,7 +206,7 @@ class SchoolViewTest {
 
     @Test
     void getConfirmationFromUserAboutDeletingStudent_shouldReturnedOneCharacterConfirmation_whenScannerMockReturnOneCharacter() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         Student student = new Student("FirstName", "LastName", 1);
         String expectedConfirmationFromUser = "Y";
         when(scannerMock.next()).thenReturn(expectedConfirmationFromUser);
@@ -209,7 +218,7 @@ class SchoolViewTest {
 
     @Test
     void getConfirmationFromUserAboutDeletingStudent_shouldReturnedNullConfirmation_whenScannerMockReturnNull() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         Student student = new Student("FirstName", "LastName", 1);
         String expectedConfirmationFromUser = null;
         when(scannerMock.next()).thenReturn(expectedConfirmationFromUser);
@@ -221,14 +230,14 @@ class SchoolViewTest {
 
     @Test
     void displayGroupsWithTheirNumberOfStudents_shouldNullPointerException_whenMapWithGroupsWithTheirNumberOfStudentsIsNull() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
 
         assertThrows(NullPointerException.class, () -> view.displayGroupsWithTheirNumberOfStudents(null));
     }
 
     @Test
     void displayGroupsWithTheirNumberOfStudents_shouldNullPointerException_whenGroupInMapIsNull() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         Map<Group, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
         groupsWithTheirNumberOfStudents.put(null, 20);
 
@@ -238,7 +247,7 @@ class SchoolViewTest {
 
     @Test
     void displayGroupsWithTheirNumberOfStudents_shouldNullPointerException_whenGroupNameInMapIsNull() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         Group group = new Group(null);
         Map<Group, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
         groupsWithTheirNumberOfStudents.put(group, 20);
@@ -249,7 +258,7 @@ class SchoolViewTest {
 
     @Test
     void displayGroupsWithTheirNumberOfStudents_shouldNullPointerException_whenNumberOfStudentsIsNull() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         Group group = new Group("FS-25");
         Map<Group, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
         groupsWithTheirNumberOfStudents.put(group, null);
@@ -268,7 +277,7 @@ class SchoolViewTest {
 
     @Test
     void displayGroupsWithTheirNumberOfStudents_shouldDisplayedOnlySentence_whenGroupsWithTheirNumberOfStudentsMapEmpty() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         Map<Group, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
         String expectedDisplayedGroups = "Groups with their number of students:\n";
 
@@ -280,7 +289,7 @@ class SchoolViewTest {
 
     @Test
     void displayGroupsWithTheirNumberOfStudents_shouldDisplayedCrookedTableGroupsWithTheirNumberOfStudents_whenGroupsInMapHaveNamesWithDifferentLengths() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         Map<Group, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
         Group firstGroup = new Group("JRJF-84");
         Group secondGroup = new Group("QFL-03");
@@ -307,7 +316,7 @@ class SchoolViewTest {
 
     @Test
     void displayGroupsWithTheirNumberOfStudents_shouldDisplayedCrookedTableGroupsWithTheirNumberOfStudents_whenNumberOfStudentsInMapHaveDifferentLengths() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         Map<Group, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
         Group firstGroup = new Group("JR-84");
         Group secondGroup = new Group("QF-03");
@@ -334,7 +343,7 @@ class SchoolViewTest {
 
     @Test
     void displayGroupsWithTheirNumberOfStudents_shouldDisplayedGroupsWithTheirNumberOfStudents_whenMapContainsThreeCorrectGroupsWithTheirNumberOfStudents() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         Map<Group, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
         Group firstGroup = new Group("JR-84");
         Group secondGroup = new Group("QL-03");
@@ -361,14 +370,14 @@ class SchoolViewTest {
 
     @Test
     void displayStudentsWithTheirCourses_shouldNullPointerException_whenMapWithStudentsAndTheirCoursesIsNull() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
 
         assertThrows(NullPointerException.class, () -> view.displayStudentsWithTheirCourses(null));
     }
 
     @Test
     void displayStudentsWithTheirCourses_shouldNullPointerException_whenStudentInMapIsNull() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         Course firstCourse = new Course("CourseName_1", "Description_1");
         Course secondCourse = new Course("CourseName_2", "Description_2");
         List<Course> coursesForStudent = new ArrayList<>();
@@ -382,7 +391,7 @@ class SchoolViewTest {
 
     @Test
     void displayStudentsWithTheirCourses_shouldDisplayedStudentWithNullFirstName_whenStudentFirstNameInMapIsNull() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         Student student = new Student(null, "LastName", 1);
         Course firstCourse = new Course("CourseName_1", "Description_1");
         Course secondCourse = new Course("CourseName_2", "Description_2");
@@ -406,7 +415,7 @@ class SchoolViewTest {
 
     @Test
     void displayStudentsWithTheirCourses_shouldNullPointerException_whenCoursesListForStudentInMapIsNull() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         Student student = new Student("FirstName", "LastName", 1);
         Map<Student, List<Course>> studentsWithTheirCourses = new HashMap<>();
         studentsWithTheirCourses.put(student, null);
@@ -416,7 +425,7 @@ class SchoolViewTest {
 
     @Test
     void displayStudentsWithTheirCourses_shouldNullPointerException_whenCourseInCoursesListForStudentIsNull() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         Student student = new Student("FirstName", "LastName", 1);
         Course firstCourse = new Course("CourseName_1", "Description_1");
         Course secondCourse = new Course("CourseName_2", "Description_2");
@@ -432,7 +441,7 @@ class SchoolViewTest {
 
     @Test
     void displayStudentsWithTheirCourses_shouldDisplayedNullCourseName_whenCourseNameInCoursesListForStudentIsNull() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         Student student = new Student("FirstName", "LastName", 1);
         Course firstCourse = new Course("CourseName_1", "Description_1");
         Course secondCourse = new Course(null, "Description_2");
@@ -456,7 +465,7 @@ class SchoolViewTest {
 
     @Test
     void displayStudentsWithTheirCourses_shouldDisplayedOnlySentence_whenStudentsWithTheirCoursesMapEmpty() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         Map<Student, List<Course>> studentsWithTheirCourses = new HashMap<>();
         String expectedDisplayedStudentsWithCourses = """
                 Students with their courses:
@@ -470,7 +479,7 @@ class SchoolViewTest {
 
     @Test
     void displayStudentsWithTheirCourses_shouldDisplayedCorrectTableWithStudentsAndTheirCourses_whenNamesOfSomeStudentsAreEmpty() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         Student firstStudent = new Student("", "", 1);
         Student secondStudent = new Student("", "LastName_2", 1);
         Student thirdStudent = new Student("FirstName_3", "", 1);
@@ -513,7 +522,7 @@ class SchoolViewTest {
 
     @Test
     void displayStudentsWithTheirCourses_shouldDisplayedCorrectTableWithStudentsAndTheirCourses_whenNamesOfSomeCoursesAreEmpty() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         Student firstStudent = new Student("FirstName_1", "LastName_1", 1);
         Student secondStudent = new Student("FirstName_2", "LastName_2", 1);
         Student thirdStudent = new Student("FirstName_3", "LastName_3", 1);
@@ -556,7 +565,7 @@ class SchoolViewTest {
 
     @Test
     void displayStudentsWithTheirCourses_shouldDisplayedCorrectTableWithStudentsAndTheirCourses_whenMapContainStudentsWithOtherStudentsAndOtherCourses() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         Student firstStudent = new Student("FirstName__1", "LastName___1", 1);
         Student secondStudent = new Student("First_2", "LastName_2", 1);
         Student thirdStudent = new Student("F", "LastName____3", 1);
@@ -599,14 +608,14 @@ class SchoolViewTest {
 
     @Test
     void displayCourses_shouldNullPointerException_whenCoursesListIsNull() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
 
         assertThrows(NullPointerException.class, () -> view.displayCourses(null));
     }
 
     @Test
     void displayCourses_shouldNullPointerException_whenCourseInCoursesListIsNull() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         List<Course> coursesList = new ArrayList<>();
         coursesList.add(null);
 
@@ -615,7 +624,7 @@ class SchoolViewTest {
 
     @Test
     void displayCourses_shouldNullPointerException_whenCourseNameInCoursesListIsNull() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         Course course = new Course(null, "Description");
         List<Course> coursesList = new ArrayList<>();
         coursesList.add(course);
@@ -625,7 +634,7 @@ class SchoolViewTest {
 
     @Test
     void displayCourses_shouldNullPointerException_whenCourseDescriptionInCoursesListIsNull() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         Course course = new Course("CourseName", null);
         List<Course> coursesList = new ArrayList<>();
         coursesList.add(course);
@@ -635,7 +644,7 @@ class SchoolViewTest {
 
     @Test
     void displayCourses_shouldDisplayedOnlySentences_whenCoursesListEmpty() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         List<Course> coursesList = new ArrayList<>();
         String expectedDisplayedCourses = """
                 Courses with descriptions:""";
@@ -648,7 +657,7 @@ class SchoolViewTest {
 
     @Test
     void displayCourses_shouldDisplayedTableWithCoursesNamesAndDescriptions_whenSomeCoursesNamesAndDescriptionsEmpty() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         Course firstCourse = new Course("", "Description_1");
         Course secondCourse = new Course("CourseName_2", "");
         Course thirdCourse = new Course("", "");
@@ -674,7 +683,7 @@ class SchoolViewTest {
 
     @Test
     void displayCourses_shouldDisplayedTableWithCoursesNamesAndDescriptions_whenСoursesWithDifferentNamesAndDescriptionsPresentInCourseList() {
-        view = new SchoolView(scannerMock);
+        view = new SchoolViewImpl(scannerMock);
         Course firstCourse = new Course("CourseName______1", "Description_____1");
         Course secondCourse = new Course("CourseName_2", "Description__2");
         Course thirdCourse = new Course("Co", "De");
@@ -700,8 +709,8 @@ class SchoolViewTest {
 
     @Test
     void makeCharacterSequence_shouldInvocationTargetException_whenCharactersCountIsNull() throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("makeCharacterSequence", Integer.class, Character.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("makeCharacterSequence", Integer.class, Character.class);
         method.setAccessible(true);
 
         assertThrows(InvocationTargetException.class, () -> method.invoke(view, null, '-'));
@@ -709,8 +718,8 @@ class SchoolViewTest {
 
     @Test
     void makeCharacterSequence_shouldStringThatContainsTenNullWords_whenCharacterIsNull() throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("makeCharacterSequence", Integer.class, Character.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("makeCharacterSequence", Integer.class, Character.class);
         method.setAccessible(true);
         String expectedCharacterSequence = "nullnullnullnullnullnullnullnullnullnull";
 
@@ -721,8 +730,8 @@ class SchoolViewTest {
 
     @Test
     void makeCharacterSequence_shouldEmptyString_whenCharactersCountLessThanZero() throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("makeCharacterSequence", Integer.class, Character.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("makeCharacterSequence", Integer.class, Character.class);
         method.setAccessible(true);
         String expectedCharacterSequence = "";
 
@@ -733,8 +742,8 @@ class SchoolViewTest {
 
     @Test
     void makeCharacterSequence_shouldEmptyString_whenCharactersCountIsZero() throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("makeCharacterSequence", Integer.class, Character.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("makeCharacterSequence", Integer.class, Character.class);
         method.setAccessible(true);
         String expectedCharacterSequence = "";
 
@@ -745,8 +754,8 @@ class SchoolViewTest {
 
     @Test
     void makeCharacterSequence_shouldStringThatContainsFiveSpaces_whenCharacterIsSpace() throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("makeCharacterSequence", Integer.class, Character.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("makeCharacterSequence", Integer.class, Character.class);
         method.setAccessible(true);
         String expectedCharacterSequence = "     ";
 
@@ -757,8 +766,8 @@ class SchoolViewTest {
 
     @Test
     void makeCharacterSequence_shouldStringThatContainsEightyCharacters_whenLargeCharactersCount() throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("makeCharacterSequence", Integer.class, Character.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("makeCharacterSequence", Integer.class, Character.class);
         method.setAccessible(true);
         String expectedCharacterSequence = "********************************************************************************";
 
@@ -769,8 +778,8 @@ class SchoolViewTest {
 
     @Test
     void getStudentFullName_shouldInvocationTargetException_whenStudentIsNull() throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("getStudentFullName", Student.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getStudentFullName", Student.class);
         method.setAccessible(true);
         Student student = null;
 
@@ -779,8 +788,8 @@ class SchoolViewTest {
 
     @Test
     void getStudentFullName_shouldStudentFullNameWhereFirstNameIsNull_whenStudentFirstNameIsNull() throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("getStudentFullName", Student.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getStudentFullName", Student.class);
         method.setAccessible(true);
         Student student = new Student(null, "LastName", 1);
         String expectedStudentFullName = "null LastName";
@@ -792,8 +801,8 @@ class SchoolViewTest {
 
     @Test
     void getStudentFullName_shouldOneSpace_whenStudentFirstNameAndLastNameAreEmpty() throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("getStudentFullName", Student.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getStudentFullName", Student.class);
         method.setAccessible(true);
         Student student = new Student("", "", 1);
         String expectedStudentFullName = " ";
@@ -805,8 +814,8 @@ class SchoolViewTest {
 
     @Test
     void getStudentFullName_shouldThreeSpaces_whenStudentFirstNameAndLastNameAreOneSpace() throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("getStudentFullName", Student.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getStudentFullName", Student.class);
         method.setAccessible(true);
         Student student = new Student(" ", " ", 1);
         String expectedStudentFullName = "   ";
@@ -818,8 +827,8 @@ class SchoolViewTest {
 
     @Test
     void getStudentFullName_shouldCorrectFullName_whenStudentFirstNameAndLastNameAreCorrect() throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("getStudentFullName", Student.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getStudentFullName", Student.class);
         method.setAccessible(true);
         Student student = new Student("Firstname", "LastName", 1);
         String expectedStudentFullName = "Firstname LastName";
@@ -831,8 +840,8 @@ class SchoolViewTest {
 
     @Test
     void getCoursesEnumeration_shouldInvocationTargetException_whenCoursesListIsNull() throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("getCoursesEnumeration", List.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getCoursesEnumeration", List.class);
         method.setAccessible(true);
         List<Course> coursesList = null;
 
@@ -842,8 +851,8 @@ class SchoolViewTest {
     @Test
     void getCoursesEnumeration_shouldCoursesEnumerationWhereSecondCourseNameIsNull_whenSecondCourseNmaeIsNull()
             throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("getCoursesEnumeration", List.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getCoursesEnumeration", List.class);
         method.setAccessible(true);
         Course firstCourse = new Course("CourseName_1", "Description_1");
         Course secondCourse = new Course(null, "Description_2");
@@ -859,8 +868,8 @@ class SchoolViewTest {
 
     @Test
     void getCoursesEnumeration_shouldEmptyString_whenCourseListEmpty() throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("getCoursesEnumeration", List.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getCoursesEnumeration", List.class);
         method.setAccessible(true);
         List<Course> courses = new ArrayList<>();
         String expectedCoursesEnumeration = "";
@@ -872,8 +881,8 @@ class SchoolViewTest {
 
     @Test
     void getCoursesEnumeration_shouldCommaWithSpace_whenCoursesNamesAreEmpty() throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("getCoursesEnumeration", List.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getCoursesEnumeration", List.class);
         method.setAccessible(true);
         Course firstCourse = new Course("", "Description_1");
         Course secondCourse = new Course("", "Description_2");
@@ -889,8 +898,8 @@ class SchoolViewTest {
 
     @Test
     void getCoursesEnumeration_shouldCommaWithSpaces_whenCoursesNamesAreSpaces() throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("getCoursesEnumeration", List.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getCoursesEnumeration", List.class);
         method.setAccessible(true);
         Course firstCourse = new Course("  ", "Description_1");
         Course secondCourse = new Course("  ", "Description_2");
@@ -906,8 +915,8 @@ class SchoolViewTest {
 
     @Test
     void getCoursesEnumeration_shouldCorrectCoursesEnumeration_whenCoursesNamesAreCorrect() throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("getCoursesEnumeration", List.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getCoursesEnumeration", List.class);
         method.setAccessible(true);
         Course firstCourse = new Course("CourseName_1", "Description_1");
         Course secondCourse = new Course("CourseName_2", "Description_2");
@@ -923,8 +932,8 @@ class SchoolViewTest {
 
     @Test
     void getStringWithMaxLength_shouldInvocationTargetException_whenStringsListEmpty() throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("getStringWithMaxLength", List.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getStringWithMaxLength", List.class);
         method.setAccessible(true);
         List<String> stringsList = null;
 
@@ -933,8 +942,8 @@ class SchoolViewTest {
 
     @Test
     void getStringWithMaxLength_shouldInvocationTargetException_whenStringsListContainNull() throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("getStringWithMaxLength", List.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getStringWithMaxLength", List.class);
         method.setAccessible(true);
         List<String> strings = new ArrayList<>();
         strings.add("  fff");
@@ -945,8 +954,8 @@ class SchoolViewTest {
 
     @Test
     void getStringWithMaxLength_shouldEmptyString_whenStringsListEmpty() throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("getStringWithMaxLength", List.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getStringWithMaxLength", List.class);
         method.setAccessible(true);
         List<String> strings = new ArrayList<>();
         String expectedMaxString = "";
@@ -958,8 +967,8 @@ class SchoolViewTest {
 
     @Test
     void getStringWithMaxLength_shouldEmptyString_whenStringsListContainOnlyEmptyString() throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("getStringWithMaxLength", List.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getStringWithMaxLength", List.class);
         method.setAccessible(true);
         List<String> strings = new ArrayList<>();
         strings.add("");
@@ -972,8 +981,8 @@ class SchoolViewTest {
 
     @Test
     void getStringWithMaxLength_shouldStringWithMaxLength_whenStringsListContainOnlyEmptyString() throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("getStringWithMaxLength", List.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getStringWithMaxLength", List.class);
         method.setAccessible(true);
         List<String> strings = new ArrayList<>();
         strings.add("");
@@ -988,8 +997,8 @@ class SchoolViewTest {
 
     @Test
     void getMaxCousrse_shouldInvocationTargetException_whenIdentifierIsNull() throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("getMaxCousrse", String.class, List.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getMaxCousrse", String.class, List.class);
         method.setAccessible(true);
         Course firstCourse = new Course("CourseName_1", "Description_1");
         Course secondCourse = new Course("CourseName_2", "Description_2");
@@ -1002,8 +1011,8 @@ class SchoolViewTest {
 
     @Test
     void getMaxCousrse_shouldInvocationTargetException_whenIdentifierSomeWord() throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("getMaxCousrse", String.class, List.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getMaxCousrse", String.class, List.class);
         method.setAccessible(true);
         String identifier = "SomeWord";
         Course firstCourse = new Course("CourseName_1", "Description_1");
@@ -1017,8 +1026,8 @@ class SchoolViewTest {
 
     @Test
     void getMaxCousrse_shouldInvocationTargetException_whenIdentifierIsNameAndCoursesListIsNull() throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("getMaxCousrse", String.class, List.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getMaxCousrse", String.class, List.class);
         method.setAccessible(true);
         String identifier = "Name";
 
@@ -1028,8 +1037,8 @@ class SchoolViewTest {
     @Test
     void getMaxCousrse_shouldInvocationTargetException_whenIdentifierIsDescriptionAndCoursesListIsNull()
             throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("getMaxCousrse", String.class, List.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getMaxCousrse", String.class, List.class);
         method.setAccessible(true);
         String identifier = "Description";
 
@@ -1038,8 +1047,8 @@ class SchoolViewTest {
 
     @Test
     void getMaxCousrse_shouldInvocationTargetException_whenIdentifierIsNameAndCourseNameIsNull() throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("getMaxCousrse", String.class, List.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getMaxCousrse", String.class, List.class);
         method.setAccessible(true);
         String identifier = "Name";
         Course firstCourse = new Course("CourseName_1", "Description_1");
@@ -1054,8 +1063,8 @@ class SchoolViewTest {
     @Test
     void getMaxCousrse_shouldInvocationTargetException_whenIdentifierIsDescriptionAndCourseDescriptionIsNull()
             throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("getMaxCousrse", String.class, List.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getMaxCousrse", String.class, List.class);
         method.setAccessible(true);
         String identifier = "Description";
         Course firstCourse = new Course("CourseName_1", "Description_1");
@@ -1069,8 +1078,8 @@ class SchoolViewTest {
 
     @Test
     void formatLineWithPluses_shouldInvocationTargetException_whenLineIsNull() throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("formatLineWithPluses", String.class, Integer.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("formatLineWithPluses", String.class, Integer.class);
         method.setAccessible(true);
         String line = null;
         Integer plusIndexInsideLine = 2;
@@ -1080,8 +1089,8 @@ class SchoolViewTest {
 
     @Test
     void formatLineWithPluses_shouldInvocationTargetException_whenPlusIndexInsideLineIsNull() throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("formatLineWithPluses", String.class, Integer.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("formatLineWithPluses", String.class, Integer.class);
         method.setAccessible(true);
         String line = "-------------";
         Integer plusIndexInsideLine = null;
@@ -1092,8 +1101,8 @@ class SchoolViewTest {
     @Test
     void formatLineWithPluses_shouldInvocationTargetException_whenPlusIndexInsideLineMoreThanLineLength()
             throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("formatLineWithPluses", String.class, Integer.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("formatLineWithPluses", String.class, Integer.class);
         method.setAccessible(true);
         String line = "---";
         Integer plusIndexInsideLine = 3;
@@ -1103,8 +1112,8 @@ class SchoolViewTest {
 
     @Test
     void formatLineWithPluses_shouldIneWithPluses_whenLineAndPlusIndexInsideLineAreCorrect() throws Exception {
-        view = new SchoolView(scannerMock);
-        Method method = SchoolView.class.getDeclaredMethod("formatLineWithPluses", String.class, Integer.class);
+        view = new SchoolViewImpl(scannerMock);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("formatLineWithPluses", String.class, Integer.class);
         method.setAccessible(true);
         String line = "-----------";
         Integer plusIndexInsideLine = 5;

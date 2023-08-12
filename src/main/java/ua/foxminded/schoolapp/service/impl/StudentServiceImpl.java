@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+import org.springframework.stereotype.Service;
 import ua.foxminded.schoolapp.dao.StudentDao;
 import ua.foxminded.schoolapp.datasetup.Generatable;
 import ua.foxminded.schoolapp.model.Student;
@@ -13,10 +14,18 @@ import ua.foxminded.schoolapp.service.StudentService;
 /**
  * The StudentServiceImpl class is an implementation of the
  * {@link StudentService} interface. It provides operations for managing
- * students.
+ * students, such as initializing students, adding and deleting students,
+ * managing student enrollments in courses, and retrieving student data.
+ * <p>
+ * The class is annotated with {@code @Service} to indicate that it is a Spring
+ * service, and it can be automatically discovered and registered as a bean in
+ * the Spring context. The StudentServiceImpl requires instances of
+ * {@link Generatable<Student>} for generating students and a {@link StudentDao}
+ * for data access to perform its operations.
  *
  * @author Serhii Bohdan
  */
+@Service
 public class StudentServiceImpl implements StudentService {
 
     private Generatable<Student> studentsGenerator;
@@ -43,8 +52,7 @@ public class StudentServiceImpl implements StudentService {
      */
     @Override
     public void initStudents() {
-        studentsGenerator.toGenerate().stream()
-                                      .forEach(studentDao::save);
+        studentsGenerator.toGenerate().stream().forEach(studentDao::save);
     }
 
     /**
@@ -91,7 +99,7 @@ public class StudentServiceImpl implements StudentService {
      */
     @Override
     public int deleteStudent(int studentId) {
-        return studentDao.deleteStudentById(studentId);
+        return studentDao.delete(studentId);
     }
 
     /**
@@ -115,7 +123,7 @@ public class StudentServiceImpl implements StudentService {
      */
     @Override
     public Student getStudentById(int studentId) {
-        return studentDao.findStudentById(studentId);
+        return studentDao.find(studentId);
     }
 
     /**

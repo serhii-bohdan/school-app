@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
 import ua.foxminded.schoolapp.model.Course;
 import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
@@ -14,12 +15,20 @@ import ua.foxminded.schoolapp.service.StudentService;
 import ua.foxminded.schoolapp.service.UserInputValidator;
 
 /**
- * The ServiceFacadeImpl class is an implementation of the ServiceFacade
+ * The ServiceFacadeImpl class is an implementation of the {@link ServiceFacade}
  * interface. It provides access to the school application's services and
- * functionalities.
+ * functionalities, serving as a single entry point for managing groups,
+ * students, and courses.
+ * <p>
+ * The class is annotated with {@code @Service} to indicate that it is a Spring
+ * service, and it can be automatically discovered and registered as a bean in
+ * the Spring context. The ServiceFacadeImpl requires instances of
+ * {@link GroupService}, {@link StudentService}, {@link CourseService}, and
+ * {@link UserInputValidator} to perform its operations.
  *
  * @author Serhii Bohdan
  */
+@Service
 public class ServiceFacadeImpl implements ServiceFacade {
 
     private GroupService groupService;

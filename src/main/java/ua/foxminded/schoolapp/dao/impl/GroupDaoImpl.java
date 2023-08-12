@@ -1,45 +1,45 @@
 package ua.foxminded.schoolapp.dao.impl;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import ua.foxminded.schoolapp.dao.Connectable;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
 import ua.foxminded.schoolapp.dao.GroupDao;
-import ua.foxminded.schoolapp.exception.DaoException;
+import ua.foxminded.schoolapp.dao.mapper.GroupRowMapper;
 import ua.foxminded.schoolapp.model.Group;
 
 /**
  * The GroupDaoImpl class is an implementation of the {@link GroupDao}
  * interface. It provides methods for accessing and manipulating Group entities
  * in the database.
+ * <p>
+ * This class is annotated with {@link Repository}, marking it as a Spring
+ * repository component, which enables automatic dependency injection and
+ * exception translation for database access.
+ * <p>
+ * The GroupDaoImpl uses the {@link JdbcTemplate} to interact with the database.
+ * It also uses a {@link GroupRowMapper} to map rows of the result set to Group
+ * objects.
+ * <p>
+ * Note: This class should be used in conjunction with the Spring context to
+ * configure the application and enable database access for Group entities.
  *
  * @author Serhii Bohdan
  */
+@Repository
 public class GroupDaoImpl implements GroupDao {
 
-    /**
-     * A constant representing a new line character.
-     */
-    public static final String NEW_LINE = "\n";
-
-    private Connectable connector;
+    private final JdbcTemplate jdbcTemplate;
+    private final RowMapper<Group> groupRowMapper = new GroupRowMapper();
 
     /**
-     * Constructs a GroupDaoImpl object with the specified Connectable connector.
+     * Constructs a new GroupDaoImpl with the given JdbcTemplate.
      *
-     * @param connector the Connectable object used for obtaining a database
-     *                  connection
+     * @param jdbcTemplate the JdbcTemplate to be used for database interactions
      */
-    public GroupDaoImpl(Connectable connector) {
-        Objects.requireNonNull(connector, "connector must not be null");
-        this.connector = connector;
+    public GroupDaoImpl(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     /**
@@ -47,20 +47,29 @@ public class GroupDaoImpl implements GroupDao {
      */
     @Override
     public int save(Group group) {
-        int rowsInserted;
+        String sql = """
+                INSERT INTO groups (group_name)
+                VALUES( ? );
+                """;
 
-        try (Connection connection = connector.getConnection()) {
-            PreparedStatement statement = connection.prepareStatement("""
-                    INSERT INTO groups (group_name)
-                    VALUES(?);
-                    """);
-            statement.setString(1, group.getGroupName());
-            rowsInserted = statement.executeUpdate();
+        return jdbcTemplate.update(sql, group.getGroupName());
+    }
 
-        } catch (SQLException e) {
-            throw new DaoException("Error saving group data to database." + NEW_LINE + e.getMessage());
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Group find(int groupId) {
+        String sql = """
+                SELECT * FROM groups
+                WHERE group_id = ?;
+                """;
+
+        try {
+            return jdbcTemplate.queryForObject(sql, groupRowMapper, groupId);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
         }
-        return rowsInserted;
     }
 
     /**
@@ -68,60 +77,74 @@ public class GroupDaoImpl implements GroupDao {
      */
     @Override
     public List<Group> findAll() {
-        List<Group> groups = new ArrayList<>();
+        String sql = "SELECT * FROM groups;";
 
-        try (Connection connection = connector.getConnection()) {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("""
-                    SELECT group_id, group_name
-                    FROM groups;
-                    """);
-
-            while (resultSet.next()) {
-                Group group = new Group();
-                group.setId(resultSet.getInt("group_id"));
-                group.setGroupName(resultSet.getString("group_name"));
-                groups.add(group);
-            }
-
-        } catch (SQLException e) {
-            throw new DaoException(
-                    "An error occurred while searching for data about all groups." + NEW_LINE + e.getMessage());
-        }
-        return groups;
+        return jdbcTemplate.query(sql, groupRowMapper);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Map<Group, Integer> findGroupsWithGivenNumberStudents(int amountOfStudents) {
-        Map<Group, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
+    public int update(Group group) {
+        String sql = """
+                UPDATE groups SET group_name = ?
+                WHERE group_id = ?;
+                """;
 
-        try (Connection connection = connector.getConnection()) {
-            PreparedStatement statement = connection.prepareStatement("""
-                    SELECT groups.group_id, group_name, COUNT(student_id) AS students_count
-                    FROM students
-                    LEFT JOIN groups USING(group_id)
-                    GROUP BY groups.group_id
-                    HAVING COUNT(student_id) <= ?
-                    ORDER BY COUNT(student_id) DESC;
-                    """);
-            statement.setInt(1, amountOfStudents);
-            ResultSet resultSet = statement.executeQuery();
+        return jdbcTemplate.update(sql, group.getGroupName(), group.getId());
+    }
 
-            while (resultSet.next()) {
-                Group group = new Group();
-                group.setId(resultSet.getInt("group_id"));
-                group.setGroupName(resultSet.getString("group_name"));
-                groupsWithTheirNumberOfStudents.put(group, resultSet.getInt("students_count"));
-            }
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int delete(int groupId) {
+        String sql = """
+                DELETE FROM students
+                WHERE group_id = ?;
 
-        } catch (SQLException e) {
-            throw new DaoException("An error occurred when searching for groups "
-                    + "with the specified number of students." + NEW_LINE + e.getMessage());
+                DELETE FROM groups
+                WHERE group_id = ?;
+                """;
+
+        return jdbcTemplate.update(sql, groupId, groupId);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Group> findGroupsWithGivenNumberStudents(int amountOfStudents) {
+        String sql = """
+                SELECT groups.group_id, group_name
+                FROM students
+                LEFT JOIN groups USING(group_id)
+                GROUP BY groups.group_id
+                HAVING COUNT(student_id) <= ?
+                ORDER BY COUNT(student_id) DESC;
+                """;
+
+        return jdbcTemplate.query(sql, groupRowMapper, amountOfStudents);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int findNumberOfStudentsForGroup(Group group) {
+        String sql = """
+                SELECT COUNT(student_id) AS students_count
+                FROM students
+                LEFT JOIN groups USING(group_id)
+                GROUP BY groups.group_id
+                HAVING groups.group_id = ?;
+                """;
+        try {
+            return jdbcTemplate.queryForObject(sql, Integer.class, group.getId());
+        } catch (EmptyResultDataAccessException e) {
+            return -1;
         }
-        return groupsWithTheirNumberOfStudents;
     }
 
 }

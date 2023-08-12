@@ -1,33 +1,37 @@
 package ua.foxminded.schoolapp.service.impl;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import ua.foxminded.schoolapp.TestAppConfig;
 import ua.foxminded.schoolapp.dao.CourseDao;
 import ua.foxminded.schoolapp.dao.GroupDao;
 import ua.foxminded.schoolapp.dao.StudentDao;
 import ua.foxminded.schoolapp.model.Course;
 import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
-import ua.foxminded.schoolapp.service.UserInputValidator;
 
+@SpringBootTest
+@ContextConfiguration(classes = TestAppConfig.class)
 class UserInputValidatorImplTest {
 
+    @Mock
     GroupDao groupDaoMock;
-    StudentDao studentDaoMock;
-    CourseDao courseDaoMock;
-    UserInputValidator validator;
 
-    @BeforeEach
-    void setUp() throws Exception {
-        groupDaoMock = mock(GroupDao.class);
-        studentDaoMock = mock(StudentDao.class);
-        courseDaoMock = mock(CourseDao.class);
-    }
+    @Mock
+    StudentDao studentDaoMock;
+
+    @Mock
+    CourseDao courseDaoMock;
+
+    @InjectMocks
+    UserInputValidatorImpl validator;
 
     @Test
     void UserInputValidatorImpl_shouldNullPointerException_whenGroupDaoIsNull() {

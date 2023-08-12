@@ -1,1601 +1,342 @@
 package ua.foxminded.schoolapp.dao.impl;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.List;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ua.foxminded.schoolapp.dao.Connectable;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.jdbc.Sql;
+import ua.foxminded.schoolapp.TestAppConfig;
 import ua.foxminded.schoolapp.dao.StudentDao;
+import ua.foxminded.schoolapp.dao.mapper.StudentRowMapper;
 import ua.foxminded.schoolapp.model.Student;
-import ua.foxminded.schoolapp.exception.DaoException;
 
+@JdbcTest
+@ContextConfiguration(classes = TestAppConfig.class)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Sql(
+        scripts = { "/sql/clear_tables.sql", "/sql/students_test_init.sql" },
+        executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
+)
 class StudentDaoImplTest {
 
-    final static String URL = "jdbc:h2:~/test;MODE=PostgreSQL";
-    final static String USER = "sa";
-    final static String PASSWORD = "1234";
-
-    Connectable connectorMock;
+    @Autowired
+    JdbcTemplate jdbcTemplate;
     StudentDao studentDao;
-
-    @BeforeAll
-    static void setUpBeforeClass() {
-        String sqlScript = """
-                CREATE TABLE groups (
-                  group_id SERIAL PRIMARY KEY,
-                  group_name VARCHAR(5) NOT NULL
-                );
-
-                CREATE TABLE students (
-                  student_id SERIAL PRIMARY KEY,
-                  first_name VARCHAR(25) NOT NULL,
-                  last_name VARCHAR(25) NOT NULL,
-                  group_id INTEGER REFERENCES groups(group_id)
-                );
-
-                CREATE TABLE courses (
-                  course_id SERIAL PRIMARY KEY,
-                  course_name VARCHAR(25) NOT NULL,
-                  course_description TEXT NOT NULL
-                );
-
-                CREATE TABLE students_courses (
-                  student_courses_id SERIAL PRIMARY KEY,
-                  student_id INTEGER REFERENCES students(student_id) ON DELETE CASCADE NOT NULL,
-                  course_id INTEGER REFERENCES courses(course_id) ON DELETE CASCADE NOT NULL
-                );
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(sqlScript);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+    final RowMapper<Student> studentRowMapper = new StudentRowMapper();
 
     @BeforeEach
     void setUp() {
-        connectorMock = mock(Connectable.class);
-    }
-
-    @Test
-    void studentDaoImpl_shouldNullPointerException_whenConnectorIsNull() {
-        assertThrows(NullPointerException.class, () -> new StudentDaoImpl(null));
+        studentDao = new StudentDaoImpl(jdbcTemplate);
     }
 
     @Test
     void save_shouldNullPointerException_whenStudentIsNull() {
-        studentDao = new StudentDaoImpl(connectorMock);
-
-        try {
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         assertThrows(NullPointerException.class, () -> studentDao.save(null));
     }
 
     @Test
-    void save_shouldDaoException_whenStudentFieldsNotInitialized() {
-        studentDao = new StudentDaoImpl(connectorMock);
+    void save_shouldDataIntegrityViolationException_whenStudentFieldsNotInitialized() {
         Student student = new Student();
 
-        try {
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertThrows(DaoException.class, () -> studentDao.save(student));
+        assertThrows(DataIntegrityViolationException.class, () -> studentDao.save(student));
     }
 
     @Test
-    void save_shouldDaoException_whenNoGroupWithSpecifiedGroupIdInGroupsTable() {
-        studentDao = new StudentDaoImpl(connectorMock);
+    void save_shouldDataIntegrityViolationException_whenNoGroupWithSpecifiedGroupIdInGroupsTable() {
         Student student = new Student("FirstName", "LastName", 2);
-        String fillingGroupsTableSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
-                """;
 
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingGroupsTableSqlScript);
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertThrows(DaoException.class, () -> studentDao.save(student));
+        assertThrows(DataIntegrityViolationException.class, () -> studentDao.save(student));
     }
 
     @Test
-    void save_shouldNewRecordInStudentsTable_whenStudentFirstNameAndLastNameIsEmpty() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        Student student = new Student("", "", 1);
-        String fillingGroupsTableSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
+    void save_shouldSavedStudent_whenStudentFirstNameAndLastNameIsEmpty() {
+        Student expectedStudent = new Student("", "", 1);
+        expectedStudent.setId(4);
+        String selectTestDataScript = """
+                SELECT * FROM students
+                WHERE student_id = 4;
                 """;
-        String selectDataFromStudentsTableScript = """
-                SELECT student_id, first_name, last_name, group_id
-                FROM students
-                WHERE student_id = 1 AND first_name = '' AND last_name = ''
-                AND group_id = 1;
-                """;
-        int actualStudentId = 0;
-        String actualFirstName = null;
-        String actualLastName = null;
-        int actualGroupId = 0;
-        int recordNumber = 0;
 
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingGroupsTableSqlScript);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        studentDao.save(expectedStudent);
+        Student actualStudent = jdbcTemplate.queryForObject(selectTestDataScript, studentRowMapper);
 
-        try (Connection connection = getTestConnection()) {
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            recordNumber = studentDao.save(student);
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(selectDataFromStudentsTableScript);
-
-            while (resultSet.next()) {
-                actualStudentId = resultSet.getInt("student_id");
-                actualFirstName = resultSet.getString("first_name");
-                actualLastName = resultSet.getString("last_name");
-                actualGroupId = resultSet.getInt("group_id");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertEquals(1, actualStudentId);
-        assertEquals("", actualFirstName);
-        assertEquals("", actualLastName);
-        assertEquals(1, actualGroupId);
-        assertEquals(1, recordNumber);
+        assertEquals(expectedStudent, actualStudent);
     }
 
     @Test
-    void save_shouldNewRecordInStudentsTable_whenStudentFirstNameAndLastNameOnlySpaces() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        Student student = new Student("    ", "    ", 1);
-        String fillingGroupsTableSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
+    void save_shouldSavedStudent_whenStudentFieldsIsCorrect() {
+        Student expectedStudent = new Student("FirstName", "LastName", 1);
+        expectedStudent.setId(4);
+        String selectTestDataScript = """
+                SELECT * FROM students
+                WHERE student_id = 4;
                 """;
-        String selectDataFromStudentsTableScript = """
-                SELECT student_id, first_name, last_name, group_id
-                FROM students
-                WHERE student_id = 1 AND first_name = '    ' AND last_name = '    '
-                AND group_id = 1;
-                """;
-        int actualStudentId = 0;
-        String actualFirstName = null;
-        String actualLastName = null;
-        int actualGroupId = 0;
-        int recordNumber = 0;
 
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingGroupsTableSqlScript);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        studentDao.save(expectedStudent);
+        Student actualStudent = jdbcTemplate.queryForObject(selectTestDataScript, studentRowMapper);
 
-        try (Connection connection = getTestConnection()) {
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            recordNumber = studentDao.save(student);
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(selectDataFromStudentsTableScript);
-
-            while (resultSet.next()) {
-                actualStudentId = resultSet.getInt("student_id");
-                actualFirstName = resultSet.getString("first_name");
-                actualLastName = resultSet.getString("last_name");
-                actualGroupId = resultSet.getInt("group_id");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertEquals(1, actualStudentId);
-        assertEquals("    ", actualFirstName);
-        assertEquals("    ", actualLastName);
-        assertEquals(1, actualGroupId);
-        assertEquals(1, recordNumber);
+        assertEquals(expectedStudent, actualStudent);
     }
 
     @Test
-    void save_shouldNewRecordInStudentsTable_whenStudentFieldsIsCorrect() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        Student student = new Student("FirstName", "LastName", 1);
-        String fillingGroupsTableSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
-                """;
-        String selectDataFromStudentsTableScript = """
-                SELECT student_id, first_name, last_name, group_id
-                FROM students
-                WHERE student_id = 1 AND first_name = 'FirstName' AND last_name = 'LastName'
-                AND group_id = 1;
-                """;
-        int actualStudentId = 0;
-        String actualFirstName = null;
-        String actualLastName = null;
-        int actualGroupId = 0;
-        int recordNumber = 0;
+    void find_shouldNull_whenNoStudentWithGivenId() {
+        int studentIdThatNotExist = 5;
+        Student actualStudent = studentDao.find(studentIdThatNotExist);
 
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingGroupsTableSqlScript);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try (Connection connection = getTestConnection()) {
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            recordNumber = studentDao.save(student);
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(selectDataFromStudentsTableScript);
-
-            while (resultSet.next()) {
-                actualStudentId = resultSet.getInt("student_id");
-                actualFirstName = resultSet.getString("first_name");
-                actualLastName = resultSet.getString("last_name");
-                actualGroupId = resultSet.getInt("group_id");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertEquals(1, actualStudentId);
-        assertEquals("FirstName", actualFirstName);
-        assertEquals("LastName", actualLastName);
-        assertEquals(1, actualGroupId);
-        assertEquals(1, recordNumber);
+        assertNull(actualStudent);
     }
 
     @Test
-    void findAll_shouldDaoException_whenThrownSQLException() {
-        studentDao = new StudentDaoImpl(connectorMock);
+    void find_shouldStudentThatExistInStudentsTable_whenStudentWithGivenIdExists() {
+        int expectedStudentId = 2;
+        Student expectedStudent = new Student("FirstName_2", "LastName_2", 1);
+        expectedStudent.setId(expectedStudentId);
 
-        try {
-            when(connectorMock.getConnection()).thenThrow(SQLException.class);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        Student actualStudent = studentDao.find(expectedStudentId);
 
-        assertThrows(DaoException.class, () -> studentDao.findAll());
+        assertEquals(expectedStudent, actualStudent);
+    }
+
+    @Test
+    @Sql("/sql/clear_tables.sql")
+    void findAll_shouldEmptyStudentsList_whenStudentsTableEmpty() {
+        List<Student> actualAllAvailableStudnts = studentDao.findAll();
+
+        assertTrue(actualAllAvailableStudnts.isEmpty());
     }
 
     @Test
     void findAll_shouldStudentsList_whenStudentsTableContainsStudnets() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        List<Student> exceptAllAvailableStudnts = new ArrayList<>();
-        List<Student> actualAllAvailableStudnts = new ArrayList<>();
-        String fillingGroupsAndStudentsTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90'),
-                       ('AL-31'),
-                       ('NO-24');
+        List<Student> actualAllAvailableStudnts = studentDao.findAll();
 
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1),
-                       ('FirstName', 'LastName', 2),
-                       ('FirstName', 'LastName', 3);
+        assertEquals(3, actualAllAvailableStudnts.size());
+    }
+
+    @Test
+    void update_shouldUpdatedStudent_whenStudentWithGivenIdExists() {
+        Student expectedNewStudent = new Student("NewFirstName", "NewLastName", 1);
+        expectedNewStudent.setId(3);
+        String selectTestDataScript = """
+                SELECT * FROM students
+                WHERE student_id = 3;
                 """;
 
-        for (int i = 1; i <= 3; i++) {
-            Student student = new Student("FirstName", "LastName", i);
-            student.setId(i);
-            exceptAllAvailableStudnts.add(student);
-        }
+        int numberOfChanges = studentDao.update(expectedNewStudent);
+        Student actualNewStudent = jdbcTemplate.queryForObject(selectTestDataScript, studentRowMapper);
 
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingGroupsAndStudentsTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            actualAllAvailableStudnts = studentDao.findAll();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertEquals(exceptAllAvailableStudnts, actualAllAvailableStudnts);
+        assertEquals(1, numberOfChanges);
+        assertEquals(expectedNewStudent, actualNewStudent);
     }
 
     @Test
-    void findAll_shouldEmptyStudentsList_whenStudentsTableEmpty() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        List<Student> exceptAllAvailableStudnts = new ArrayList<>();
-        List<Student> actualAllAvailableStudnts = null;
+    void update_shouldNoAnuChanges_whenNoStudentWithGivenId() {
+        Student expectedNewStudent = new Student("NewFirstName", "NewLastName", 1);
+        expectedNewStudent.setId(5);
 
-        try {
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            actualAllAvailableStudnts = studentDao.findAll();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        int numberOfChanges = studentDao.update(expectedNewStudent);
 
-        assertEquals(exceptAllAvailableStudnts, actualAllAvailableStudnts);
+        assertEquals(0, numberOfChanges);
     }
 
     @Test
-    void findStudentById_shouldDaoException_whenThrownSQLException() {
-        studentDao = new StudentDaoImpl(connectorMock);
-
-        try (Connection connection = getTestConnection()) {
-            when(connectorMock.getConnection()).thenThrow(SQLException.class);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertThrows(DaoException.class, () -> studentDao.findStudentById(1));
-    }
-
-    @Test
-    void findStudentById_shouldReturnStudentWithNoInitializedFields_whenGivenStudentIdLessThenZero() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        Student expectedStudent = new Student();
-        Student actualStudent = null;
-
-        try (Connection connection = getTestConnection()) {
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            actualStudent = studentDao.findStudentById(-1);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertEquals(expectedStudent, actualStudent);
-    }
-
-    @Test
-    void findStudentById_shouldReturnStudentWithNoInitializedFields_whenGivenStudentIdIsZero() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        Student expectedStudent = new Student();
-        Student actualStudent = null;
-
-        try (Connection connection = getTestConnection()) {
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            actualStudent = studentDao.findStudentById(0);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertEquals(expectedStudent, actualStudent);
-    }
-
-    @Test
-    void findStudentById_shouldReturnStudentWithNoInitializedFields_whenGivenStudentIdMoreThanZeroAndNoStudentWithThisId() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        Student expectedStudent = new Student();
-        Student actualStudent = null;
-
-        String fillingGroupsAndStudentsTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
-
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1);
+    void delete_shouldDeletedStudent_whenStudentWithGivenIdExists() {
+        int studentId = 3;
+        String selectTestDataScript = """
+                SELECT * FROM students
+                WHERE student_id = 3;
                 """;
 
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingGroupsAndStudentsTablesSqlScript);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        int numberOfChanges = studentDao.delete(studentId);
 
-        try (Connection connection = getTestConnection()) {
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            actualStudent = studentDao.findStudentById(2);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertEquals(expectedStudent, actualStudent);
+        assertEquals(1, numberOfChanges);
+        assertThrows(EmptyResultDataAccessException.class,
+                () -> jdbcTemplate.queryForObject(selectTestDataScript, studentRowMapper));
     }
 
     @Test
-    void findStudentById_shouldReturnedStudentWithInitializedFields_whenStudentExistsWithGivenId() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        Student expectedStudent = new Student("FirstName", "LastName", 1);
-        expectedStudent.setId(1);
-        Student actualStudent = null;
-        String fillingGroupsAndStudentsTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
+    void delete_shouldNothingDeleted_whenNoStudentWithGivenId() {
+        int studentIdThatNotExist = 5;
 
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1);
-                """;
+        int numberOfChanges = studentDao.delete(studentIdThatNotExist);
 
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingGroupsAndStudentsTablesSqlScript);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try (Connection connection = getTestConnection()) {
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            actualStudent = studentDao.findStudentById(1);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertEquals(expectedStudent, actualStudent);
-    }
-
-    @Test
-    void findStudentsRelatedToCourse_shouldDaoException_whenThrownSQLException() {
-        studentDao = new StudentDaoImpl(connectorMock);
-
-        try (Connection connection = getTestConnection()) {
-            when(connectorMock.getConnection()).thenThrow(SQLException.class);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertThrows(DaoException.class, () -> studentDao.findStudentsRelatedToCourse("CourseName"));
+        assertEquals(0, numberOfChanges);
     }
 
     @Test
     void findStudentsRelatedToCourse_shouldEmptyStudentsList_whenGivenCourseNameIsNull() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        List<Student> expectedStudentsOnCourse = new ArrayList<>();
-        List<Student> actualStudentsOnCourse = null;
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
+        List<Student> actualStudentsOnCourse = studentDao.findStudentsRelatedToCourse(null);
 
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1),
-                       ('FirstName', 'LastName', 1),
-                       ('FirstName', 'LastName', 1);
-
-                INSERT INTO courses (course_name, course_description)
-                VALUES ('CourseName', 'Description');
-
-                INSERT INTO students_courses (student_id, course_id)
-                VALUES (1, 1),
-                       (2, 1),
-                       (3, 1);
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            actualStudentsOnCourse = studentDao.findStudentsRelatedToCourse(null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertEquals(expectedStudentsOnCourse, actualStudentsOnCourse);
+        assertTrue(actualStudentsOnCourse.isEmpty());
     }
 
     @Test
     void findStudentsRelatedToCourse_shouldEmptyStudentsList_whenNoCourseWithGivenName() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        List<Student> expectedStudentsOnCourse = new ArrayList<>();
-        List<Student> actualStudentsOnCourse = null;
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
+        List<Student> actualStudentsOnCourse = studentDao.findStudentsRelatedToCourse("NonExistentCourse");
 
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1),
-                       ('FirstName', 'LastName', 1),
-                       ('FirstName', 'LastName', 1);
-
-                INSERT INTO courses (course_name, course_description)
-                VALUES ('CourseName', 'Description');
-
-                INSERT INTO students_courses (student_id, course_id)
-                VALUES (1, 1),
-                       (2, 1),
-                       (3, 1);
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            actualStudentsOnCourse = studentDao.findStudentsRelatedToCourse("NonExistentCourse");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertEquals(expectedStudentsOnCourse, actualStudentsOnCourse);
+        assertTrue(actualStudentsOnCourse.isEmpty());
     }
 
     @Test
-    void findStudentsRelatedToCourse_shouldEmptyStudentsList_whenNoStudentOnCourse() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        List<Student> expectedStudentsOnCourse = new ArrayList<>();
-        List<Student> actualStudentsOnCourse = null;
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
+    @Sql(statements = "DELETE FROM students_courses;")
+    void findStudentsRelatedToCourse_shouldEmptyStudentsList_whenNoStudentsOnCourse() {
+        List<Student> actualStudentsOnCourse = studentDao.findStudentsRelatedToCourse("CourseName");
 
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1),
-                       ('FirstName', 'LastName', 1),
-                       ('FirstName', 'LastName', 1);
-
-                INSERT INTO courses (course_name, course_description)
-                VALUES ('CourseName', 'Description');
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            actualStudentsOnCourse = studentDao.findStudentsRelatedToCourse("CourseName");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertEquals(expectedStudentsOnCourse, actualStudentsOnCourse);
+        assertTrue(actualStudentsOnCourse.isEmpty());
     }
 
     @Test
-    void findStudentsRelatedToCourse_shouldListOfStudentsInCourseWithGivenName_whenStudentsRegisteredForCourse() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        List<Student> expectedStudentsOnCourse = new ArrayList<>();
-        List<Student> actualStudentsOnCourse = null;
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
+    void findStudentsRelatedToCourse_shouldListOfStudentsOnCourseWithGivenName_whenStudentsRegisteredForCourse() {
+        List<Student> actualStudentsOnCourse = studentDao.findStudentsRelatedToCourse("CourseName");
 
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1),
-                       ('FirstName', 'LastName', 1),
-                       ('FirstName', 'LastName', 1);
-
-                INSERT INTO courses (course_name, course_description)
-                VALUES ('CourseName', 'Description');
-
-                INSERT INTO students_courses (student_id, course_id)
-                VALUES (1, 1),
-                       (2, 1),
-                       (3, 1);
-                """;
-
-        for (int i = 1; i <= 3; i++) {
-            Student student = new Student("FirstName", "LastName", 1);
-            student.setId(i);
-            expectedStudentsOnCourse.add(student);
-        }
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            actualStudentsOnCourse = studentDao.findStudentsRelatedToCourse("CourseName");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertEquals(expectedStudentsOnCourse, actualStudentsOnCourse);
-    }
-
-    @Test
-    void deleteStudentById_shouldDaoException_whenThrownSQLException() {
-        studentDao = new StudentDaoImpl(connectorMock);
-
-        try (Connection connection = getTestConnection()) {
-            when(connectorMock.getConnection()).thenThrow(SQLException.class);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertThrows(DaoException.class, () -> studentDao.deleteStudentById(1));
-    }
-
-    @Test
-    void deleteStudentById_shouldDeletedStudent_whenStudentWithGivenIdExists() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        int studentId = 1;
-        int rowsDeleted = 0;
-        String actualFirstNameAfterDeleting = null;
-        String actualLastNameAfterDeleting = null;
-        int actualGroupIdAfterDeleting = 0;
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
-
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1);
-                """;
-        String selectingTestDataSqlScript = """
-                SELECT student_id, first_name, last_name, group_id
-                FROM students
-                WHERE student_id = 1;
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            rowsDeleted = studentDao.deleteStudentById(studentId);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(selectingTestDataSqlScript);
-
-            while (resultSet.next()) {
-                actualFirstNameAfterDeleting = resultSet.getString("first_name");
-                actualLastNameAfterDeleting = resultSet.getString("last_name");
-                actualGroupIdAfterDeleting = resultSet.getInt("group_id");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertEquals(1, rowsDeleted);
-        assertEquals(null, actualFirstNameAfterDeleting);
-        assertEquals(null, actualLastNameAfterDeleting);
-        assertEquals(0, actualGroupIdAfterDeleting);
-    }
-
-    @Test
-    void deleteStudentById_shouldNothingDeleted_whenStudentWithGivenIdNotExists() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        int studentId = 2;
-        int rowsDeleted = 0;
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
-
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1);
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            rowsDeleted = studentDao.deleteStudentById(studentId);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertEquals(0, rowsDeleted);
-    }
-
-    @Test
-    void deleteStudentById_shouldNothingDeleted_whenStudentWithGivenIdNotExistsAndIdIsZero() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        int studentId = 0;
-        int rowsDeleted = 0;
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
-
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1);
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            rowsDeleted = studentDao.deleteStudentById(studentId);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertEquals(0, rowsDeleted);
-    }
-
-    @Test
-    void deleteStudentById_shouldNothingDeleted_whenStudentWithGivenIdNotExistsAndIdLessThenZero() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        int studentId = -1;
-        int rowsDeleted = 0;
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
-
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1);
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            rowsDeleted = studentDao.deleteStudentById(studentId);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertEquals(0, rowsDeleted);
-    }
-
-    @Test
-    void isStudentOnCourse_shouldDaoException_whenThrownSQLException() {
-        studentDao = new StudentDaoImpl(connectorMock);
-
-        try (Connection connection = getTestConnection()) {
-            when(connectorMock.getConnection()).thenThrow(SQLException.class);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertThrows(DaoException.class, () -> studentDao.isStudentOnCourse("FirstName", "LsatName", "courseName"));
+        assertEquals(3, actualStudentsOnCourse.size());
     }
 
     @Test
     void isStudentOnCourse_shouldTrue_whenStudentOnCourse() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        boolean studentOnCourse = false;
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
-
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1);
-
-                INSERT INTO courses (course_name, course_description)
-                VALUES ('CourseName', 'Description');
-
-                INSERT INTO students_courses (student_id, course_id)
-                VALUES (1, 1);
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            studentOnCourse = studentDao.isStudentOnCourse("FirstName", "LastName", "CourseName");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        boolean studentOnCourse = studentDao.isStudentOnCourse("FirstName_1", "LastName_1", "CourseName");
 
         assertTrue(studentOnCourse);
     }
 
     @Test
+    @Sql(statements = "DELETE FROM students_courses;")
     void isStudentOnCourse_shouldFalse_whenStudentNotOnCourse() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        boolean studentOnCourse = true;
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
-
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1);
-
-                INSERT INTO courses (course_name, course_description)
-                VALUES ('CourseName', 'Description');
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            studentOnCourse = studentDao.isStudentOnCourse("FirstName", "LastName", "CourseName");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        boolean studentOnCourse = studentDao.isStudentOnCourse("FirstName_1", "LastName_1", "CourseName");
 
         assertFalse(studentOnCourse);
     }
 
     @Test
     void isStudentOnCourse_shouldFalse_whenNoStudentWithGivenFirstNameAndLastName() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        boolean studentOnCourse = true;
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
-
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1);
-
-                INSERT INTO courses (course_name, course_description)
-                VALUES ('CourseName', 'Description');
-
-                INSERT INTO students_courses (student_id, course_id)
-                VALUES (1, 1);
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            studentOnCourse = studentDao.isStudentOnCourse("NotExists", "NotExists", "CourseName");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        boolean studentOnCourse = studentDao.isStudentOnCourse("NotExists", "NotExists", "CourseName");
 
         assertFalse(studentOnCourse);
     }
 
     @Test
     void isStudentOnCourse_shouldFalse_whenNoCourseWithGivenName() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        boolean studentOnCourse = true;
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
-
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1);
-
-                INSERT INTO courses (course_name, course_description)
-                VALUES ('CourseName', 'Description');
-
-                INSERT INTO students_courses (student_id, course_id)
-                VALUES (1, 1);
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            studentOnCourse = studentDao.isStudentOnCourse("FirstName", "LastName", "NotExists");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        boolean studentOnCourse = studentDao.isStudentOnCourse("FirstName_1", "LastName_1", "NotExists");
 
         assertFalse(studentOnCourse);
     }
 
     @Test
     void isStudentOnCourse_shouldFalse_whenGivenStudentFirstNameIsNull() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        boolean studentOnCourse = true;
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
-
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1);
-
-                INSERT INTO courses (course_name, course_description)
-                VALUES ('CourseName', 'Description');
-
-                INSERT INTO students_courses (student_id, course_id)
-                VALUES (1, 1);
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            studentOnCourse = studentDao.isStudentOnCourse(null, "LastName", "CourseName");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        boolean studentOnCourse = studentDao.isStudentOnCourse(null, "LastName_1", "CourseName");
 
         assertFalse(studentOnCourse);
     }
 
     @Test
     void isStudentOnCourse_shouldFalse_whenGivenCourseNameIsNull() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        boolean studentOnCourse = true;
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
-
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1);
-
-                INSERT INTO courses (course_name, course_description)
-                VALUES ('CourseName', 'Description');
-
-                INSERT INTO students_courses (student_id, course_id)
-                VALUES (1, 1);
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            studentOnCourse = studentDao.isStudentOnCourse("FirstName", "LastName", null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        boolean studentOnCourse = studentDao.isStudentOnCourse("FirstName_1", "LastName_1", null);
 
         assertFalse(studentOnCourse);
     }
 
     @Test
-    void addStudentToCourse_shouldDaoException_whenThrownSQLException() {
-        studentDao = new StudentDaoImpl(connectorMock);
-
-        try (Connection connection = getTestConnection()) {
-            when(connectorMock.getConnection()).thenThrow(SQLException.class);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertThrows(DaoException.class, () -> studentDao.addStudentToCourse("FirstName", "LastName", "CourseName"));
-    }
-
-    @Test
     void addStudentToCourse_shouldAddedStudentToCourse_whenExistsStudentWithGivenFirstNameAndLastNameAndExistCourseWithGivenName() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        String actudalStudentFirstNameAddedToCourse = null;
-        String actudalStudentLastNameAddedToCourse = null;
-        String actudalCourseNameToWhichStudentAdded = null;
-        int studentsNumberAddedToCourse = 0;
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
+        int numberOfChanges = studentDao.addStudentToCourse("FirstName_1", "LastName_1", "CourseName");
 
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1);
-
-                INSERT INTO courses (course_name, course_description)
-                VALUES ('CourseName', 'Description');
-                """;
-        String selectingTestDataSqlScript = """
-                SELECT first_name, last_name, course_name FROM students
-                JOIN students_courses ON students.student_id = students_courses.student_id
-                JOIN courses ON courses.course_id = students_courses.course_id
-                WHERE students.first_name = 'FirstName'
-                AND students.last_name = 'LastName'
-                AND courses.course_name = 'CourseName';
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            studentsNumberAddedToCourse = studentDao.addStudentToCourse("FirstName", "LastName", "CourseName");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(selectingTestDataSqlScript);
-
-            while (resultSet.next()) {
-                actudalStudentFirstNameAddedToCourse = resultSet.getString("first_name");
-                actudalStudentLastNameAddedToCourse = resultSet.getString("last_name");
-                actudalCourseNameToWhichStudentAdded = resultSet.getString("course_name");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertEquals("FirstName", actudalStudentFirstNameAddedToCourse);
-        assertEquals("LastName", actudalStudentLastNameAddedToCourse);
-        assertEquals("CourseName", actudalCourseNameToWhichStudentAdded);
-        assertEquals(1, studentsNumberAddedToCourse);
+        assertEquals(1, numberOfChanges);
     }
 
     @Test
-    void addStudentToCourse_shouldAgainAddStudentToCourse_whenStudentAlreadyRegisteredOnCourse() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        int numberOfRecordsExtractedFromTable = 0;
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
-
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1);
-
-                INSERT INTO courses (course_name, course_description)
-                VALUES ('CourseName', 'Description');
-
-                INSERT INTO students_courses (student_id, course_id)
-                VALUES (1, 1);
-                """;
-
-        String selectingTestDataSqlScript = """
-                SELECT first_name, last_name, course_name FROM students
-                JOIN students_courses ON students.student_id = students_courses.student_id
-                JOIN courses ON courses.course_id = students_courses.course_id
-                WHERE students.first_name = 'FirstName'
-                AND students.last_name = 'LastName'
-                AND courses.course_name = 'CourseName';
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            studentDao.addStudentToCourse("FirstName", "LastName", "CourseName");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(selectingTestDataSqlScript);
-
-            while (resultSet.next()) {
-                numberOfRecordsExtractedFromTable++;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertEquals(2, numberOfRecordsExtractedFromTable);
+    void addStudentToCourse_shouldDataIntegrityViolationException_whenNotExistsStudentWithGivenLastName() {
+        assertThrows(DataIntegrityViolationException.class,
+                () -> studentDao.addStudentToCourse("FirstName_1", "NotExists", "CourseName"));
     }
 
     @Test
-    void addStudentToCourse_shouldDaoException_whenNotExistsStudentWithGivenLastName() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
-
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1);
-
-                INSERT INTO courses (course_name, course_description)
-                VALUES ('CourseName', 'Description');
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertThrows(DaoException.class, () -> studentDao.addStudentToCourse("FirstName", "NotExists", "CourseName"));
+    void addStudentToCourse_shouldDaoDataIntegrityViolationException_whenNotExistsCourseWithGivenName() {
+        assertThrows(DataIntegrityViolationException.class,
+                () -> studentDao.addStudentToCourse("FirstName_1", "LastName_2", "NotExists"));
     }
 
     @Test
-    void addStudentToCourse_shouldDaoException_whenNotExistsCourseWithGivenName() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
-
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1);
-
-                INSERT INTO courses (course_name, course_description)
-                VALUES ('CourseName', 'Description');
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertThrows(DaoException.class, () -> studentDao.addStudentToCourse("FirstName", "LastName", "NotExists"));
+    void addStudentToCourse_shouldDataIntegrityViolationException_whenStudentLastNameIsNull() {
+        assertThrows(DataIntegrityViolationException.class,
+                () -> studentDao.addStudentToCourse("FirstName_1", null, "CourseName"));
     }
 
     @Test
-    void addStudentToCourse_shouldDaoException_whenStudentLastNameIsNull() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
-
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1);
-
-                INSERT INTO courses (course_name, course_description)
-                VALUES ('CourseName', 'Description');
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertThrows(DaoException.class, () -> studentDao.addStudentToCourse("FirstName", null, "CourseName"));
+    void addStudentToCourse_shouldDataIntegrityViolationException_whenCourseNameIsNull() {
+        assertThrows(DataIntegrityViolationException.class,
+                () -> studentDao.addStudentToCourse("FirstName_1", "LastName_1", null));
     }
 
     @Test
-    void addStudentToCourse_shouldDaoException_whenCourseNameIsNull() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
+    void addStudentToCourseCongested_shouldAddedStudentToCourse_whenExistsStudentWithGivenIdAndExistCourseWithGivenId() {
+        int numberOfChanges = studentDao.addStudentToCourse(1, 1);
 
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1);
-
-                INSERT INTO courses (course_name, course_description)
-                VALUES ('CourseName', 'Description');
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertThrows(DaoException.class, () -> studentDao.addStudentToCourse("FirstName", "LastName", null));
+        assertEquals(1, numberOfChanges);
     }
 
     @Test
-    void addStudentToCourseCongested_shouldDaoException_whenThrownSQLException() {
-        studentDao = new StudentDaoImpl(connectorMock);
+    void addStudentToCourseCongested_shouldDataIntegrityViolationException_whenNotExistsStudentWithGivenStudentId() {
+        int notExistentStudentId = 4;
 
-        try (Connection connection = getTestConnection()) {
-            when(connectorMock.getConnection()).thenThrow(SQLException.class);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertThrows(DaoException.class, () -> studentDao.addStudentToCourse(1, 1));
+        assertThrows(DataIntegrityViolationException.class,
+                () -> studentDao.addStudentToCourse(notExistentStudentId, 1));
     }
 
     @Test
-    void addStudentToCourseCongested_shouldAddedStudentToCourse_whenExistsStudentWithGivenStudentIdAndExistCourseWithGivenCourseId() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        String actudalStudentFirstNameAddedToCourse = null;
-        String actudalStudentLastNameAddedToCourse = null;
-        String actudalCourseNameToWhichStudentAdded = null;
-        int studentsNumberAddedToCourse = 0;
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
-
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1);
-
-                INSERT INTO courses (course_name, course_description)
-                VALUES ('CourseName', 'Description');
-                """;
-        String selectingTestDataSqlScript = """
-                SELECT first_name, last_name, course_name FROM students
-                JOIN students_courses ON students.student_id = students_courses.student_id
-                JOIN courses ON courses.course_id = students_courses.course_id
-                WHERE students.student_id = 1
-                AND courses.course_id = 1;
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            studentsNumberAddedToCourse = studentDao.addStudentToCourse(1, 1);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(selectingTestDataSqlScript);
-
-            while (resultSet.next()) {
-                actudalStudentFirstNameAddedToCourse = resultSet.getString("first_name");
-                actudalStudentLastNameAddedToCourse = resultSet.getString("last_name");
-                actudalCourseNameToWhichStudentAdded = resultSet.getString("course_name");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertEquals("FirstName", actudalStudentFirstNameAddedToCourse);
-        assertEquals("LastName", actudalStudentLastNameAddedToCourse);
-        assertEquals("CourseName", actudalCourseNameToWhichStudentAdded);
-        assertEquals(1, studentsNumberAddedToCourse);
-    }
-
-    @Test
-    void addStudentToCourseCongested_shouldAgainAddStudentToCourse_whenStudentAlreadyRegisteredOnCourse() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        int numberOfRecordsExtractedFromTable = 0;
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
-
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1);
-
-                INSERT INTO courses (course_name, course_description)
-                VALUES ('CourseName', 'Description');
-
-                INSERT INTO students_courses (student_id, course_id)
-                VALUES (1, 1);
-                """;
-
-        String selectingTestDataSqlScript = """
-                SELECT first_name, last_name, course_name FROM students
-                JOIN students_courses ON students.student_id = students_courses.student_id
-                JOIN courses ON courses.course_id = students_courses.course_id
-                WHERE students.student_id = 1
-                AND courses.course_id = 1;
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            studentDao.addStudentToCourse(1, 1);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(selectingTestDataSqlScript);
-
-            while (resultSet.next()) {
-                numberOfRecordsExtractedFromTable++;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertEquals(2, numberOfRecordsExtractedFromTable);
-    }
-
-    @Test
-    void addStudentToCourseCongested_shouldDaoException_whenNotExistsStudentWithGivenStudentId() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        int notExistentStudentId = 2;
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
-
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1);
-
-                INSERT INTO courses (course_name, course_description)
-                VALUES ('CourseName', 'Description');
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertThrows(DaoException.class, () -> studentDao.addStudentToCourse(notExistentStudentId, 1));
-    }
-
-    @Test
-    void addStudentToCourseCongested_shouldDaoException_whenNotExistsCourseWithGivenCoursetId() {
-        studentDao = new StudentDaoImpl(connectorMock);
+    void addStudentToCourseCongested_shouldDataIntegrityViolationException_whenNotExistsCourseWithGivenCoursetId() {
         int notExistentCourseId = 2;
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
 
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1);
-
-                INSERT INTO courses (course_name, course_description)
-                VALUES ('CourseName', 'Description');
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertThrows(DaoException.class, () -> studentDao.addStudentToCourse(1, notExistentCourseId));
-    }
-
-    @Test
-    void deleteStudentFromCourse_shouldDaoException_whenThrownSQLException() {
-        studentDao = new StudentDaoImpl(connectorMock);
-
-        try (Connection connection = getTestConnection()) {
-            when(connectorMock.getConnection()).thenThrow(SQLException.class);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertThrows(DaoException.class,
-                () -> studentDao.deleteStudentFromCourse("FirstName", "LastName", "CourseName"));
+        assertThrows(DataIntegrityViolationException.class,
+                () -> studentDao.addStudentToCourse(1, notExistentCourseId));
     }
 
     @Test
     void deleteStudentFromCourse_shouldDeletedStudentFromCourse_whenStudentWasPreviouslyOnCourse() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        String actudalStudentFirstNameAfterDeletingFromCourse = "";
-        String actudalStudentLastNameAfterDeletingFromCourse = "";
-        String actudalCourseNameFromWhichStudentDeleted = "";
-        int studentsNumberDeletedFromCourse = 0;
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
+        int numberOfChanges = studentDao.deleteStudentFromCourse("FirstName_2", "LastName_2", "CourseName");
 
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1);
-
-                INSERT INTO courses (course_name, course_description)
-                VALUES ('CourseName', 'Description');
-
-                INSERT INTO students_courses (student_id, course_id)
-                VALUES (1, 1);
-                """;
-        String selectingTestDataSqlScript = """
-                SELECT first_name, last_name, course_name FROM students
-                JOIN students_courses ON students.student_id = students_courses.student_id
-                JOIN courses ON courses.course_id = students_courses.course_id
-                WHERE students.first_name = 'FirstName'
-                AND students.last_name = 'LastName'
-                AND courses.course_name = 'CourseName';
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            studentsNumberDeletedFromCourse = studentDao.deleteStudentFromCourse("FirstName", "LastName", "CourseName");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(selectingTestDataSqlScript);
-
-            while (resultSet.next()) {
-                actudalStudentFirstNameAfterDeletingFromCourse = resultSet.getString("first_name");
-                actudalStudentLastNameAfterDeletingFromCourse = resultSet.getString("last_name");
-                actudalCourseNameFromWhichStudentDeleted = resultSet.getString("course_name");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertEquals("", actudalStudentFirstNameAfterDeletingFromCourse);
-        assertEquals("", actudalStudentLastNameAfterDeletingFromCourse);
-        assertEquals("", actudalCourseNameFromWhichStudentDeleted);
-        assertEquals(1, studentsNumberDeletedFromCourse);
+        assertEquals(1, numberOfChanges);
     }
 
     @Test
+    @Sql(statements = "INSERT INTO courses (course_name, course_description) VALUES('CourseName_2', 'Description_2');")
     void deleteStudentFromCourse_shouldNothingDeleted_whenNotExistsStudentWithGivenFirstNameOnCourse() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        int studentsNumberDeletedFromCourse = 0;
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
+        int numberOfChanges = studentDao.deleteStudentFromCourse("FirstName_1", "LastName_1", "CourseName_2");
 
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1);
-
-                INSERT INTO courses (course_name, course_description)
-                VALUES ('CourseName', 'Description');
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            studentsNumberDeletedFromCourse = studentDao.deleteStudentFromCourse("FirstName", "LastName", "CourseName");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertEquals(0, studentsNumberDeletedFromCourse);
+        assertEquals(0, numberOfChanges);
     }
 
     @Test
     void deleteStudentFromCourse_shouldNothingDeleted_whenNoStudentWithGivenFirstName() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        int studentsNumberDeletedFromCourse = 0;
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
+        int numberOfChanges = studentDao.deleteStudentFromCourse("NotExists", "LastName_1", "CourseName");
 
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1);
-
-                INSERT INTO courses (course_name, course_description)
-                VALUES ('CourseName', 'Description');
-
-                INSERT INTO students_courses (student_id, course_id)
-                VALUES (1, 1);
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            studentsNumberDeletedFromCourse = studentDao.deleteStudentFromCourse("NotExists", "LastName", "CourseName");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertEquals(0, studentsNumberDeletedFromCourse);
+        assertEquals(0, numberOfChanges);
     }
 
     @Test
     void deleteStudentFromCourse_shouldNothingDeleted_whenNoCourseWithGivenName() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        int studentsNumberDeletedFromCourse = 0;
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
+        int numberOfChanges = studentDao.deleteStudentFromCourse("FirstName_2", "LastName_2", "NotExists");
 
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1);
-
-                INSERT INTO courses (course_name, course_description)
-                VALUES ('CourseName', 'Description');
-
-                INSERT INTO students_courses (student_id, course_id)
-                VALUES (1, 1);
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            studentsNumberDeletedFromCourse = studentDao.deleteStudentFromCourse("FirstName", "LastName", "NotExists");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertEquals(0, studentsNumberDeletedFromCourse);
+        assertEquals(0, numberOfChanges);
     }
 
     @Test
     void deleteStudentFromCourse_shouldNothingDeleted_whenStudentFirstNameIsNull() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        int studentsNumberDeletedFromCourse = 0;
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
+        int numberOfChanges = studentDao.deleteStudentFromCourse(null, "LastName_1", "CourseName");
 
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1);
-
-                INSERT INTO courses (course_name, course_description)
-                VALUES ('CourseName', 'Description');
-
-                INSERT INTO students_courses (student_id, course_id)
-                VALUES (1, 1);
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            studentsNumberDeletedFromCourse = studentDao.deleteStudentFromCourse(null, "LastName", "CourseName");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertEquals(0, studentsNumberDeletedFromCourse);
+        assertEquals(0, numberOfChanges);
     }
 
     @Test
     void deleteStudentFromCourse_shouldNothingDeleted_whenCourseNameIsNull() {
-        studentDao = new StudentDaoImpl(connectorMock);
-        int studentsNumberDeletedFromCourse = 0;
-        String fillingTablesSqlScript = """
-                INSERT INTO groups (group_name)
-                VALUES ('MQ-90');
+        int numberOfChanges = studentDao.deleteStudentFromCourse("FirstName_1", "LastName_1", null);
 
-                INSERT INTO students (first_name, last_name, group_id)
-                VALUES ('FirstName', 'LastName', 1);
-
-                INSERT INTO courses (course_name, course_description)
-                VALUES ('CourseName', 'Description');
-
-                INSERT INTO students_courses (student_id, course_id)
-                VALUES (1, 1);
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(fillingTablesSqlScript);
-
-            when(connectorMock.getConnection()).thenReturn(getTestConnection());
-            studentsNumberDeletedFromCourse = studentDao.deleteStudentFromCourse("FirstName", "LastName", null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        assertEquals(0, studentsNumberDeletedFromCourse);
-    }
-
-    @AfterEach
-    void tearDown() {
-        String sqlScript = """
-                ALTER TABLE students ALTER COLUMN student_id RESTART WITH 1;
-                DELETE FROM students;
-                ALTER TABLE groups ALTER COLUMN group_id RESTART WITH 1;
-                DELETE FROM groups;
-                ALTER TABLE courses ALTER COLUMN course_id RESTART WITH 1;
-                DELETE FROM courses;
-                ALTER TABLE students_courses ALTER COLUMN student_courses_id RESTART WITH 1;
-                DELETE FROM students_courses;
-                """;
-
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(sqlScript);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @AfterAll
-    static void tearDownAfterClass() {
-        String sqlScript = """
-                DROP TABLE IF EXISTS groups CASCADE;
-                DROP TABLE IF EXISTS students CASCADE;
-                DROP TABLE IF EXISTS courses CASCADE;
-                DROP TABLE IF EXISTS students_courses CASCADE;
-                """;
-        try (Connection connection = getTestConnection()) {
-            Statement statement = connection.createStatement();
-            statement.execute(sqlScript);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static Connection getTestConnection() throws SQLException {
-        return DriverManager.getConnection(URL, USER, PASSWORD);
+        assertEquals(0, numberOfChanges);
     }
 
 }
