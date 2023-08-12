@@ -1,36 +1,36 @@
 package ua.foxminded.schoolapp.datasetup.impl;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 import ua.foxminded.schoolapp.model.Course;
+import ua.foxminded.schoolapp.TestAppConfig;
 import ua.foxminded.schoolapp.datasetup.CoursesGeneratorTestHelper;
-import ua.foxminded.schoolapp.datasetup.Generatable;
 import ua.foxminded.schoolapp.datasetup.Reader;
 import ua.foxminded.schoolapp.exception.DataSetUpException;
 import ua.foxminded.schoolapp.exception.FileReadingException;
 
+@SpringBootTest
+@ContextConfiguration(classes = TestAppConfig.class)
 class CoursesGeneratorTest {
 
-    Reader readerMock;
-    Generatable<Course> coursesGenerator;
-    CoursesGeneratorTestHelper helper;
+    final CoursesGeneratorTestHelper helper = new CoursesGeneratorTestHelper();;
 
-    @BeforeEach
-    void setUp() {
-        readerMock = mock(Reader.class);
-        helper = new CoursesGeneratorTestHelper();
-    }
+    @Mock
+    Reader readerMock;
+
+    @InjectMocks
+    CoursesGenerator coursesGenerator;
 
     @Test
-    void toGenerate_shouldNullPointerException_whenReaderIsNull() {
-        assertThrows(NullPointerException.class, () -> {
-            coursesGenerator = new CoursesGenerator(null);
-        });
+    void CoursesGenerator_shouldNullPointerException_whenReaderIsNull() {
+        assertThrows(NullPointerException.class, () -> coursesGenerator = new CoursesGenerator(null));
     }
 
     @Test
@@ -87,9 +87,7 @@ class CoursesGeneratorTest {
         when(readerMock.readFileAndPopulateListWithLines("courses/courses.txt")).thenReturn(coursesNames);
         when(readerMock.readFileAndPopulateListWithLines("courses/descriptions.txt")).thenReturn(coursesDescriptions);
 
-        assertThrows(DataSetUpException.class, () -> {
-            coursesGenerator.toGenerate();
-        });
+        assertThrows(DataSetUpException.class, () -> coursesGenerator.toGenerate());
     }
 
     @Test
@@ -100,9 +98,7 @@ class CoursesGeneratorTest {
         when(readerMock.readFileAndPopulateListWithLines("courses/courses.txt")).thenReturn(coursesNames);
         when(readerMock.readFileAndPopulateListWithLines("courses/descriptions.txt")).thenReturn(coursesDescriptions);
 
-        assertThrows(DataSetUpException.class, () -> {
-            coursesGenerator.toGenerate();
-        });
+        assertThrows(DataSetUpException.class, () -> coursesGenerator.toGenerate());
     }
 
     @Test
@@ -112,9 +108,7 @@ class CoursesGeneratorTest {
         when(readerMock.readFileAndPopulateListWithLines("courses/courses.txt")).thenThrow(FileReadingException.class);
         when(readerMock.readFileAndPopulateListWithLines("courses/descriptions.txt")).thenReturn(coursesDescriptions);
 
-        assertThrows(FileReadingException.class, () -> {
-            coursesGenerator.toGenerate();
-        });
+        assertThrows(FileReadingException.class, () -> coursesGenerator.toGenerate());
     }
 
 }

@@ -1,16 +1,12 @@
 package ua.foxminded.schoolapp.dao.impl;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import ua.foxminded.schoolapp.dao.Connectable;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
 import ua.foxminded.schoolapp.dao.CourseDao;
-import ua.foxminded.schoolapp.exception.DaoException;
+import ua.foxminded.schoolapp.dao.mapper.CourseRowMapper;
 import ua.foxminded.schoolapp.model.Course;
 import ua.foxminded.schoolapp.model.Student;
 
@@ -18,27 +14,33 @@ import ua.foxminded.schoolapp.model.Student;
  * The CourseDaoImpl class is an implementation of the {@link CourseDao}
  * interface. It provides methods for accessing and manipulating Course entities
  * in the database.
+ * <p>
+ * This class is annotated with {@link Repository}, marking it as a Spring
+ * repository component, which enables automatic dependency injection and
+ * exception translation for database access.
+ * <p>
+ * The CourseDaoImpl uses the {@link JdbcTemplate} to interact with the
+ * database. It also uses a {@link CourseRowMapper} to map rows of the result
+ * set to Course objects.
+ * <p>
+ * Note: This class should be used in conjunction with the Spring context to
+ * configure the application and enable database access for Course entities.
  *
  * @author Serhii Bohdan
  */
+@Repository
 public class CourseDaoImpl implements CourseDao {
 
-    /**
-     * A constant representing a new line character.
-     */
-    public static final String NEW_LINE = "\n";
-
-    private Connectable connector;
+    private final JdbcTemplate jdbcTemplate;
+    private final RowMapper<Course> courseRowMapper = new CourseRowMapper();
 
     /**
-     * Constructs a CourseDaoImpl object with the specified Connectable connector.
+     * Constructs a new CourseDaoImpl with the specified JdbcTemplate.
      *
-     * @param connector the Connectable object used for obtaining a database
-     *                  connection
+     * @param jdbcTemplate the JdbcTemplate used to interact with the database
      */
-    public CourseDaoImpl(Connectable connector) {
-        Objects.requireNonNull(connector, "connector must not be null");
-        this.connector = connector;
+    public CourseDaoImpl(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     /**
@@ -46,22 +48,29 @@ public class CourseDaoImpl implements CourseDao {
      */
     @Override
     public int save(Course course) {
-        int rowsInserted;
+        String sql = """
+                INSERT INTO courses (course_name, course_description)
+                VALUES(?, ?);
+                """;
 
-        try (Connection connection = connector.getConnection()) {
-            PreparedStatement statement = connection.prepareStatement("""
-                    INSERT INTO courses (course_name, course_description)
-                    VALUES(?, ?);
-                    """);
-            statement.setString(1, course.getCourseName());
-            statement.setString(2, course.getDescription());
-            rowsInserted = statement.executeUpdate();
+        return jdbcTemplate.update(sql, course.getCourseName(), course.getDescription());
+    }
 
-        } catch (SQLException e) {
-            throw new DaoException(
-                    "An error occurred when saving the course data to the database." + NEW_LINE + e.getMessage());
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Course find(int courseId) {
+        String sql = """
+                SELECT * FROM courses
+                WHERE course_id = ?;
+                """;
+
+        try {
+            return jdbcTemplate.queryForObject(sql, courseRowMapper, courseId);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
         }
-        return rowsInserted;
     }
 
     /**
@@ -69,27 +78,39 @@ public class CourseDaoImpl implements CourseDao {
      */
     @Override
     public List<Course> findAll() {
-        List<Course> courses = new ArrayList<>();
+        String sql = "SELECT * FROM courses;";
 
-        try (Connection connection = connector.getConnection()) {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("""
-                    SELECT course_id, course_name, course_description
-                    FROM courses;
-                    """);
+        return jdbcTemplate.query(sql, courseRowMapper);
+    }
 
-            while (resultSet.next()) {
-                Course course = new Course();
-                course.setId(resultSet.getInt("course_id"));
-                course.setCourseName(resultSet.getString("course_name"));
-                course.setDescription(resultSet.getString("course_description"));
-                courses.add(course);
-            }
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int update(Course course) {
+        String sql = """
+                UPDATE courses
+                SET course_name = ?, course_description = ?
+                WHERE course_id = ?;
+                """;
 
-        } catch (SQLException e) {
-            throw new DaoException("An error occurred when searching for all course data." + NEW_LINE + e.getMessage());
-        }
-        return courses;
+        return jdbcTemplate.update(sql, course.getCourseName(), course.getDescription(), course.getId());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int delete(int courseId) {
+        String sql = """
+                DELETE FROM students_courses
+                WHERE course_id = ?;
+
+                DELETE FROM courses
+                WHERE course_id = ?;
+                """;
+
+        return jdbcTemplate.update(sql, courseId, courseId);
     }
 
     /**
@@ -97,33 +118,14 @@ public class CourseDaoImpl implements CourseDao {
      */
     @Override
     public List<Course> findCoursesForStudent(Student student) {
-        List<Course> coursesForStudent = new ArrayList<>();
+        String sql = """
+                SELECT courses.course_id, course_name, course_description
+                FROM students JOIN students_courses ON students.student_id = students_courses.student_id
+                JOIN courses ON courses.course_id = students_courses.course_id
+                WHERE students.student_id = ? AND students.first_name = ? AND students.last_name = ?;
+                """;
 
-        try (Connection connection = connector.getConnection()) {
-            PreparedStatement statement = connection.prepareStatement("""
-                    SELECT courses.course_id, course_name, course_description
-                    FROM students JOIN students_courses ON students.student_id = students_courses.student_id
-                    JOIN courses ON courses.course_id = students_courses.course_id
-                    WHERE students.student_id = ? AND students.first_name = ? AND students.last_name = ?;
-                    """);
-            statement.setInt(1, student.getId());
-            statement.setString(2, student.getFirstName());
-            statement.setString(3, student.getLastName());
-            ResultSet resultSet = statement.executeQuery();
-
-            while (resultSet.next()) {
-                Course course = new Course();
-                course.setId(resultSet.getInt("course_id"));
-                course.setCourseName(resultSet.getString("course_name"));
-                course.setDescription(resultSet.getString("course_description"));
-                coursesForStudent.add(course);
-            }
-
-        } catch (SQLException e) {
-            throw new DaoException("An error occurred when searching for courses in which the student is registered."
-                    + NEW_LINE + e.getMessage());
-        }
-        return coursesForStudent;
+        return jdbcTemplate.query(sql, courseRowMapper, student.getId(), student.getFirstName(), student.getLastName());
     }
 
 }

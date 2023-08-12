@@ -1,40 +1,39 @@
 package ua.foxminded.schoolapp.datasetup.impl;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 import ua.foxminded.schoolapp.exception.FileReadingException;
 import ua.foxminded.schoolapp.model.Student;
-import ua.foxminded.schoolapp.datasetup.Generatable;
+import ua.foxminded.schoolapp.TestAppConfig;
 import ua.foxminded.schoolapp.datasetup.Reader;
 import ua.foxminded.schoolapp.datasetup.StudentGeneratorTestHelper;
 import ua.foxminded.schoolapp.exception.DataSetUpException;
 
+@SpringBootTest
+@ContextConfiguration(classes = TestAppConfig.class)
 class StudentsGeneratorTest {
 
-    Reader readerMock;
-    Generatable<Student> studentsGenerator;
-    StudentGeneratorTestHelper helper;
+    final StudentGeneratorTestHelper helper = new StudentGeneratorTestHelper();
 
-    @BeforeEach
-    void setUp() {
-        readerMock = mock(Reader.class);
-        helper = new StudentGeneratorTestHelper();
-    }
+    @Mock
+    Reader readerMock;
+
+    @InjectMocks
+    StudentsGenerator studentsGenerator;
 
     @Test
-    void toGenerate_shouldNullPointerException_whenReaderIsNull() {
-
-        assertThrows(NullPointerException.class, () -> {
-            studentsGenerator = new StudentsGenerator(null);
-        });
+    void StudentGenerator_shouldNullPointerException_whenReaderIsNull() {
+        assertThrows(NullPointerException.class, () -> studentsGenerator = new StudentsGenerator(null));
     }
 
     @Test
@@ -93,9 +92,7 @@ class StudentsGeneratorTest {
         when(readerMock.readFileAndPopulateListWithLines("students/first_names.txt")).thenReturn(testFirstNames);
         when(readerMock.readFileAndPopulateListWithLines("students/last_names.txt")).thenReturn(testLastNames);
 
-        assertThrows(DataSetUpException.class, () -> {
-            studentsGenerator.toGenerate();
-        });
+        assertThrows(DataSetUpException.class, () -> studentsGenerator.toGenerate());
     }
 
     @Test
@@ -106,9 +103,7 @@ class StudentsGeneratorTest {
         when(readerMock.readFileAndPopulateListWithLines("students/first_names.txt")).thenReturn(testFirstNames);
         when(readerMock.readFileAndPopulateListWithLines("students/last_names.txt")).thenReturn(testLastNames);
 
-        assertThrows(DataSetUpException.class, () -> {
-            studentsGenerator.toGenerate();
-        });
+        assertThrows(DataSetUpException.class, () -> studentsGenerator.toGenerate());
     }
 
     @Test
@@ -119,9 +114,7 @@ class StudentsGeneratorTest {
         when(readerMock.readFileAndPopulateListWithLines("students/last_names.txt"))
                 .thenThrow(FileReadingException.class);
 
-        assertThrows(FileReadingException.class, () -> {
-            studentsGenerator.toGenerate();
-        });
+        assertThrows(FileReadingException.class, () -> studentsGenerator.toGenerate());
     }
 
     @Test
@@ -193,9 +186,7 @@ class StudentsGeneratorTest {
         when(readerMock.readFileAndPopulateListWithLines("students/first_names.txt")).thenReturn(testFirstNames);
         when(readerMock.readFileAndPopulateListWithLines("students/last_names.txt")).thenReturn(testLastNames);
 
-        assertThrows(InvocationTargetException.class, () -> {
-            method.invoke(studentsGenerator);
-        });
+        assertThrows(InvocationTargetException.class, () -> method.invoke(studentsGenerator));
     }
 
     @Test
@@ -209,9 +200,7 @@ class StudentsGeneratorTest {
         when(readerMock.readFileAndPopulateListWithLines("students/first_names.txt")).thenReturn(testFirstNames);
         when(readerMock.readFileAndPopulateListWithLines("students/last_names.txt")).thenReturn(testLastNames);
 
-        assertThrows(InvocationTargetException.class, () -> {
-            method.invoke(studentsGenerator);
-        });
+        assertThrows(InvocationTargetException.class, () -> method.invoke(studentsGenerator));
     }
 
     @Test

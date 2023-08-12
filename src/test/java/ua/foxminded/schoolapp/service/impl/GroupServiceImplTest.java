@@ -2,7 +2,6 @@ package ua.foxminded.schoolapp.service.impl;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -11,26 +10,28 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import ua.foxminded.schoolapp.TestAppConfig;
 import ua.foxminded.schoolapp.dao.GroupDao;
 import ua.foxminded.schoolapp.datasetup.Generatable;
-import ua.foxminded.schoolapp.exception.DaoException;
 import ua.foxminded.schoolapp.model.Group;
-import ua.foxminded.schoolapp.service.GroupService;
 
+@SpringBootTest
+@ContextConfiguration(classes = TestAppConfig.class)
 class GroupServiceImplTest {
 
+    @Mock
     Generatable<Group> groupsGeneratorMock;
-    GroupDao groupDaoMock;
-    GroupService groupService;
 
-    @SuppressWarnings("unchecked")
-    @BeforeEach
-    void setUp() {
-        groupsGeneratorMock = mock(Generatable.class);
-        groupDaoMock = mock(GroupDao.class);
-    }
+    @Mock
+    GroupDao groupDaoMock;
+
+    @InjectMocks
+    GroupServiceImpl groupService;
 
     @Test
     void GroupServiceImpl_shouldNullPointerException_whenGroupsGeneratorIsNull() {
@@ -40,21 +41,6 @@ class GroupServiceImplTest {
     @Test
     void GroupServiceImpl_shouldNullPointerException_whenGroupDaoIsNull() {
         assertThrows(NullPointerException.class, () -> new GroupServiceImpl(groupsGeneratorMock, null));
-    }
-
-    @Test
-    void initGroups_shouldDaoException_whenGroupDaoThrowDaoException() {
-        groupService = new GroupServiceImpl(groupsGeneratorMock, groupDaoMock);
-        List<Group> generatedGroups = new ArrayList<>();
-        Group group = new Group("GH-37");
-        group.setId(1);
-        generatedGroups.add(group);
-        when(groupsGeneratorMock.toGenerate()).thenReturn(generatedGroups);
-        when(groupDaoMock.save(group)).thenThrow(DaoException.class);
-
-        assertThrows(DaoException.class, () -> groupService.initGroups());
-        verify(groupsGeneratorMock, times(1)).toGenerate();
-        verify(groupDaoMock, times(1)).save(group);
     }
 
     @Test
@@ -93,38 +79,39 @@ class GroupServiceImplTest {
     }
 
     @Test
-    void getGroupsWithGivenNumberOfStudents_shouldDaoException_whenGroupDaoThrowDaoException() {
+    void getGroupsWithGivenNumberOfStudents_shouldBeReturnedMapWithTwoGroupsAndTheirNumberOfStudents_whenGroupDaoReturnListWithTwoGroups() {
         groupService = new GroupServiceImpl(groupsGeneratorMock, groupDaoMock);
-        int studentsNumber = 11;
-        when(groupDaoMock.findGroupsWithGivenNumberStudents(studentsNumber)).thenThrow(DaoException.class);
-
-        assertThrows(DaoException.class, () -> groupService.getGroupsWithGivenNumberOfStudents(studentsNumber));
-        verify(groupDaoMock, times(1)).findGroupsWithGivenNumberStudents(studentsNumber);
-    }
-
-    @Test
-    void getGroupsWithGivenNumberOfStudents_shouldBeReturnedValueThatReturnGroupDao_whenWePassedCorrectGroupDaoInstance() {
-        groupService = new GroupServiceImpl(groupsGeneratorMock, groupDaoMock);
-        int studentsNumber = 11;
+        Group firstGroup = new Group("TO-72");
+        Group secondGroup = new Group("JD-20");
+        List<Group> groupsWithGivenNumberOfStudents = new ArrayList<Group>();
+        groupsWithGivenNumberOfStudents.add(firstGroup);
+        groupsWithGivenNumberOfStudents.add(secondGroup);
+        int studentsNumberForFirstGroup = 3;
+        int studentsNumberForSecondGroup = 2;
         Map<Group, Integer> expectedGroupWithTheirNumberOfStudents = new HashMap<>();
-        expectedGroupWithTheirNumberOfStudents.put(new Group("TO-72"), studentsNumber);
-        when(groupDaoMock.findGroupsWithGivenNumberStudents(studentsNumber))
-                .thenReturn(expectedGroupWithTheirNumberOfStudents);
+        expectedGroupWithTheirNumberOfStudents.put(firstGroup, studentsNumberForFirstGroup);
+        expectedGroupWithTheirNumberOfStudents.put(secondGroup, studentsNumberForSecondGroup);
+        when(groupDaoMock.findGroupsWithGivenNumberStudents(studentsNumberForFirstGroup))
+                .thenReturn(groupsWithGivenNumberOfStudents);
+        when(groupDaoMock.findNumberOfStudentsForGroup(firstGroup)).thenReturn(studentsNumberForFirstGroup);
+        when(groupDaoMock.findNumberOfStudentsForGroup(secondGroup)).thenReturn(studentsNumberForSecondGroup);
 
         Map<Group, Integer> actualGroupWithTheirNumberOfStudents = groupService
-                .getGroupsWithGivenNumberOfStudents(studentsNumber);
+                .getGroupsWithGivenNumberOfStudents(studentsNumberForFirstGroup);
 
         assertEquals(expectedGroupWithTheirNumberOfStudents, actualGroupWithTheirNumberOfStudents);
-        verify(groupDaoMock, times(1)).findGroupsWithGivenNumberStudents(studentsNumber);
+        verify(groupDaoMock, times(1)).findGroupsWithGivenNumberStudents(studentsNumberForFirstGroup);
+        verify(groupDaoMock, times(1)).findNumberOfStudentsForGroup(firstGroup);
+        verify(groupDaoMock, times(1)).findNumberOfStudentsForGroup(secondGroup);
     }
 
     @Test
-    void getGroupsWithGivenNumberOfStudents_shouldEmptyMap_whenGroupReturnEmptyMap() {
+    void getGroupsWithGivenNumberOfStudents_shouldEmptyMap_whenGroupDaoReturnEmptyGroupsList() {
         groupService = new GroupServiceImpl(groupsGeneratorMock, groupDaoMock);
-        int studentsNumber = 11;
+        int studentsNumber = 2;
+        List<Group> emptyGroupsList = new ArrayList<>();
         Map<Group, Integer> expectedGroupWithTheirNumberOfStudents = new HashMap<>();
-        when(groupDaoMock.findGroupsWithGivenNumberStudents(studentsNumber))
-                .thenReturn(expectedGroupWithTheirNumberOfStudents);
+        when(groupDaoMock.findGroupsWithGivenNumberStudents(studentsNumber)).thenReturn(emptyGroupsList);
 
         Map<Group, Integer> actualGroupWithTheirNumberOfStudents = groupService
                 .getGroupsWithGivenNumberOfStudents(studentsNumber);

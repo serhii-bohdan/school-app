@@ -2,33 +2,34 @@ package ua.foxminded.schoolapp.service.impl;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import ua.foxminded.schoolapp.TestAppConfig;
 import ua.foxminded.schoolapp.dao.StudentDao;
 import ua.foxminded.schoolapp.datasetup.Generatable;
-import ua.foxminded.schoolapp.exception.DaoException;
 import ua.foxminded.schoolapp.model.Student;
-import ua.foxminded.schoolapp.service.StudentService;
 
+@SpringBootTest
+@ContextConfiguration(classes = TestAppConfig.class)
 class StudentServiceImplTest {
 
+    @Mock
     Generatable<Student> studentsGeneratorMock;
-    StudentDao studentDaoMock;
-    StudentService studentService;
 
-    @SuppressWarnings("unchecked")
-    @BeforeEach
-    void setUp() {
-        studentsGeneratorMock = mock(Generatable.class);
-        studentDaoMock = mock(StudentDao.class);
-    }
+    @Mock
+    StudentDao studentDaoMock;
+
+    @InjectMocks
+    StudentServiceImpl studentService;
 
     @Test
     void StudentServiceImpl_shouldNullPointerException_whenStudentsGeneratorIsNull() {
@@ -38,20 +39,6 @@ class StudentServiceImplTest {
     @Test
     void StudentServiceImpl_shouldNullPointerException_whenStudentDaoIsNull() {
         assertThrows(NullPointerException.class, () -> new StudentServiceImpl(studentsGeneratorMock, null));
-    }
-
-    @Test
-    void initStudents_shouldDaoException_whenStudentDaoThrowDaoException() {
-        studentService = new StudentServiceImpl(studentsGeneratorMock, studentDaoMock);
-        List<Student> generatedStudents = new ArrayList<>();
-        Student student = new Student("FirstName", "LastName", 1);
-        generatedStudents.add(student);
-        when(studentsGeneratorMock.toGenerate()).thenReturn(generatedStudents);
-        when(studentDaoMock.save(student)).thenThrow(DaoException.class);
-
-        assertThrows(DaoException.class, () -> studentService.initStudents());
-        verify(studentsGeneratorMock, times(1)).toGenerate();
-        verify(studentDaoMock, times(1)).save(student);
     }
 
     @Test
@@ -87,15 +74,6 @@ class StudentServiceImplTest {
     }
 
     @Test
-    void initStudentsCoursesTable_shouldDaoException_whenStudentDaoThrowDaoException() {
-        studentService = new StudentServiceImpl(studentsGeneratorMock, studentDaoMock);
-        when(studentDaoMock.findAll()).thenThrow(DaoException.class);
-
-        assertThrows(DaoException.class, () -> studentService.initStudentsCoursesTable());
-        verify(studentDaoMock, times(1)).findAll();
-    }
-
-    @Test
     void initStudentsCoursesTable_shouldOneStudentAddedToCourses_whenStudentDaoReturnsListWithOneStudent() {
         studentService = new StudentServiceImpl(studentsGeneratorMock, studentDaoMock);
         List<Student> allStudents = new ArrayList<>();
@@ -105,16 +83,6 @@ class StudentServiceImplTest {
         studentService.initStudentsCoursesTable();
 
         verify(studentDaoMock, times(1)).findAll();
-    }
-
-    @Test
-    void getStudentsRelatedToCourse_shouldDaoException_whenStudentDaoThrowDaoException() {
-        studentService = new StudentServiceImpl(studentsGeneratorMock, studentDaoMock);
-        String courseName = "CourseName";
-        when(studentDaoMock.findStudentsRelatedToCourse(courseName)).thenThrow(DaoException.class);
-
-        assertThrows(DaoException.class, () -> studentService.getStudentsRelatedToCourse(courseName));
-        verify(studentDaoMock, times(1)).findStudentsRelatedToCourse(courseName);
     }
 
     @Test
@@ -150,19 +118,6 @@ class StudentServiceImplTest {
     }
 
     @Test
-    void addStudent_shouldDaoException_whenStudentDaoThrowDaoException() {
-        studentService = new StudentServiceImpl(studentsGeneratorMock, studentDaoMock);
-        String firstName = "FirstName";
-        String lastName = "LastName";
-        int groupId = 1;
-        Student student = new Student(firstName, lastName, groupId);
-        when(studentDaoMock.save(student)).thenThrow(DaoException.class);
-
-        assertThrows(DaoException.class, () -> studentService.addStudent(firstName, lastName, groupId));
-        verify(studentDaoMock, times(1)).save(student);
-    }
-
-    @Test
     void addStudent_shouldOneNewRecord_whenStudentDaoSaveNewStudent() {
         studentService = new StudentServiceImpl(studentsGeneratorMock, studentDaoMock);
         int expectedNumberOfNewRecords = 1;
@@ -179,40 +134,16 @@ class StudentServiceImplTest {
     }
 
     @Test
-    void deleteStudent_shouldDaoException_whenStudentDaoThrowDaoException() {
-        studentService = new StudentServiceImpl(studentsGeneratorMock, studentDaoMock);
-        int studentId = 1;
-        when(studentDaoMock.deleteStudentById(studentId)).thenThrow(DaoException.class);
-
-        assertThrows(DaoException.class, () -> studentService.deleteStudent(studentId));
-        verify(studentDaoMock, times(1)).deleteStudentById(studentId);
-    }
-
-    @Test
     void deleteStudent_shouldNumberOfDeletedRecords_whenStudentDaoDeletedStudentById() {
         studentService = new StudentServiceImpl(studentsGeneratorMock, studentDaoMock);
         int expectedNumberOfDeletedRecords = 1;
         int studentId = 1;
-        when(studentDaoMock.deleteStudentById(studentId)).thenReturn(expectedNumberOfDeletedRecords);
+        when(studentDaoMock.delete(studentId)).thenReturn(expectedNumberOfDeletedRecords);
 
         int actualNumberOfDeletedRecords = studentService.deleteStudent(studentId);
 
         assertEquals(expectedNumberOfDeletedRecords, actualNumberOfDeletedRecords);
-        verify(studentDaoMock, times(1)).deleteStudentById(studentId);
-    }
-
-    @Test
-    void addStudentToCourse_shouldDaoException_whenStudentDaoThrowDaoException() {
-        studentService = new StudentServiceImpl(studentsGeneratorMock, studentDaoMock);
-        String studentFirstName = "FirstName";
-        String studentLastName = "LastName";
-        String courseName = "CourseName";
-        when(studentDaoMock.addStudentToCourse(studentFirstName, studentLastName, courseName))
-                .thenThrow(DaoException.class);
-
-        assertThrows(DaoException.class,
-                () -> studentService.addStudentToCourse(studentFirstName, studentLastName, courseName));
-        verify(studentDaoMock, times(1)).addStudentToCourse(studentFirstName, studentLastName, courseName);
+        verify(studentDaoMock, times(1)).delete(studentId);
     }
 
     @Test
@@ -229,20 +160,6 @@ class StudentServiceImplTest {
 
         assertEquals(expectedNumberOfNewRecords, actualNumberOfNewRecords);
         verify(studentDaoMock, times(1)).addStudentToCourse(studentFirstName, studentLastName, courseName);
-    }
-
-    @Test
-    void deleteStudentFromCourse_shouldDaoException_whenStudentDaoThrowDaoException() {
-        studentService = new StudentServiceImpl(studentsGeneratorMock, studentDaoMock);
-        String studentFirstName = "FirstName";
-        String studentLastName = "LastName";
-        String courseName = "CourseName";
-        when(studentDaoMock.deleteStudentFromCourse(studentFirstName, studentLastName, courseName))
-                .thenThrow(DaoException.class);
-
-        assertThrows(DaoException.class,
-                () -> studentService.deleteStudentFromCourse(studentFirstName, studentLastName, courseName));
-        verify(studentDaoMock, times(1)).deleteStudentFromCourse(studentFirstName, studentLastName, courseName);
     }
 
     @Test
@@ -263,36 +180,17 @@ class StudentServiceImplTest {
     }
 
     @Test
-    void getStudentById_shouldDaoException_whenStudentDaoThrowDaoException() {
-        studentService = new StudentServiceImpl(studentsGeneratorMock, studentDaoMock);
-        int studentId = 1;
-        when(studentDaoMock.findStudentById(studentId)).thenThrow(DaoException.class);
-
-        assertThrows(DaoException.class, () -> studentService.getStudentById(studentId));
-        verify(studentDaoMock, times(1)).findStudentById(studentId);
-    }
-
-    @Test
     void getStudentById_shouldStudentWithEnteredId_whenStudentDaoReturnStudentById() {
         studentService = new StudentServiceImpl(studentsGeneratorMock, studentDaoMock);
         int studentId = 1;
         Student expectedStudent = new Student("FirstName", "LastName", 1);
         expectedStudent.setId(studentId);
-        when(studentDaoMock.findStudentById(studentId)).thenReturn(expectedStudent);
+        when(studentDaoMock.find(studentId)).thenReturn(expectedStudent);
 
         Student actualStudent = studentService.getStudentById(studentId);
 
         assertEquals(expectedStudent, actualStudent);
-        verify(studentDaoMock, times(1)).findStudentById(studentId);
-    }
-
-    @Test
-    void getAllStudents_shouldDaoException_whenStudentDaoThrowDaoException() {
-        studentService = new StudentServiceImpl(studentsGeneratorMock, studentDaoMock);
-        when(studentDaoMock.findAll()).thenThrow(DaoException.class);
-
-        assertThrows(DaoException.class, () -> studentService.getAllStudents());
-        verify(studentDaoMock, times(1)).findAll();
+        verify(studentDaoMock, times(1)).find(studentId);
     }
 
     @Test

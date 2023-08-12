@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import org.springframework.stereotype.Component;
 import ua.foxminded.schoolapp.model.Student;
 import ua.foxminded.schoolapp.datasetup.Generatable;
 import ua.foxminded.schoolapp.datasetup.Reader;
@@ -15,9 +16,20 @@ import ua.foxminded.schoolapp.exception.DataSetUpException;
 /**
  * Generates a list of randomly generated student objects. The StudentsGenerator
  * class is an implementation of the {@link Generatable} interface.
+ * <p>
+ * This class is annotated with {@code @Component} to indicate that it is a
+ * Spring component, and it can be automatically discovered and registered as a
+ * bean in the Spring context. The StudentsGenerator generates a list of 200
+ * randomly generated {@link Student} objects, where each student has a unique
+ * first name, last name, and a random group ID. The first names and last names
+ * are read from files specified by the file paths "students/first_names.txt"
+ * and "students/last_names.txt" respectively, and they must have at least 20
+ * entries each. The group IDs are randomly generated and must not exceed 10
+ * different group IDs.
  *
  * @author Serhii Bohdan
  */
+@Component
 public class StudentsGenerator implements Generatable<Student> {
 
     /**
