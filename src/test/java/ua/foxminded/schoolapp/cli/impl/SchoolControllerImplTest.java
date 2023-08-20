@@ -1,62 +1,39 @@
 package ua.foxminded.schoolapp.cli.impl;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
-import ua.foxminded.schoolapp.TestAppConfig;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import ua.foxminded.schoolapp.cli.SchoolView;
 import ua.foxminded.schoolapp.model.Course;
 import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
-import ua.foxminded.schoolapp.service.ServiceFacade;
+import ua.foxminded.schoolapp.service.logic.ServiceFacade;
 
-@SpringBootTest
-@ContextConfiguration(classes = TestAppConfig.class)
+@SpringBootTest(classes = { SchoolControllerImpl.class })
 class SchoolControllerImplTest {
 
     static final String NEW_LINE = "\n";
     static final String NON_BREAKING_SPACE = "\u00A0";
     static final String SELECTION = "Select an option: ";
 
-    @Mock
+    @MockBean
     SchoolView viewMock;
 
-    @Mock
+    @MockBean
     ServiceFacade serviceFacadeMock;
 
-    @InjectMocks
+    @Autowired
     SchoolControllerImpl controller;
-
-    @BeforeEach
-    void setUp() {
-        viewMock = mock(SchoolView.class);
-        serviceFacadeMock = mock(ServiceFacade.class);
-    }
-
-    @Test
-    void SchoolControllerImpl_shouldNullPointerException_whenServiceFacadeIsNull() {
-        assertThrows(NullPointerException.class, () -> new SchoolControllerImpl(null, viewMock));
-    }
-
-    @Test
-    void SchoolControllerImpl_shouldNullPointerException_whenViewIsNull() {
-        assertThrows(NullPointerException.class, () -> new SchoolControllerImpl(serviceFacadeMock, null));
-    }
 
     @Test
     void runSchoolApp_shouldPrintedMessageAboutIncorrectnessEnteredNumber_whenSelectedFirstOptionAndMapWithGroupsAndTheirNumberOfStudentsIsNull() {
-        controller = new SchoolControllerImpl(serviceFacadeMock, viewMock);
         int numberGreaterThanMaximumStudentsCountInGroup = 34;
         when(viewMock.getIntNumberFromUser(NEW_LINE + SELECTION)).thenReturn(1, 0);
         when(viewMock
@@ -76,7 +53,6 @@ class SchoolControllerImplTest {
 
     @Test
     void runSchoolApp_shouldPrintedMessageAboutFactThatGroupsListEmpty_whenSelectedFirstOptionAndMapWithGroupsAndTheirNumberOfStudentsEmpty() {
-        controller = new SchoolControllerImpl(serviceFacadeMock, viewMock);
         int verySmallStudentsNumber = 10;
         when(viewMock.getIntNumberFromUser(NEW_LINE + SELECTION)).thenReturn(1, 0);
         when(viewMock.getIntNumberFromUser("Enter the number of students:" + NON_BREAKING_SPACE))
@@ -92,7 +68,6 @@ class SchoolControllerImplTest {
 
     @Test
     void runSchoolApp_shouldDisplayedGroupsNamesWithTheirNumberOfStudents_whenSelectedFirstOptionAndMapWithGroupsAndTheirNumberOfStudentsContainsSomeGroups() {
-        controller = new SchoolControllerImpl(serviceFacadeMock, viewMock);
         int studentsNumber = 18;
         Map<Group, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
         groupsWithTheirNumberOfStudents.put(new Group("FG-62"), 17);
@@ -114,7 +89,6 @@ class SchoolControllerImplTest {
 
     @Test
     void runSchoolApp_shouldPrintedMessageAboutFactThatCourseNotExist_whenSelectedSecondOptionAndEnteredCourseNameNotExist() {
-        controller = new SchoolControllerImpl(serviceFacadeMock, viewMock);
         String nonExistentCourseName = "NonExistentCourseName";
         List<Course> allCourses = new ArrayList<>();
         allCourses.add(new Course("CourseName_1", "Decription_1"));
@@ -138,7 +112,6 @@ class SchoolControllerImplTest {
 
     @Test
     void runSchoolApp_shouldPrintedMessageAboutFactThatStudentsListEmpty_whenSelectedSecondOptionAndMapWithStudentsAndTheirCoursesEmpty() {
-        controller = new SchoolControllerImpl(serviceFacadeMock, viewMock);
         String existentCourseName = "CourseName_1";
         List<Course> allCourses = new ArrayList<>();
         allCourses.add(new Course("CourseName_1", "Decription_1"));
@@ -162,7 +135,6 @@ class SchoolControllerImplTest {
 
     @Test
     void runSchoolApp_shouldDisplayedStudentsNamesWithTheirCourses_whenSelectedSecondOptionAndEnteredExistentCourseName() {
-        controller = new SchoolControllerImpl(serviceFacadeMock, viewMock);
         String existentCourseName = "CourseName_1";
         Map<Student, List<Course>> studentWithTheirCourses = new HashMap<>();
         Student student = new Student("FirstName_1", "LastName_1", 1);
@@ -189,7 +161,6 @@ class SchoolControllerImplTest {
 
     @Test
     void runSchoolApp_shouldPrintedMessageAboutFactThatStudentWasSuccessfullyAdded_whenSelectedThirdOptionAndStudentWithEnteredDataSuccessfullAddedToDatabase() {
-        controller = new SchoolControllerImpl(serviceFacadeMock, viewMock);
         String studentFirstName = "FirstName";
         String studentLastName = "LastName";
         int studentGroupId = 1;
@@ -211,7 +182,6 @@ class SchoolControllerImplTest {
 
     @Test
     void runSchoolApp_shouldPrintedMessageAboutFactThatStudentNotAddedToDatabase_whenSelectedThirdOptionAndStudentWithEnteredDataAlreadyPresentInDatabase() {
-        controller = new SchoolControllerImpl(serviceFacadeMock, viewMock);
         String studentFirstName = "FirstName";
         String studentLastName = "LastName";
         int studentGroupId = 1;
@@ -235,7 +205,6 @@ class SchoolControllerImplTest {
 
     @Test
     void runSchoolApp_shouldDeletedStudentFromDatabase_whenSelectedFourthOptionAndStudentWithEnteredIdExistsAndUserConfirmedDeletion() {
-        controller = new SchoolControllerImpl(serviceFacadeMock, viewMock);
         int studentId = 1;
         Student student = new Student("FirstName", "LastName", 2);
         student.setId(studentId);
@@ -255,7 +224,6 @@ class SchoolControllerImplTest {
 
     @Test
     void runSchoolApp_shouldPrintedMessageAboutFactThatStudentNotDeletedFromDatabase_whenSelectedFourthOptionAndStudentWithEnteredIdExistsAndUserNotConfirmedDeletion() {
-        controller = new SchoolControllerImpl(serviceFacadeMock, viewMock);
         int studentId = 1;
         Student student = new Student("FirstName", "LastName", 2);
         student.setId(studentId);
@@ -274,7 +242,6 @@ class SchoolControllerImplTest {
 
     @Test
     void runSchoolApp_shouldPrintedMessageAboutFactThatNoEnteredOption_whenSelectedFourthOptionAndStudentWithEnteredIdExistsAndUserEnteredNonExistentOption() {
-        controller = new SchoolControllerImpl(serviceFacadeMock, viewMock);
         int studentId = 1;
         Student student = new Student("FirstName", "LastName", 2);
         student.setId(studentId);
@@ -293,7 +260,6 @@ class SchoolControllerImplTest {
 
     @Test
     void runSchoolApp_shouldPrintedMessageAboutFactThatNoExistStudentWithEnteredId_whenSelectedFourthOptionAndNoExistStudentWithEnteredId() {
-        controller = new SchoolControllerImpl(serviceFacadeMock, viewMock);
         int studentId = 1;
         when(viewMock.getIntNumberFromUser(NEW_LINE + SELECTION)).thenReturn(4, 0);
         when(viewMock.getIntNumberFromUser(NEW_LINE + "Enter your student ID:" + NON_BREAKING_SPACE))
@@ -308,7 +274,6 @@ class SchoolControllerImplTest {
 
     @Test
     void runSchoolApp_shouldPrintedMessageAboutFactThatStudentSuccessfullyAddedToCourse_whenSelectedFifthOptionAndStudentSuccessfullyAddedToCourse() {
-        controller = new SchoolControllerImpl(serviceFacadeMock, viewMock);
         Map<Student, List<Course>> studentWithTheirCourses = new HashMap<>();
         Student student = new Student("FirstName_1", "LastName_1", 1);
         Course firstCourse = new Course("CourseName_1", "Description_1");
@@ -338,7 +303,6 @@ class SchoolControllerImplTest {
 
     @Test
     void runSchoolApp_shouldPrintedMessageAboutFactThatStudentNotAddedToCourse_whenSelectedFifthOptionAndStudentAlreadyAttendingCourseOrEnteredIncorrectStudentName() {
-        controller = new SchoolControllerImpl(serviceFacadeMock, viewMock);
         Map<Student, List<Course>> studentWithTheirCourses = new HashMap<>();
         Student student = new Student("FirstName_1", "LastName_1", 1);
         Course firstCourse = new Course("CourseName_1", "Description_1");
@@ -371,7 +335,6 @@ class SchoolControllerImplTest {
 
     @Test
     void runSchoolApp_shouldPrintedMessageAboutFactThatStudentSuccessfullyDeletedFromCourse_whenSelectedSixthOptionAndStudentSuccessfullyDeletedFromCourse() {
-        controller = new SchoolControllerImpl(serviceFacadeMock, viewMock);
         Map<Student, List<Course>> studentWithTheirCourses = new HashMap<>();
         Student student = new Student("FirstName_1", "LastName_1", 1);
         Course firstCourse = new Course("CourseName_1", "Description_1");
@@ -401,7 +364,6 @@ class SchoolControllerImplTest {
 
     @Test
     void runSchoolApp_shouldPrintedMessageAboutFactThatStudentNotDeletedFromCourse_whenSelectedSixthOptionAndStudentNotPreviouslyAttendedCourseOrEnteredIncorrectStudentName() {
-        controller = new SchoolControllerImpl(serviceFacadeMock, viewMock);
         Map<Student, List<Course>> studentWithTheirCourses = new HashMap<>();
         Student student = new Student("FirstName_1", "LastName_1", 1);
         Course firstCourse = new Course("CourseName_1", "Description_1");
@@ -434,7 +396,6 @@ class SchoolControllerImplTest {
 
     @Test
     void runSchoolApp_shouldPrintedMessageAboutFactThatNoOptionThatCorrespondToEnteredNumber_whenEnteredOptionWhichNotExist() {
-        controller = new SchoolControllerImpl(serviceFacadeMock, viewMock);
         when(viewMock.getIntNumberFromUser(NEW_LINE + SELECTION)).thenReturn(8, 0);
 
         controller.runSchoolApp();

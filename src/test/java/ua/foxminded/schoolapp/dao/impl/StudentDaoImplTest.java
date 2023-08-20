@@ -2,7 +2,6 @@ package ua.foxminded.schoolapp.dao.impl;
 
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -13,13 +12,13 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
-import ua.foxminded.schoolapp.TestAppConfig;
+import ua.foxminded.schoolapp.TestApplicationConfig;
 import ua.foxminded.schoolapp.dao.StudentDao;
 import ua.foxminded.schoolapp.dao.mapper.StudentRowMapper;
 import ua.foxminded.schoolapp.model.Student;
 
 @JdbcTest
-@ContextConfiguration(classes = TestAppConfig.class)
+@ContextConfiguration(classes = TestApplicationConfig.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Sql(
         scripts = { "/sql/clear_tables.sql", "/sql/students_test_init.sql" },
@@ -27,15 +26,13 @@ import ua.foxminded.schoolapp.model.Student;
 )
 class StudentDaoImplTest {
 
-    @Autowired
-    JdbcTemplate jdbcTemplate;
-    StudentDao studentDao;
     final RowMapper<Student> studentRowMapper = new StudentRowMapper();
 
-    @BeforeEach
-    void setUp() {
-        studentDao = new StudentDaoImpl(jdbcTemplate);
-    }
+    @Autowired
+    JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    StudentDao studentDao;
 
     @Test
     void save_shouldNullPointerException_whenStudentIsNull() {

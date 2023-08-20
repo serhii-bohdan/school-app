@@ -9,7 +9,7 @@ import ua.foxminded.schoolapp.cli.SchoolView;
 import ua.foxminded.schoolapp.model.Course;
 import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
-import ua.foxminded.schoolapp.service.ServiceFacade;
+import ua.foxminded.schoolapp.service.logic.ServiceFacade;
 
 /**
  * The SchoolControllerImpl class implements the {@link SchoolController}
@@ -22,7 +22,7 @@ import ua.foxminded.schoolapp.service.ServiceFacade;
  * The SchoolControllerImpl requires an instance of {@link ServiceFacade} for
  * accessing the business logic and an instance of {@link SchoolView} for user
  * interactions and displaying information.
- *<p>
+ * <p>
  * The class contains methods to run the School App, handle user options from
  * the main menu, and interact with the user through the console. It provides
  * functionality to find groups with a given number of students, find students
@@ -44,19 +44,16 @@ public class SchoolControllerImpl implements SchoolController {
      */
     public static final String NON_BREAKING_SPACE = "\u00A0";
 
-    private ServiceFacade serviceFacade;
-    private SchoolView view;
+    private final ServiceFacade serviceFacade;
+    private final SchoolView view;
 
     /**
      * Constructs a SchoolController with the specified ServiceFacade and View.
      *
      * @param serviceFacade the ServiceFacade to be used
      * @param view          the View to be used
-     * @throws NullPointerException if the serviceFacade or view is null
      */
     public SchoolControllerImpl(ServiceFacade serviceFacade, SchoolView view) {
-        Objects.requireNonNull(serviceFacade, "serviceFacade must not be null");
-        Objects.requireNonNull(view, "view must not be null");
         this.serviceFacade = serviceFacade;
         this.view = view;
     }
