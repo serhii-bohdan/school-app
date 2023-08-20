@@ -2,7 +2,6 @@ package ua.foxminded.schoolapp.cli.impl;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -43,16 +42,14 @@ public class SchoolViewImpl implements SchoolView {
      */
     public static final String NON_BREAKING_SPACE = "\u00A0";
 
-    private Scanner scanner;
+    private final Scanner scanner;
 
     /**
      * Constructs a new SchoolView with the specified scanner.
      *
      * @param scanner the scanner to be used for user input
-     * @throws NullPointerException if the scanner is null
      */
     public SchoolViewImpl(Scanner scanner) {
-        Objects.requireNonNull(scanner, "scanner must not be null");
         this.scanner = scanner;
     }
 
@@ -158,12 +155,15 @@ public class SchoolViewImpl implements SchoolView {
         for (int i = 0; i < studentsFullNames.size(); i++) {
             String studentFullName = studentsFullNames.get(i);
             String coursesNamesEnumeration = coursesNamesEnumerationForEachStudent.get(i);
-            String spacesAfterStudentFullName = makeCharacterSequence(maxStudentFullName.length() - studentFullName.length(), ' ');
-            String spacesAfterCoursesNamesEnumeration = makeCharacterSequence(maxCoursesNamesEnumeration.length() - coursesNamesEnumeration.length(), ' ');
+            String spacesAfterStudentFullName = makeCharacterSequence(
+                    maxStudentFullName.length() - studentFullName.length(), ' ');
+            String spacesAfterCoursesNamesEnumeration = makeCharacterSequence(
+                    maxCoursesNamesEnumeration.length() - coursesNamesEnumeration.length(), ' ');
             String tableRow = String.format(NEW_LINE + "| %s%s | %s%s |", studentFullName, spacesAfterStudentFullName,
                     coursesNamesEnumeration, spacesAfterCoursesNamesEnumeration);
             String lineBetweenRowsWithoutPluses = makeCharacterSequence(tableRow.length() - 1, '-');
-            lineBetweenRows = NEW_LINE + formatLineWithPluses(lineBetweenRowsWithoutPluses, 3 + maxStudentFullName.length());
+            lineBetweenRows = NEW_LINE
+                    + formatLineWithPluses(lineBetweenRowsWithoutPluses, 3 + maxStudentFullName.length());
             formattedStudents.append(tableRow);
             formattedStudents.append(lineBetweenRows);
         }
@@ -182,9 +182,11 @@ public class SchoolViewImpl implements SchoolView {
         String maxCourseName = getMaxCousrse("Name", courses);
         String maxCourseDescription = getMaxCousrse("Description", courses);
 
-        for(Course course : courses) {
-            String spacesAfterCourseName = makeCharacterSequence(maxCourseName.length() - course.getCourseName().length(), ' ');
-            String spacesAfterCourseDescription = makeCharacterSequence(maxCourseDescription.length() - course.getDescription().length(), ' ');
+        for (Course course : courses) {
+            String spacesAfterCourseName = makeCharacterSequence(
+                    maxCourseName.length() - course.getCourseName().length(), ' ');
+            String spacesAfterCourseDescription = makeCharacterSequence(
+                    maxCourseDescription.length() - course.getDescription().length(), ' ');
             String tableRow = String.format(NEW_LINE + "| %s%s | %s%s |", course.getCourseName(), spacesAfterCourseName,
                     course.getDescription(), spacesAfterCourseDescription);
             String lineBetweenRowsWithoutPluses = makeCharacterSequence(tableRow.length() - 1, '-');
@@ -218,26 +220,20 @@ public class SchoolViewImpl implements SchoolView {
     }
 
     private String getCoursesEnumeration(List<Course> coursesForStudent) {
-        return coursesForStudent.stream()
-                                .map(Course::getCourseName)
-                                .collect(Collectors.joining(", "));
+        return coursesForStudent.stream().map(Course::getCourseName).collect(Collectors.joining(", "));
     }
 
     private String getStringWithMaxLength(List<String> stringsList) {
-        return stringsList.stream()
-                          .max(Comparator.comparingInt(String::length))
-                          .orElse("");
+        return stringsList.stream().max(Comparator.comparingInt(String::length)).orElse("");
     }
 
     private String getMaxCousrse(String identifier, List<Course> courses) {
         Stream<String> coursesNamesOrDescriptions = null;
 
-        if("Name".equals(identifier)) {
-            coursesNamesOrDescriptions = courses.stream()
-                                                .map(Course::getCourseName);
-        } else if("Description".equals(identifier)) {
-            coursesNamesOrDescriptions = courses.stream()
-                                                .map(Course::getDescription);
+        if ("Name".equals(identifier)) {
+            coursesNamesOrDescriptions = courses.stream().map(Course::getCourseName);
+        } else if ("Description".equals(identifier)) {
+            coursesNamesOrDescriptions = courses.stream().map(Course::getDescription);
         } else {
             throw new RuntimeException("An instance of the Course type does not contain this field: " + identifier);
         }

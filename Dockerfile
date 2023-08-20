@@ -1,12 +1,11 @@
-FROM eclipse-temurin:17-jdk-jammy as base
+FROM maven:3.8.3-openjdk-17 as base
 
 WORKDIR /app
 
-COPY .mvn/ .mvn
-COPY mvnw pom.xml ./
+COPY pom.xml ./
 COPY src/ src
 
-RUN ./mvnw -B dependency:resolve dependency:resolve-plugins
-RUN ./mvnw package -DskipTests
+RUN mvn -B dependency:resolve dependency:resolve-plugins
+RUN mvn package -DskipTests
 
 CMD ["java", "-jar", "target/school-app-0.0.1-SNAPSHOT.jar"]

@@ -1,7 +1,6 @@
 package ua.foxminded.schoolapp.dao.impl;
 
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,29 +12,27 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
-import ua.foxminded.schoolapp.TestAppConfig;
+import ua.foxminded.schoolapp.TestApplicationConfig;
 import ua.foxminded.schoolapp.dao.GroupDao;
 import ua.foxminded.schoolapp.dao.mapper.GroupRowMapper;
 import ua.foxminded.schoolapp.model.Group;
 
 @JdbcTest
-@ContextConfiguration(classes = TestAppConfig.class)
+@ContextConfiguration(classes = TestApplicationConfig.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Sql( 
+@Sql(
         scripts = { "/sql/clear_tables.sql", "/sql/groups_test_init.sql" }, 
         executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
 )
 class GroupDaoImplTest {
 
-    @Autowired
-    JdbcTemplate jdbcTemplate;
-    GroupDao groupDao;
     final RowMapper<Group> groupRowMapper = new GroupRowMapper();
 
-    @BeforeEach
-    void setUp() {
-        groupDao = new GroupDaoImpl(jdbcTemplate);
-    }
+    @Autowired
+    JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    GroupDao groupDao;
 
     @Test
     void save_shouldNullPointerException_whenGroupIsNull() {

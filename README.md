@@ -1,3 +1,60 @@
+# Task 2.3 Service layer
+
+**Assignment:**
+1. Create a [service layer](https://www.sourcecodeexamples.net/2021/08/spring-boot-project-with-controller.html) on the top of your DAO to implement the following requirements:
+- Find all groups with less or equals student count
+- Find all students related to the course with the given name
+- Add a new student
+- Delete a student by STUDENT_ID
+- Add a student to the course 
+- Remove the student from one of their courses
+
+** Add missing DAO methods to accomplish services needs
+
+2. Create a generator service that will be called if database is empty:
+- Create 10 groups with randomly generated names. The name should contain 2 characters, hyphen, 2 numbers
+- Create 10 courses (math, biology, etc.)
+- Create 200 students. Take 20 first names and 20 last names and randomly combine them to generate students.
+- Randomly assign students to the groups. Each group can contain from 10 to 30 students. It is possible that some groups are without students or students without groups
+- Create the relation MANY-TO-MANY between the tables STUDENTS and COURSES. Randomly assign from 1 to 3 courses for each student
+
+**Hint:** <br>
+
+Use `ApplicationRunner` interface as an entry point for triggering generator
+
+**Testing**
+
+Cover your services with tests using [mocked DAO layer](https://www.baeldung.com/injecting-mocks-in-spring)
+
+```java
+@SpringBootTest(classes = {CourseServiceImpl.class})
+class CourseServiceImplTest {
+    @MockBean
+    CourseDao courseDao;
+
+    @Autowired
+    CourseServiceImpl courseService;
+
+    @Test
+    void shouldCreateNewCourse() {
+        Course course = getCourseEntity();
+
+        when(courseDao.findByName(course.getName())).thenReturn(Optional.empty());
+        when(courseDao.create(any(Course.class))).thenReturn(course);
+
+        CourseDto newCourseDto = CourseDto.builder().name("Math").description("Math Description").build();
+        CourseDto courseDto = courseService.create(newCourseDto);
+
+        assertNotNull(courseDto.getId());
+        assertEquals(newCourseDto.getName(), courseDto.getName());
+        assertEquals(newCourseDto.getDescription(), courseDto.getDescription());
+
+        verify(courseDao).create(any(Course.class));
+    }
+
+    // rest of the tests
+```
+
 # Task 2.2 Spring Boot JDBC Api
 
 **Assignment:**
@@ -40,7 +97,7 @@ courses(
 
 Create a [DAO layer](https://www.baeldung.com/java-dao-pattern) using [JdbcTemplate](https://www.baeldung.com/spring-jdbc-jdbctemplate) and implement the basic CRUD functionality
 
-```
+```java
 package com.foxminded.spring.console.dao;
 
 @Repository
@@ -73,7 +130,7 @@ public class JdbcCourseDao implements CourseDao {
 Use test containers to run your tests <br>
 /src/test/resources/application.yml
 
-```
+```yml
 spring:
   datasource:
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
@@ -87,7 +144,7 @@ spring:
 
 Then run your tests like this:
 
-```
+```java
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Sql(
@@ -243,7 +300,7 @@ There are two ways to **run** the application. Let's consider both.
            c) finally replace `pass` with the database user password you use to connect to your local database. 
 
     At the end of these settings, you should get the following [application.yml](src/main/resources/application.yml) content:
-    ```
+    ```yml
     spring:
       datasource:
         driver-class-name: org.postgresql.Driver
@@ -270,8 +327,6 @@ There are two ways to **run** the application. Let's consider both.
     ```
 
 Thus, after installation and launch, you will be able to use the application for the management of the educational institution.
-
->**WARNING**: If you want to run the program a second time, I recommend deleting the old database `school` and creating a new one with the same name. This action will ensure that new tables with new data are created in the new database when the application is launched.
 
 ## Tests
 The application has a set of unit tests that you can also run and verify that they pass successfully. What you need to have to run the tests:
