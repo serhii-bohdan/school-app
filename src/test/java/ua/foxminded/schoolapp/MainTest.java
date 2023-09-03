@@ -15,11 +15,11 @@ class MainTest {
     SchoolController controllerMock;
 
     @Autowired
-    Main mainMock;
+    Main main;
 
     @Test
     void run_shouldInvokedAllMethodsInMainMethod_whenTheseMethodsWorkCorrectly() {
-        mainMock.run();
+        main.run();
 
         verify(controllerMock, times(1)).runSchoolApp();
     }

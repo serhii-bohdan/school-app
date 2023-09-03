@@ -1,5 +1,7 @@
 package ua.foxminded.schoolapp.service.logic.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ua.foxminded.schoolapp.dao.CourseDao;
 import ua.foxminded.schoolapp.dao.GroupDao;
@@ -26,6 +28,12 @@ import ua.foxminded.schoolapp.service.logic.UserInputValidator;
 @Service
 public class UserInputValidatorImpl implements UserInputValidator {
 
+    /**
+     * The logger for logging events and messages in the
+     * {@link UserInputValidatorImpl} class.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserInputValidatorImpl.class);
+
     private final GroupDao groupDao;
     private final StudentDao studentDao;
     private final CourseDao courseDao;
@@ -49,7 +57,11 @@ public class UserInputValidatorImpl implements UserInputValidator {
      */
     @Override
     public boolean validateAmountOfStudents(int amountOfStudents) {
-        return amountOfStudents >= 10 && amountOfStudents <= 30;
+        LOGGER.debug("Validating amount of students: {}", amountOfStudents);
+        boolean isValid = amountOfStudents >= 10 && amountOfStudents <= 30;
+
+        LOGGER.debug("Amount of students validation result: {}", isValid);
+        return isValid;
     }
 
     /**
@@ -57,9 +69,13 @@ public class UserInputValidatorImpl implements UserInputValidator {
      */
     @Override
     public boolean validateCourseName(String courseName) {
-        return courseDao.findAll().stream()
-                                  .map(Course::getCourseName)
-                                  .toList().contains(courseName);
+        LOGGER.debug("Validating course name: {}", courseName);
+        boolean isValid = courseDao.findAll().stream()
+                .map(Course::getCourseName)
+                .toList().contains(courseName);
+
+        LOGGER.debug("Course name validation result: {}", isValid);
+        return isValid;
     }
 
     /**
@@ -67,9 +83,13 @@ public class UserInputValidatorImpl implements UserInputValidator {
      */
     @Override
     public boolean validateStudentFullName(String firstName, String lastName) {
-        return studentDao.findAll().stream()
-                                   .anyMatch(s -> s.getFirstName().equals(firstName) &&
-                                           s.getLastName().equals(lastName));
+        LOGGER.debug("Validating student full name: {} {}", firstName, lastName);
+        boolean isValid = studentDao.findAll().stream()
+                .anyMatch(s -> s.getFirstName().equals(firstName)
+                        && s.getLastName().equals(lastName));
+
+        LOGGER.debug("Student full name validation result: {}", isValid);
+        return isValid;
     }
 
     /**
@@ -77,9 +97,13 @@ public class UserInputValidatorImpl implements UserInputValidator {
      */
     @Override
     public boolean validateGroupId(int groupId) {
-        return groupDao.findAll().stream()
-                                 .map(Group::getId)
-                                 .toList().contains(groupId);
+        LOGGER.debug("Validating group ID: {}", groupId);
+        boolean isValid = groupDao.findAll().stream()
+                .map(Group::getId)
+                .toList().contains(groupId);
+
+        LOGGER.debug("Group ID validation result: {}", isValid);
+        return isValid;
     }
 
     /**
@@ -87,9 +111,13 @@ public class UserInputValidatorImpl implements UserInputValidator {
      */
     @Override
     public boolean validateStudentId(int studentId) {
-        return studentDao.findAll().stream()
-                                   .map(Student::getId)
-                                   .toList().contains(studentId);
+        LOGGER.debug("Validating student ID: {}", studentId);
+        boolean isValid = studentDao.findAll().stream()
+                .map(Student::getId)
+                .toList().contains(studentId);
+
+        LOGGER.debug("Student ID validation result: {}", isValid);
+        return isValid;
     }
 
     /**
@@ -97,7 +125,11 @@ public class UserInputValidatorImpl implements UserInputValidator {
      */
     @Override
     public boolean isStudentOnCourse(String firstName, String lastName, String courseName) {
-        return studentDao.isStudentOnCourse(firstName, lastName, courseName);
+        LOGGER.debug("Checking if student is on course: {} {} - {}", firstName, lastName, courseName);
+        boolean isOnCourse = studentDao.isStudentOnCourse(firstName, lastName, courseName);
+
+        LOGGER.debug("Student on course check result: {}", isOnCourse);
+        return isOnCourse;
     }
 
 }

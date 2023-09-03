@@ -75,7 +75,7 @@ class GroupServiceImplTest {
         Map<Group, Integer> expectedGroupWithTheirNumberOfStudents = new HashMap<>();
         expectedGroupWithTheirNumberOfStudents.put(firstGroup, studentsNumberForFirstGroup);
         expectedGroupWithTheirNumberOfStudents.put(secondGroup, studentsNumberForSecondGroup);
-        when(groupDaoMock.findGroupsWithGivenNumberStudents(studentsNumberForFirstGroup))
+        when(groupDaoMock.findGroupsWithGivenNumberOfStudents(studentsNumberForFirstGroup))
                 .thenReturn(groupsWithGivenNumberOfStudents);
         when(groupDaoMock.findNumberOfStudentsForGroup(firstGroup)).thenReturn(studentsNumberForFirstGroup);
         when(groupDaoMock.findNumberOfStudentsForGroup(secondGroup)).thenReturn(studentsNumberForSecondGroup);
@@ -84,7 +84,7 @@ class GroupServiceImplTest {
                 .getGroupsWithGivenNumberOfStudents(studentsNumberForFirstGroup);
 
         assertEquals(expectedGroupWithTheirNumberOfStudents, actualGroupWithTheirNumberOfStudents);
-        verify(groupDaoMock, times(1)).findGroupsWithGivenNumberStudents(studentsNumberForFirstGroup);
+        verify(groupDaoMock, times(1)).findGroupsWithGivenNumberOfStudents(studentsNumberForFirstGroup);
         verify(groupDaoMock, times(1)).findNumberOfStudentsForGroup(firstGroup);
         verify(groupDaoMock, times(1)).findNumberOfStudentsForGroup(secondGroup);
     }
@@ -94,13 +94,13 @@ class GroupServiceImplTest {
         int studentsNumber = 2;
         List<Group> emptyGroupsList = new ArrayList<>();
         Map<Group, Integer> expectedGroupWithTheirNumberOfStudents = new HashMap<>();
-        when(groupDaoMock.findGroupsWithGivenNumberStudents(studentsNumber)).thenReturn(emptyGroupsList);
+        when(groupDaoMock.findGroupsWithGivenNumberOfStudents(studentsNumber)).thenReturn(emptyGroupsList);
 
         Map<Group, Integer> actualGroupWithTheirNumberOfStudents = groupService
                 .getGroupsWithGivenNumberOfStudents(studentsNumber);
 
         assertEquals(expectedGroupWithTheirNumberOfStudents, actualGroupWithTheirNumberOfStudents);
-        verify(groupDaoMock, times(1)).findGroupsWithGivenNumberStudents(studentsNumber);
+        verify(groupDaoMock, times(1)).findGroupsWithGivenNumberOfStudents(studentsNumber);
     }
 
 }

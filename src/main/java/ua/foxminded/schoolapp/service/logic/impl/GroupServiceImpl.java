@@ -3,6 +3,8 @@ package ua.foxminded.schoolapp.service.logic.impl;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ua.foxminded.schoolapp.dao.GroupDao;
 import ua.foxminded.schoolapp.model.Group;
@@ -26,6 +28,12 @@ import ua.foxminded.schoolapp.service.logic.GroupService;
 @Service
 public class GroupServiceImpl implements GroupService {
 
+    /**
+     * The logger for logging events and messages in the {@link GroupServiceImpl}
+     * class.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(GroupServiceImpl.class);
+
     private final Generatable<Group> groupsGenerator;
     private final GroupDao groupDao;
 
@@ -46,6 +54,7 @@ public class GroupServiceImpl implements GroupService {
      */
     @Override
     public void initGroups() {
+        LOGGER.info("Filling with generated groups");
         groupsGenerator.toGenerate().forEach(groupDao::save);
     }
 
@@ -53,7 +62,10 @@ public class GroupServiceImpl implements GroupService {
      * {@inheritDoc}
      */
     public List<Group> getAllGroups() {
-        return groupDao.findAll();
+        List<Group> allGroups = groupDao.findAll();
+        LOGGER.debug("All received groups: {}", allGroups);
+
+        return allGroups;
     }
 
     /**
@@ -61,8 +73,12 @@ public class GroupServiceImpl implements GroupService {
      */
     @Override
     public Map<Group, Integer> getGroupsWithGivenNumberOfStudents(int amountOfStudents) {
-        return groupDao.findGroupsWithGivenNumberStudents(amountOfStudents).stream()
+        Map<Group, Integer> groupsWithTheirNumberOfStudents = groupDao
+                .findGroupsWithGivenNumberOfStudents(amountOfStudents).stream()
                 .collect(Collectors.toMap(group -> group, groupDao::findNumberOfStudentsForGroup));
+        LOGGER.debug("Received groups with a given number of students: {}", groupsWithTheirNumberOfStudents);
+
+        return groupsWithTheirNumberOfStudents;
     }
 
 }

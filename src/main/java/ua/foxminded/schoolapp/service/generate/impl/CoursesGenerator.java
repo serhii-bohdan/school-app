@@ -2,8 +2,10 @@ package ua.foxminded.schoolapp.service.generate.impl;
 
 import java.util.List;
 import java.util.stream.IntStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import ua.foxminded.schoolapp.exception.DataSetUpException;
+import ua.foxminded.schoolapp.exception.DataGenerationException;
 import ua.foxminded.schoolapp.model.Course;
 import ua.foxminded.schoolapp.service.generate.Generatable;
 import ua.foxminded.schoolapp.service.generate.Reader;
@@ -24,6 +26,17 @@ import ua.foxminded.schoolapp.service.generate.Reader;
 @Component
 public class CoursesGenerator implements Generatable<Course> {
 
+    /**
+     * The minimum number of courses to generate.
+     */
+    private static final int NUMBER_OF_COURSES = 10;
+
+    /**
+     * The logger for logging events and messages in the {@link CoursesGenerator}
+     * class.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(CoursesGenerator.class);
+
     private final Reader reader;
 
     /**
@@ -43,15 +56,21 @@ public class CoursesGenerator implements Generatable<Course> {
      */
     @Override
     public List<Course> toGenerate() {
+        LOGGER.info("Generating courses started...");
         List<String> coursesNames = reader.readFileAndPopulateListWithLines("courses/courses.txt");
         List<String> coursesDescriptions = reader.readFileAndPopulateListWithLines("courses/descriptions.txt");
 
-        if (coursesNames.size() >= 10 && coursesNames.size() == coursesDescriptions.size()) {
-            return IntStream.rangeClosed(0, 9)
+        if (coursesNames.size() >= NUMBER_OF_COURSES && coursesNames.size() == coursesDescriptions.size()) {
+            List<Course> generatedCourses = IntStream.rangeClosed(0, NUMBER_OF_COURSES - 1)
                     .mapToObj(i -> new Course(coursesNames.get(i), coursesDescriptions.get(i)))
                     .toList();
+
+            LOGGER.info("Generated {} courses.", generatedCourses.size());
+            LOGGER.debug("Generated courses: {}", generatedCourses);
+            return generatedCourses;
         } else {
-            throw new DataSetUpException("Error generating courses. The number of course names must be"
+            LOGGER.error("Error generating courses. The number of course names must be equal to or greater than ten.");
+            throw new DataGenerationException("Error generating courses. The number of course names must be"
                     + " equal to or greater than ten. Also, make sure that the number of course names "
                     + "equals the number of descriptions.");
         }

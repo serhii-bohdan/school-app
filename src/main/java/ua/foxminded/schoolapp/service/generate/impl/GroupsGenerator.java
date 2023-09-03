@@ -3,6 +3,8 @@ package ua.foxminded.schoolapp.service.generate.impl;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.service.generate.Generatable;
@@ -27,12 +29,22 @@ public class GroupsGenerator implements Generatable<Group> {
      * The separator used to separate the initials and random digits in the group
      * name.
      */
-    public static final String SEPARATOR = "-";
+    private static final String SEPARATOR = "-";
+
+    /**
+     * The number of groups to generate.
+     */
+    private static final int NUMBER_OF_GROUPS = 10;
+
+    /**
+     * The logger for logging events and messages in the {@link GroupsGenerator} class.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(GroupsGenerator.class);
 
     /**
      * The Random object used for generating random values.
      */
-    private final Random random = new Random();
+    private static final Random RANDOM = new Random();
 
     /**
      * Generates a list of randomly generated Group objects.
@@ -41,23 +53,30 @@ public class GroupsGenerator implements Generatable<Group> {
      */
     @Override
     public List<Group> toGenerate() {
-        return Stream.generate(() -> getRandomInitials() + SEPARATOR + getTwoRandomDigits())
-                .distinct().limit(10)
+        LOGGER.info("Generating groups started...");
+
+        List<Group> generatedGroups = Stream.generate(() -> getRandomInitials() + SEPARATOR + getTwoRandomDigits())
+                .distinct()
+                .limit(NUMBER_OF_GROUPS)
                 .map(Group::new)
                 .toList();
+
+        LOGGER.info("Generated {} groups.", generatedGroups.size());
+        LOGGER.debug("Generated groups: {}", generatedGroups);
+        return generatedGroups;
     }
 
     private String getRandomInitials() {
         StringBuilder initials = new StringBuilder();
-        initials.append((char) (random.nextInt(26) + 'A'));
-        initials.append((char) (random.nextInt(26) + 'A'));
+        initials.append((char) (RANDOM.nextInt(26) + 'A'));
+        initials.append((char) (RANDOM.nextInt(26) + 'A'));
         return initials.toString();
     }
 
     private String getTwoRandomDigits() {
         StringBuilder twoRandomDigits = new StringBuilder();
-        twoRandomDigits.append(random.nextInt(10));
-        twoRandomDigits.append(random.nextInt(10));
+        twoRandomDigits.append(RANDOM.nextInt(10));
+        twoRandomDigits.append(RANDOM.nextInt(10));
         return twoRandomDigits.toString();
     }
 

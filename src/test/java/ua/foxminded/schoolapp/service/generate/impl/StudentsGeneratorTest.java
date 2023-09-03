@@ -15,7 +15,7 @@ import ua.foxminded.schoolapp.exception.FileReadingException;
 import ua.foxminded.schoolapp.model.Student;
 import ua.foxminded.schoolapp.service.generate.Reader;
 import ua.foxminded.schoolapp.service.generate.StudentGeneratorTestHelper;
-import ua.foxminded.schoolapp.exception.DataSetUpException;
+import ua.foxminded.schoolapp.exception.DataGenerationException;
 
 @SpringBootTest(classes = { StudentsGenerator.class })
 class StudentsGeneratorTest {
@@ -80,7 +80,7 @@ class StudentsGeneratorTest {
         when(readerMock.readFileAndPopulateListWithLines("students/first_names.txt")).thenReturn(testFirstNames);
         when(readerMock.readFileAndPopulateListWithLines("students/last_names.txt")).thenReturn(testLastNames);
 
-        assertThrows(DataSetUpException.class, () -> studentsGenerator.toGenerate());
+        assertThrows(DataGenerationException.class, () -> studentsGenerator.toGenerate());
     }
 
     @Test
@@ -90,7 +90,7 @@ class StudentsGeneratorTest {
         when(readerMock.readFileAndPopulateListWithLines("students/first_names.txt")).thenReturn(testFirstNames);
         when(readerMock.readFileAndPopulateListWithLines("students/last_names.txt")).thenReturn(testLastNames);
 
-        assertThrows(DataSetUpException.class, () -> studentsGenerator.toGenerate());
+        assertThrows(DataGenerationException.class, () -> studentsGenerator.toGenerate());
     }
 
     @Test

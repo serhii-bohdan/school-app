@@ -1,6 +1,8 @@
 package ua.foxminded.schoolapp.service.logic.impl;
 
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ua.foxminded.schoolapp.dao.CourseDao;
 import ua.foxminded.schoolapp.model.Course;
@@ -25,6 +27,12 @@ import ua.foxminded.schoolapp.service.logic.CourseService;
 @Service
 public class CourseServiceImpl implements CourseService {
 
+    /**
+     * The logger for logging events and messages in the {@link CourseServiceImpl}
+     * class.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(CourseServiceImpl.class);
+
     private final Generatable<Course> coursesGenerator;
     private final CourseDao courseDao;
 
@@ -45,6 +53,7 @@ public class CourseServiceImpl implements CourseService {
      */
     @Override
     public void initCourses() {
+        LOGGER.info("Filling with generated courses");
         coursesGenerator.toGenerate().forEach(courseDao::save);
     }
 
@@ -53,7 +62,10 @@ public class CourseServiceImpl implements CourseService {
      */
     @Override
     public List<Course> getAllCourses() {
-        return courseDao.findAll();
+        List<Course> allCourses = courseDao.findAll();
+        LOGGER.debug("All received courses: {}", allCourses);
+
+        return allCourses;
     }
 
     /**
@@ -61,7 +73,10 @@ public class CourseServiceImpl implements CourseService {
      */
     @Override
     public List<Course> getCoursesForStudent(Student student) {
-        return courseDao.findCoursesForStudent(student);
+        List<Course> coursesForStudent = courseDao.findCoursesForStudent(student);
+        LOGGER.debug("Received courses for the student {} ==> {}", student, coursesForStudent);
+
+        return coursesForStudent;
     }
 
 }

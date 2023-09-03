@@ -115,7 +115,7 @@ public class GroupDaoImpl implements GroupDao {
      * {@inheritDoc}
      */
     @Override
-    public List<Group> findGroupsWithGivenNumberStudents(int amountOfStudents) {
+    public List<Group> findGroupsWithGivenNumberOfStudents(int amountOfStudents) {
         String sql = """
                 SELECT groups.group_id, group_name
                 FROM students

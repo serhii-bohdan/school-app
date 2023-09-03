@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ua.foxminded.schoolapp.exception.FileReadingException;
 import ua.foxminded.schoolapp.service.generate.Reader;
@@ -28,10 +30,16 @@ import ua.foxminded.schoolapp.service.generate.Reader;
 public class ReaderImpl implements Reader {
 
     /**
+     * The logger for logging events and messages in the {@link ReaderImpl} class.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReaderImpl.class);
+
+    /**
      * {@inheritDoc}
      */
     @Override
     public List<String> readFileAndPopulateListWithLines(String filePathInResources) {
+        LOGGER.debug("Reading file and populating list with lines: {}", filePathInResources);
         List<String> lines = new ArrayList<>();
 
         try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePathInResources);
@@ -41,9 +49,12 @@ public class ReaderImpl implements Reader {
                     .filter(stripedLine -> !stripedLine.isEmpty())
                     .toList();
         } catch (Exception e) {
-            throw new FileReadingException(
-                    "Failed to read file: " + filePathInResources + ". Make sure this file exists.");
+            LOGGER.error("Failed to read file: {}", filePathInResources, e);
+            throw new FileReadingException( "Failed to read file: " + filePathInResources
+                   + ". Make sure this file exists.");
         }
+
+        LOGGER.debug("Read {} lines from file: {}", lines.size(), filePathInResources);
         return lines;
     }
 
@@ -52,6 +63,7 @@ public class ReaderImpl implements Reader {
      */
     @Override
     public String readAllFileToString(String filePathInResources) {
+        LOGGER.debug("Reading entire file to string: {}", filePathInResources);
         StringBuilder content = new StringBuilder();
 
         try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePathInResources);
@@ -62,10 +74,14 @@ public class ReaderImpl implements Reader {
             while ((line = bufferedReader.readLine()) != null) {
                 content.append(line).append("\n");
             }
+
         } catch (Exception e) {
-            throw new FileReadingException(
-                    "Failed to read file " + filePathInResources + ". Make sure this file exists.");
+            LOGGER.error("Failed to read file: {}", filePathInResources, e);
+            throw new FileReadingException("Failed to read file " + filePathInResources
+                    + ". Make sure this file exists.");
         }
+
+        LOGGER.debug("Read entire file of length {} from: {}", content.length(), filePathInResources);
         return content.toString().strip();
     }
 
