@@ -6,11 +6,13 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ua.foxminded.schoolapp.model.Student;
 import ua.foxminded.schoolapp.service.generate.Generatable;
 import ua.foxminded.schoolapp.service.generate.Reader;
-import ua.foxminded.schoolapp.exception.DataSetUpException;
+import ua.foxminded.schoolapp.exception.DataGenerationException;
 
 /**
  * Generates a list of randomly generated student objects. The StudentsGenerator
@@ -32,9 +34,26 @@ import ua.foxminded.schoolapp.exception.DataSetUpException;
 public class StudentsGenerator implements Generatable<Student> {
 
     /**
+     * The number of students to generate.
+     */
+    private static final int NUMBER_OF_STUDENTS = 200;
+
+    /**
+     * The minimum number of distinct student names required for generation.
+     */
+    private static final int MIN_NUMBER_OF_STUDENT_NAMES = 20;
+
+    /**
+     * The logger for logging events and messages in the {@link StudentsGenerator}
+     * class.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(StudentsGenerator.class);
+
+    /**
      * The Random object used for generating random values.
      */
-    private final Random random = new Random();
+    private static final Random RANDOM = new Random();
+
     private final Reader reader;
 
     /**
@@ -52,41 +71,50 @@ public class StudentsGenerator implements Generatable<Student> {
      * @return a list of randomly generated Student objects.
      */
     public List<Student> toGenerate() {
+        LOGGER.info("Generating students started...");
         List<String[]> studentsNames = getStudentsFullName();
         List<Integer> randomGroupIds = getRandomGroupIds();
 
-        return IntStream.rangeClosed(0, 199)
-                        .mapToObj(i -> {
-                            String firstName = studentsNames.get(i)[0];
-                            String lastName = studentsNames.get(i)[1];
-                            return new Student(firstName, lastName, randomGroupIds.get(i));
-                         })
-                        .toList();
+        List<Student> generatedStudents = IntStream.rangeClosed(0, NUMBER_OF_STUDENTS - 1)
+                .mapToObj(i -> {
+                    String firstName = studentsNames.get(i)[0];
+                    String lastName = studentsNames.get(i)[1];
+                    return new Student(firstName, lastName, randomGroupIds.get(i));
+                 })
+                .toList();
+
+        LOGGER.info("Generated {} students.", generatedStudents.size());
+        LOGGER.debug("Generated students: {}", generatedStudents);
+        return generatedStudents;
     }
 
     private List<String[]> getStudentsFullName() {
+        LOGGER.debug("Getting students' full names");
         List<String> firstNames = reader.readFileAndPopulateListWithLines("students/first_names.txt");
         List<String> lastNames = reader.readFileAndPopulateListWithLines("students/last_names.txt");
 
-        if (firstNames.size() >= 20 && firstNames.size() == lastNames.size()) {
-            return Stream.generate(() -> firstNames.get(random.nextInt(20)) + " " + lastNames.get(random.nextInt(20)))
-                         .distinct()
-                         .limit(200)
-                         .map(fullName -> fullName.split(" "))
-                         .toList();
+        if (firstNames.size() >= MIN_NUMBER_OF_STUDENT_NAMES && firstNames.size() == lastNames.size()) {
+            return Stream.generate(() -> firstNames.get(RANDOM.nextInt(MIN_NUMBER_OF_STUDENT_NAMES)) + " " 
+                   + lastNames.get(RANDOM.nextInt(MIN_NUMBER_OF_STUDENT_NAMES)))
+                   .distinct()
+                   .limit(NUMBER_OF_STUDENTS)
+                   .map(fullName -> fullName.split(" "))
+                   .toList();
         } else {
-            throw new DataSetUpException("An error occurred during the generation of Students data. The number of "
+            LOGGER.error("An error occurred during students' names generation.");
+            throw new DataGenerationException("An error occurred during the generation of Students data. The number of "
                     + "names and surnames in the files must be equal and not less than twenty.");
         }
     }
 
     private List<Integer> getRandomGroupIds() {
+        LOGGER.debug("Generating random group IDs for students");
         List<Integer> randomGroupIds = new ArrayList<>();
         int maxCountStudentsInGroup = 30;
         int minCountStudentsInGroup = 10;
 
-        while(randomGroupIds.size() < 200) {
-            int randomGroupId = random.nextInt(1, 11);
+        while(randomGroupIds.size() < NUMBER_OF_STUDENTS) {
+            int randomGroupId = RANDOM.nextInt(1, 11);
 
             if(Collections.frequency(randomGroupIds, randomGroupId) < maxCountStudentsInGroup) {
                 randomGroupIds.add(randomGroupId);
@@ -96,7 +124,9 @@ public class StudentsGenerator implements Generatable<Student> {
                 randomGroupIds.add(randomGroupId);
             }
         }
+
         Collections.shuffle(randomGroupIds);
+        LOGGER.debug("Generated random group IDs: {}", randomGroupIds);
         return randomGroupIds;
     }
 

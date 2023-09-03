@@ -35,12 +35,12 @@ public class SchoolViewImpl implements SchoolView {
     /**
      * A constant representing a new line character.
      */
-    public static final String NEW_LINE = "\n";
+    private static final String NEW_LINE = "\n";
 
     /**
      * A constant representing a non-breaking space character.
      */
-    public static final String NON_BREAKING_SPACE = "\u00A0";
+    private static final String NON_BREAKING_SPACE = "\u00A0";
 
     private final Scanner scanner;
 
@@ -220,20 +220,26 @@ public class SchoolViewImpl implements SchoolView {
     }
 
     private String getCoursesEnumeration(List<Course> coursesForStudent) {
-        return coursesForStudent.stream().map(Course::getCourseName).collect(Collectors.joining(", "));
+        return coursesForStudent.stream()
+                .map(Course::getCourseName)
+                .collect(Collectors.joining(", "));
     }
 
     private String getStringWithMaxLength(List<String> stringsList) {
-        return stringsList.stream().max(Comparator.comparingInt(String::length)).orElse("");
+        return stringsList.stream()
+                .max(Comparator.comparingInt(String::length))
+                .orElse("");
     }
 
     private String getMaxCousrse(String identifier, List<Course> courses) {
         Stream<String> coursesNamesOrDescriptions = null;
 
         if ("Name".equals(identifier)) {
-            coursesNamesOrDescriptions = courses.stream().map(Course::getCourseName);
+            coursesNamesOrDescriptions = courses.stream()
+                    .map(Course::getCourseName);
         } else if ("Description".equals(identifier)) {
-            coursesNamesOrDescriptions = courses.stream().map(Course::getDescription);
+            coursesNamesOrDescriptions = courses.stream()
+                    .map(Course::getDescription);
         } else {
             throw new RuntimeException("An instance of the Course type does not contain this field: " + identifier);
         }

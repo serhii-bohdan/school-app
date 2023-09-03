@@ -3,6 +3,8 @@ package ua.foxminded.schoolapp.service.logic.impl;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ua.foxminded.schoolapp.model.Course;
 import ua.foxminded.schoolapp.model.Group;
@@ -29,6 +31,12 @@ import ua.foxminded.schoolapp.service.logic.UserInputValidator;
  */
 @Service
 public class ServiceFacadeImpl implements ServiceFacade {
+
+    /**
+     * The logger for logging events and messages in the {@link ServiceFacadeImpl}
+     * class.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServiceFacadeImpl.class);
 
     private final GroupService groupService;
     private final StudentService studentService;
@@ -61,10 +69,13 @@ public class ServiceFacadeImpl implements ServiceFacade {
         boolean coursesTableIsEmpty = courseService.getAllCourses().isEmpty();
 
         if (groupsTableIsEmpty && studentsTableIsEmpty && coursesTableIsEmpty) {
+            LOGGER.info("Filling database tables with generated data");
             groupService.initGroups();
             studentService.initStudents();
             courseService.initCourses();
             studentService.initStudentsCoursesTable();
+        } else {
+            LOGGER.info("The database tables are already full");
         }
     }
 
@@ -79,6 +90,7 @@ public class ServiceFacadeImpl implements ServiceFacade {
             groupsWithTheirNumberOfStudents = groupService.getGroupsWithGivenNumberOfStudents(amountOfStudents);
         }
 
+        LOGGER.debug("Received groups with a given number of students: {}", groupsWithTheirNumberOfStudents);
         return groupsWithTheirNumberOfStudents;
     }
 
@@ -94,6 +106,8 @@ public class ServiceFacadeImpl implements ServiceFacade {
                     .collect(Collectors.toMap(student -> student, courseService::getCoursesForStudent));
         }
 
+        LOGGER.debug("Received students with their courses by course name {}: {}", courseName,
+                studentsWithTheirCourses);
         return studentsWithTheirCourses;
     }
 
@@ -110,6 +124,8 @@ public class ServiceFacadeImpl implements ServiceFacade {
             newStudentIsAdded = true;
         }
 
+        LOGGER.debug("New student with first name - {}, last name - {} and group ID {} is added: {}", firstName,
+                lastName, groupId, newStudentIsAdded);
         return newStudentIsAdded;
     }
 
@@ -125,6 +141,7 @@ public class ServiceFacadeImpl implements ServiceFacade {
             studentIsdDeleted = true;
         }
 
+        LOGGER.debug("Student with ID {} is deleted: ", studentId);
         return studentIsdDeleted;
     }
 
@@ -143,6 +160,8 @@ public class ServiceFacadeImpl implements ServiceFacade {
             studentIsAddedToCourse = true;
         }
 
+        LOGGER.debug("Added student with name {} {} to course {}: {}", firstName, lastName, courseName,
+                studentIsAddedToCourse);
         return studentIsAddedToCourse;
     }
 
@@ -161,6 +180,8 @@ public class ServiceFacadeImpl implements ServiceFacade {
             studentDeletedFromCourse = true;
         }
 
+        LOGGER.debug("Deleted student with name {} {}, from course {}: {}", firstName, lastName, courseName,
+                studentDeletedFromCourse);
         return studentDeletedFromCourse;
     }
 
@@ -175,6 +196,7 @@ public class ServiceFacadeImpl implements ServiceFacade {
             student = studentService.getStudentById(studentId);
         }
 
+        LOGGER.debug("Received student by ID {}: {}", studentId, student);
         return student;
     }
 
@@ -183,8 +205,11 @@ public class ServiceFacadeImpl implements ServiceFacade {
      */
     @Override
     public Map<Student, List<Course>> getAllStudentsWithTheirCourses() {
-        return studentService.getAllStudents().stream()
+        Map<Student, List<Course>> allStudentsWithTheirCourses = studentService.getAllStudents().stream()
                 .collect(Collectors.toMap(student -> student, courseService::getCoursesForStudent));
+        LOGGER.debug("Received all students with their courses: {}", allStudentsWithTheirCourses);
+
+        return allStudentsWithTheirCourses;
     }
 
     /**

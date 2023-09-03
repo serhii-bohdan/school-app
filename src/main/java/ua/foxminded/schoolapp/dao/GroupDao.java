@@ -17,7 +17,7 @@ public interface GroupDao extends BaseDao<Group> {
      * @param amountOfStudents the number of students
      * @return a list of Group objects that match the specified criteria
      */
-    List<Group> findGroupsWithGivenNumberStudents(int amountOfStudents);
+    List<Group> findGroupsWithGivenNumberOfStudents(int amountOfStudents);
 
     /**
      * Finds the number of students in a specific group.

@@ -51,7 +51,8 @@ public interface SchoolView {
     /**
      * Displays the groups with their corresponding number of students.
      *
-     * @param groupsWithTheirNumberOfStudents a map of groups with their number of students
+     * @param groupsWithTheirNumberOfStudents a map of groups with their number of
+     *                                        students
      */
     void displayGroupsWithTheirNumberOfStudents(Map<Group, Integer> groupsWithTheirNumberOfStudents);
 

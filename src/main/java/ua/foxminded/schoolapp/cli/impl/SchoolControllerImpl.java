@@ -37,12 +37,12 @@ public class SchoolControllerImpl implements SchoolController {
     /**
      * A constant representing a new line character.
      */
-    public static final String NEW_LINE = "\n";
+    private static final String NEW_LINE = "\n";
 
     /**
      * A constant representing a non-breaking space character.
      */
-    public static final String NON_BREAKING_SPACE = "\u00A0";
+    private static final String NON_BREAKING_SPACE = "\u00A0";
 
     private final ServiceFacade serviceFacade;
     private final SchoolView view;
@@ -64,7 +64,6 @@ public class SchoolControllerImpl implements SchoolController {
     @Override
     public void runSchoolApp() {
         boolean isRunning = true;
-        view.showMenu();
 
         while (isRunning) {
             int option = view.getIntNumberFromUser(NEW_LINE + "Select an option: ");

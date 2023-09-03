@@ -11,7 +11,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import ua.foxminded.schoolapp.model.Course;
 import ua.foxminded.schoolapp.service.generate.CoursesGeneratorTestHelper;
 import ua.foxminded.schoolapp.service.generate.Reader;
-import ua.foxminded.schoolapp.exception.DataSetUpException;
+import ua.foxminded.schoolapp.exception.DataGenerationException;
 import ua.foxminded.schoolapp.exception.FileReadingException;
 
 @SpringBootTest(classes = { CoursesGenerator.class })
@@ -75,7 +75,7 @@ class CoursesGeneratorTest {
         when(readerMock.readFileAndPopulateListWithLines("courses/courses.txt")).thenReturn(coursesNames);
         when(readerMock.readFileAndPopulateListWithLines("courses/descriptions.txt")).thenReturn(coursesDescriptions);
 
-        assertThrows(DataSetUpException.class, () -> coursesGenerator.toGenerate());
+        assertThrows(DataGenerationException.class, () -> coursesGenerator.toGenerate());
     }
 
     @Test
@@ -85,7 +85,7 @@ class CoursesGeneratorTest {
         when(readerMock.readFileAndPopulateListWithLines("courses/courses.txt")).thenReturn(coursesNames);
         when(readerMock.readFileAndPopulateListWithLines("courses/descriptions.txt")).thenReturn(coursesDescriptions);
 
-        assertThrows(DataSetUpException.class, () -> coursesGenerator.toGenerate());
+        assertThrows(DataGenerationException.class, () -> coursesGenerator.toGenerate());
     }
 
     @Test

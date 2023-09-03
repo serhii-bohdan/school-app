@@ -192,7 +192,7 @@ class GroupDaoImplTest {
     @Test
     void findGroupsWithGivenNumberStudents_shouldEmptyGroupsList_whenNoGroupsWithGivenNumberOfStudents() {
         int studentsNumber = 1;
-        List<Group> groups = groupDao.findGroupsWithGivenNumberStudents(studentsNumber);
+        List<Group> groups = groupDao.findGroupsWithGivenNumberOfStudents(studentsNumber);
 
         assertTrue(groups.isEmpty());
     }
@@ -204,7 +204,7 @@ class GroupDaoImplTest {
         expectedGroup.setId(2);
         expectedGroup.setGroupName("KL-91");
 
-        List<Group> groups = groupDao.findGroupsWithGivenNumberStudents(studentsNumber);
+        List<Group> groups = groupDao.findGroupsWithGivenNumberOfStudents(studentsNumber);
 
         assertEquals(expectedGroup, groups.get(0));
     }
@@ -213,7 +213,7 @@ class GroupDaoImplTest {
     void findGroupsWithGivenNumberStudents_shouldAllExistingGroups_whenGivenNumberOfStudentsIsMuchLargerThanWhatInEachOfAvailableGroups() {
         int studentsNumber = 100;
 
-        List<Group> groups = groupDao.findGroupsWithGivenNumberStudents(studentsNumber);
+        List<Group> groups = groupDao.findGroupsWithGivenNumberOfStudents(studentsNumber);
 
         assertEquals("CZ-03", groups.get(0).getGroupName());
         assertEquals("FD-74", groups.get(1).getGroupName());

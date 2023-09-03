@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ua.foxminded.schoolapp.dao.StudentDao;
 import ua.foxminded.schoolapp.model.Student;
@@ -27,6 +29,12 @@ import ua.foxminded.schoolapp.service.logic.StudentService;
 @Service
 public class StudentServiceImpl implements StudentService {
 
+    /**
+     * The logger for logging events and messages in the {@link StudentServiceImpl}
+     * class.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(StudentServiceImpl.class);
+
     private final Generatable<Student> studentsGenerator;
     private final StudentDao studentDao;
 
@@ -47,6 +55,7 @@ public class StudentServiceImpl implements StudentService {
      */
     @Override
     public void initStudents() {
+        LOGGER.info("Filling with generated students");
         studentsGenerator.toGenerate().forEach(studentDao::save);
     }
 
@@ -57,6 +66,7 @@ public class StudentServiceImpl implements StudentService {
     public void initStudentsCoursesTable() {
         Random random = new Random();
         int studentsNumberPresentInDatabase = studentDao.findAll().size();
+        LOGGER.info("Adding students to courses");
 
         for (int studentId = 1; studentId <= studentsNumberPresentInDatabase; studentId++) {
             int coursesNumberForStudent = random.nextInt(3) + 1;
@@ -69,8 +79,11 @@ public class StudentServiceImpl implements StudentService {
 
             for (Integer courseId : coursesForStudent) {
                 studentDao.addStudentToCourse(studentId, courseId);
+                LOGGER.debug("Added student with ID {} to course with ID {}", studentId, courseId);
             }
         }
+
+        LOGGER.info("Students have been added to courses.");
     }
 
     /**
@@ -78,7 +91,10 @@ public class StudentServiceImpl implements StudentService {
      */
     @Override
     public List<Student> getStudentsRelatedToCourse(String courseName) {
-        return studentDao.findStudentsRelatedToCourse(courseName);
+        List<Student> studentsRelatedToCourse = studentDao.findStudentsRelatedToCourse(courseName);
+        LOGGER.debug("Received students who are registered for the course {}: {}", courseName, studentsRelatedToCourse);
+
+        return studentsRelatedToCourse;
     }
 
     /**
@@ -86,7 +102,10 @@ public class StudentServiceImpl implements StudentService {
      */
     @Override
     public int addStudent(String firstName, String lastName, int groupId) {
-        return studentDao.save(new Student(firstName, lastName, groupId));
+        Student newStudent = new Student(firstName, lastName, groupId);
+        LOGGER.debug("Adding a new student: {}", newStudent);
+
+        return studentDao.save(newStudent);
     }
 
     /**
@@ -94,6 +113,7 @@ public class StudentServiceImpl implements StudentService {
      */
     @Override
     public int deleteStudent(int studentId) {
+        LOGGER.debug("Deleting student with ID: {}", studentId);
         return studentDao.delete(studentId);
     }
 
@@ -102,6 +122,7 @@ public class StudentServiceImpl implements StudentService {
      */
     @Override
     public int addStudentToCourse(String firstName, String lastName, String courseName) {
+        LOGGER.debug("Adding student with name: {} {} to course: {}", firstName, lastName, courseName);
         return studentDao.addStudentToCourse(firstName, lastName, courseName);
     }
 
@@ -110,6 +131,7 @@ public class StudentServiceImpl implements StudentService {
      */
     @Override
     public int deleteStudentFromCourse(String firstName, String lastName, String courseName) {
+        LOGGER.debug("Deleting student with name: {} {}, from course: {}", firstName, lastName, courseName);
         return studentDao.deleteStudentFromCourse(firstName, lastName, courseName);
     }
 
@@ -118,7 +140,10 @@ public class StudentServiceImpl implements StudentService {
      */
     @Override
     public Student getStudentById(int studentId) {
-        return studentDao.find(studentId);
+        Student student = studentDao.find(studentId);
+        LOGGER.debug("Received student by ID {}: {}", studentId, student);
+
+        return student;
     }
 
     /**
@@ -126,7 +151,10 @@ public class StudentServiceImpl implements StudentService {
      */
     @Override
     public List<Student> getAllStudents() {
-        return studentDao.findAll();
+        List<Student> allStudents = studentDao.findAll();
+        LOGGER.debug("All received students: {}", allStudents);
+
+        return allStudents;
     }
 
 }
