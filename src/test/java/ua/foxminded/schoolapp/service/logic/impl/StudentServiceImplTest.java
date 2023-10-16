@@ -8,11 +8,17 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import org.hibernate.PropertyValueException;
+import org.hibernate.exception.ConstraintViolationException;
+import org.hibernate.exception.DataException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import ua.foxminded.schoolapp.dao.StudentDao;
+import ua.foxminded.schoolapp.dto.StudentDto;
+import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
 import ua.foxminded.schoolapp.service.generate.Generatable;
 
@@ -20,7 +26,7 @@ import ua.foxminded.schoolapp.service.generate.Generatable;
 class StudentServiceImplTest {
 
     @MockBean
-    Generatable<Student> studentsGeneratorMock;
+    Generatable<StudentDto> studentsGeneratorMock;
 
     @MockBean
     StudentDao studentDaoMock;
@@ -29,162 +35,273 @@ class StudentServiceImplTest {
     StudentServiceImpl studentService;
 
     @Test
-    void initStudents_shouldSavedAllStudentsWhichReturnsStudentsGenerator_whenStudentsGeneratorReturnsSeveralStudents() {
-        List<Student> generatedStudents = new ArrayList<>();
-        Student firstStudent = new Student("FirstName_1", "LastName_1", 1);
-        Student secondStudent = new Student("FirstName_2", "LastName_2", 1);
-        Student thirdStudent = new Student("FirstName_3", "LastName_3", 1);
-        generatedStudents.add(firstStudent);
-        generatedStudents.add(secondStudent);
-        generatedStudents.add(thirdStudent);
+    void initStudents_shouldNotSavedAnyStudent_whenStudentsGeneratorReturnsStudentsListAndGroupsListIsEmpty() {
+        List<StudentDto> generatedStudents = new ArrayList<>();
+        generatedStudents.add(new StudentDto());
+        generatedStudents.add(new StudentDto());
+        generatedStudents.add(new StudentDto());
+        List<Group> groups = new ArrayList<Group>();
         when(studentsGeneratorMock.toGenerate()).thenReturn(generatedStudents);
 
-        studentService.initStudents();
-
-        verify(studentsGeneratorMock, times(1)).toGenerate();
-        verify(studentDaoMock, times(1)).save(firstStudent);
-        verify(studentDaoMock, times(1)).save(secondStudent);
-        verify(studentDaoMock, times(1)).save(thirdStudent);
-    }
-
-    @Test
-    void initStudents_shouldNotSaveAnyStudent_whenStudentsGeneratorReturnsEmptyStudentsList() {
-        List<Student> generatedStudents = new ArrayList<>();
-        when(studentsGeneratorMock.toGenerate()).thenReturn(generatedStudents);
-
-        studentService.initStudents();
+        studentService.initStudents(groups);
 
         verify(studentsGeneratorMock, times(1)).toGenerate();
         verify(studentDaoMock, never()).save(any(Student.class));
     }
 
     @Test
-    void initStudentsCoursesTable_shouldOneStudentAddedToCourses_whenStudentDaoReturnsListWithOneStudent() {
-        List<Student> allStudents = new ArrayList<>();
-        allStudents.add(new Student());
-        when(studentDaoMock.findAll()).thenReturn(allStudents);
+    void initStudents_shouldNotSavedAnyStudent_whenStudentsGeneratorReturnsEmptyStudentsListAndGroupsListContainsSeveralGroups() {
+        List<StudentDto> generatedStudents = new ArrayList<>();
+        List<Group> groups = new ArrayList<Group>();
+        groups.add(new Group());
+        groups.add(new Group());
+        groups.add(new Group());
+        when(studentsGeneratorMock.toGenerate()).thenReturn(generatedStudents);
 
-        studentService.initStudentsCoursesTable();
+        studentService.initStudents(groups);
 
-        verify(studentDaoMock, times(1)).findAll();
+        verify(studentsGeneratorMock, times(1)).toGenerate();
+        verify(studentDaoMock, never()).save(any(Student.class));
     }
 
     @Test
-    void getStudentsRelatedToCourse_shouldStudentsRelatedToCourse_whenStudentDaoReturnsStudentsList() {
-        String courseName = "CourseName";
-        List<Student> expectedStudentsRelatedToCourse = new ArrayList<>();
-        Student firstStudent = new Student("FirstName_1", "LastName_1", 1);
-        Student secondStudent = new Student("FirstName_2", "LastName_2", 1);
-        Student thirdStudent = new Student("FirstName_3", "LastName_3", 1);
-        expectedStudentsRelatedToCourse.add(firstStudent);
-        expectedStudentsRelatedToCourse.add(secondStudent);
-        expectedStudentsRelatedToCourse.add(thirdStudent);
-        when(studentDaoMock.findStudentsRelatedToCourse(courseName)).thenReturn(expectedStudentsRelatedToCourse);
+    void initStudents_shouldSavedAllGeneratedStudents_whenStudentsGeneratorReturnSeveralStudentsAndGroupsListContainsSeveralGroups() {
+        List<StudentDto> generatedStudents = new ArrayList<>();
+        generatedStudents.add(new StudentDto());
+        generatedStudents.add(new StudentDto());
+        generatedStudents.add(new StudentDto());
+        List<Group> groups = new ArrayList<Group>();
+        groups.add(new Group());
+        groups.add(new Group());
+        groups.add(new Group());
+        when(studentsGeneratorMock.toGenerate()).thenReturn(generatedStudents);
 
-        List<Student> actualStudentsRelatedToCourse = studentService.getStudentsRelatedToCourse(courseName);
+        studentService.initStudents(groups);
 
-        assertEquals(expectedStudentsRelatedToCourse, actualStudentsRelatedToCourse);
-        verify(studentDaoMock, times(1)).findStudentsRelatedToCourse(courseName);
+        verify(studentsGeneratorMock, times(1)).toGenerate();
+        verify(studentDaoMock, times(generatedStudents.size())).save(any(Student.class));
     }
 
     @Test
-    void getStudentsRelatedToCourse_shouldEmptyStudentsList_whenStudentDaoReturnsEmptyStudentsList() {
-        String courseName = "CourseNameThatNotExist";
-        List<Student> expectedStudentsRelatedToCourse = new ArrayList<>();
-        when(studentDaoMock.findStudentsRelatedToCourse(courseName)).thenReturn(expectedStudentsRelatedToCourse);
+    void initStudents_shouldSavedAllGeneratedStudents_whenStudentsGeneratorReturnSeveralStudentsAndGroupsListContainsOnlyOneGroup() {
+        List<StudentDto> generatedStudents = new ArrayList<>();
+        generatedStudents.add(new StudentDto());
+        generatedStudents.add(new StudentDto());
+        generatedStudents.add(new StudentDto());
+        List<Group> groups = new ArrayList<Group>();
+        groups.add(new Group());
+        when(studentsGeneratorMock.toGenerate()).thenReturn(generatedStudents);
 
-        List<Student> actualStudentsRelatedToCourse = studentService.getStudentsRelatedToCourse(courseName);
+        studentService.initStudents(groups);
 
-        assertEquals(expectedStudentsRelatedToCourse, actualStudentsRelatedToCourse);
-        verify(studentDaoMock, times(1)).findStudentsRelatedToCourse(courseName);
+        verify(studentsGeneratorMock, times(1)).toGenerate();
+        verify(studentDaoMock, times(generatedStudents.size())).save(any(Student.class));
     }
 
     @Test
-    void addStudent_shouldOneNewRecord_whenStudentDaoSaveNewStudent() {
-        int expectedNumberOfNewRecords = 1;
+    void initStudents_shouldSavedAllGeneratedStudents_whenStudentsGeneratorReturnOneStudentAndGroupsListContainsSeveralGroups() {
+        List<StudentDto> generatedStudents = new ArrayList<>();
+        generatedStudents.add(new StudentDto());
+        List<Group> groups = new ArrayList<Group>();
+        groups.add(new Group());
+        groups.add(new Group());
+        groups.add(new Group());
+        when(studentsGeneratorMock.toGenerate()).thenReturn(generatedStudents);
+
+        studentService.initStudents(groups);
+
+        verify(studentsGeneratorMock, times(1)).toGenerate();
+        verify(studentDaoMock, times(generatedStudents.size())).save(any(Student.class));
+    }
+
+    @Test
+    void initStudents_shouldNullPointerException_whenStudentsGeneratorReturnSeveralStudentsAndGroupsListIsNull() {
+        List<StudentDto> generatedStudents = new ArrayList<>();
+        generatedStudents.add(new StudentDto());
+        List<Group> groups = null;
+        when(studentsGeneratorMock.toGenerate()).thenReturn(generatedStudents);
+
+        assertThrows(NullPointerException.class, () -> studentService.initStudents(groups));
+        verify(studentsGeneratorMock, times(1)).toGenerate();
+    }
+
+    @Test
+    void addStudent_shouldAddedNewStudentAndReturnedStudentOptional_whenStudentDaoSuccessfulSaveNewStudent() {
         String firstName = "FirstName";
         String lastName = "LastName";
-        int groupId = 1;
-        Student student = new Student(firstName, lastName, groupId);
-        when(studentDaoMock.save(student)).thenReturn(expectedNumberOfNewRecords);
+        Group group = new Group();
+        Student expectedNewStudent = new Student(firstName, lastName, group);
+        when(studentDaoMock.save(expectedNewStudent)).thenReturn(expectedNewStudent);
 
-        int actualNumberOfNewRecords = studentService.addStudent(firstName, lastName, groupId);
+        Optional<Student> actualStudent = studentService.addStudent(firstName, lastName, group);
 
-        assertEquals(expectedNumberOfNewRecords, actualNumberOfNewRecords);
-        verify(studentDaoMock, times(1)).save(student);
+        verify(studentDaoMock, times(1)).save(expectedNewStudent);
+        assertTrue(actualStudent.isPresent());
+        assertEquals(expectedNewStudent, actualStudent.get());
     }
 
     @Test
-    void deleteStudent_shouldNumberOfDeletedRecords_whenStudentDaoDeletedStudentById() {
-        int expectedNumberOfDeletedRecords = 1;
-        int studentId = 1;
-        when(studentDaoMock.delete(studentId)).thenReturn(expectedNumberOfDeletedRecords);
+    void addStudent_shouldConstraintViolationException_whenStudentFirstNameIsNullAndStudentDaoThrowConstraintViolationException() {
+        String firstName = null;
+        String lastName = "LastName";
+        Group group = new Group();
+        Student expectedNewStudent = new Student(firstName, lastName, group);
+        when(studentDaoMock.save(expectedNewStudent)).thenThrow(ConstraintViolationException.class);
 
-        int actualNumberOfDeletedRecords = studentService.deleteStudent(studentId);
-
-        assertEquals(expectedNumberOfDeletedRecords, actualNumberOfDeletedRecords);
-        verify(studentDaoMock, times(1)).delete(studentId);
+        assertThrows(ConstraintViolationException.class, () -> studentService.addStudent(firstName, lastName, group));
+        verify(studentDaoMock, times(1)).save(expectedNewStudent);
     }
 
     @Test
-    void addStudentToCourse_shouldNumberOfNewRecordsInStudentsCoursesTable_whenStudentDaoAddStudentToCourse() {
-        int expectedNumberOfNewRecords = 1;
-        String studentFirstName = "FirstName";
-        String studentLastName = "LastName";
-        String courseName = "CourseName";
-        when(studentDaoMock.addStudentToCourse(studentFirstName, studentLastName, courseName))
-                .thenReturn(expectedNumberOfNewRecords);
+    void addStudent_shouldPropertyValueException_whenStudentGroupIsNullAndStudentDaoThrowPropertyValueException() {
+        String firstName = "FirstName";
+        String lastName = "LastName";
+        Group group = null;
+        Student expectedNewStudent = new Student(firstName, lastName, group);
+        when(studentDaoMock.save(expectedNewStudent)).thenThrow(PropertyValueException.class);
 
-        int actualNumberOfNewRecords = studentService.addStudentToCourse(studentFirstName, studentLastName, courseName);
-
-        assertEquals(expectedNumberOfNewRecords, actualNumberOfNewRecords);
-        verify(studentDaoMock, times(1)).addStudentToCourse(studentFirstName, studentLastName, courseName);
+        assertThrows(PropertyValueException.class, () -> studentService.addStudent(firstName, lastName, group));
+        verify(studentDaoMock, times(1)).save(expectedNewStudent);
     }
 
     @Test
-    void deleteStudentFromCourse_shouldNumberOfDeletedRecordsFromStudentsCoursesTable_whenStudentDaoDeleteStudentFromCourse() {
-        int expectedNumberOfDeletedRecords = 1;
-        String studentFirstName = "FirstName";
-        String studentLastName = "LastName";
-        String courseName = "CourseName";
-        when(studentDaoMock.deleteStudentFromCourse(studentFirstName, studentLastName, courseName))
-                .thenReturn(expectedNumberOfDeletedRecords);
+    void addStudent_shouldDataException_whenStudentLastNameContainsMoreThanTwentiFiveLettersAndStudentDaoThrowDataException() {
+        String firstName = "FirstName";
+        String lastName = "LllllaaassssttttNnnnaaaammmmeeeee";
+        Group group = new Group();
+        Student expectedNewStudent = new Student(firstName, lastName, group);
+        when(studentDaoMock.save(expectedNewStudent)).thenThrow(DataException.class);
 
-        int actualNumberOfDeletedRecords = studentService.deleteStudentFromCourse(studentFirstName, studentLastName,
-                courseName);
-
-        assertEquals(expectedNumberOfDeletedRecords, actualNumberOfDeletedRecords);
-        verify(studentDaoMock, times(1)).deleteStudentFromCourse(studentFirstName, studentLastName, courseName);
+        assertThrows(DataException.class, () -> studentService.addStudent(firstName, lastName, group));
+        verify(studentDaoMock, times(1)).save(expectedNewStudent);
     }
 
     @Test
-    void getStudentById_shouldStudentWithEnteredId_whenStudentDaoReturnStudentById() {
-        int studentId = 1;
-        Student expectedStudent = new Student("FirstName", "LastName", 1);
+    void getStudentById_shouldReturnedStudentOptioanal_whenStudentDaoFoundStudentWithGivenId() {
+        Integer studentId = 1;
+        Student expectedStudent = new Student("FirstName", "LastName", new Group());
         expectedStudent.setId(studentId);
         when(studentDaoMock.find(studentId)).thenReturn(expectedStudent);
 
-        Student actualStudent = studentService.getStudentById(studentId);
+        Optional<Student> actualStudent = studentService.getStudentById(studentId);
 
-        assertEquals(expectedStudent, actualStudent);
+        verify(studentDaoMock, times(1)).find(studentId);
+        assertTrue(actualStudent.isPresent());
+        assertEquals(expectedStudent, actualStudent.get());
+    }
+
+    @Test
+    void getStudentById_shouldReturnedEmptyOptioanal_whenStudentDaoNotFoundStudentWithGivenId() {
+        Integer studentId = -1;
+        when(studentDaoMock.find(studentId)).thenReturn(null);
+
+        Optional<Student> actualStudent = studentService.getStudentById(studentId);
+
+        verify(studentDaoMock, times(1)).find(studentId);
+        assertTrue(actualStudent.isEmpty());
+    }
+
+    @Test
+    void getStudentById_shouldIllegalArgumentException_whenStudentIdIsNull() {
+        Integer studentId = null;
+        when(studentDaoMock.find(studentId)).thenThrow(IllegalArgumentException.class);
+
+        assertThrows(IllegalArgumentException.class, () -> studentService.getStudentById(studentId));
         verify(studentDaoMock, times(1)).find(studentId);
     }
 
     @Test
-    void getAllStudents_shouldListWithAllStudents_whenStudentDaoReturnsThisList() {
+    void getStudentByFullName_shouldReturnedStudentOptioanal_whenStudentDaoFoundStudentWithFirstNameAndLastName() {
+        String firstName = "FirstName";
+        String lastName = "LastName";
+        Student expectedStudent = new Student(firstName, lastName, new Group());
+        when(studentDaoMock.findStudentByFullName(firstName, lastName)).thenReturn(Optional.of(expectedStudent));
+
+        Optional<Student> actualStudent = studentService.getStudentByFullName(firstName, lastName);
+
+        verify(studentDaoMock, times(1)).findStudentByFullName(firstName, lastName);
+        assertTrue(actualStudent.isPresent());
+        assertEquals(expectedStudent, actualStudent.get());
+    }
+
+    @Test
+    void getStudentByFullName_shouldEmptyOptioanal_whenStudentDaoNotFoundStudentWithFirstNameAndLastName() {
+        String firstName = "NotExistent";
+        String lastName = "NotExistent";
+        when(studentDaoMock.findStudentByFullName(firstName, lastName)).thenReturn(Optional.empty());
+
+        Optional<Student> actualStudent = studentService.getStudentByFullName(firstName, lastName);
+
+        verify(studentDaoMock, times(1)).findStudentByFullName(firstName, lastName);
+        assertTrue(actualStudent.isEmpty());
+    }
+
+    @Test
+    void getStudentByFullName_shouldEmptyOptioanal_whenStudentFirstNameAndLastNameAreNulls() {
+        String firstName = null;
+        String lastName = null;
+        when(studentDaoMock.findStudentByFullName(firstName, lastName)).thenReturn(Optional.empty());
+
+        Optional<Student> actualStudent = studentService.getStudentByFullName(firstName, lastName);
+
+        verify(studentDaoMock, times(1)).findStudentByFullName(firstName, lastName);
+        assertTrue(actualStudent.isEmpty());
+    }
+
+    @Test
+    void getAllStudents_shouldStudentsList_whenStudentDaoFoundAllStudents() {
         List<Student> expectedAllStudents = new ArrayList<>();
-        Student firstStudent = new Student("FirstName_1", "LastName_1", 1);
-        Student secondStudent = new Student("FirstName_2", "LastName_2", 1);
-        Student thirdStudent = new Student("FirstName_3", "LastName_3", 1);
-        expectedAllStudents.add(firstStudent);
-        expectedAllStudents.add(secondStudent);
-        expectedAllStudents.add(thirdStudent);
+        expectedAllStudents.add(new Student());
+        expectedAllStudents.add(new Student());
+        expectedAllStudents.add(new Student());
         when(studentDaoMock.findAll()).thenReturn(expectedAllStudents);
 
         List<Student> actualAllStudents = studentService.getAllStudents();
 
-        assertEquals(expectedAllStudents, actualAllStudents);
         verify(studentDaoMock, times(1)).findAll();
+        assertEquals(expectedAllStudents, actualAllStudents);
+    }
+
+    @Test
+    void getAllStudents_shouldEmptyStudentsList_whenStudentDaoNotFoundAnyStudent() {
+        List<Student> expectedAllStudents = new ArrayList<>();
+        when(studentDaoMock.findAll()).thenReturn(expectedAllStudents);
+
+        List<Student> actualAllStudents = studentService.getAllStudents();
+
+        verify(studentDaoMock, times(1)).findAll();
+        assertTrue(actualAllStudents.isEmpty());
+        assertEquals(expectedAllStudents, actualAllStudents);
+    }
+
+    @Test
+    void updateStudent_shouldReturnedUpdatedStudentOptional_whenStudentDaoSuccessfullyUpdateStudent() {
+        Student updatedStudent = new Student("NewFirstName", "NewLastName", new Group());
+        when(studentDaoMock.update(updatedStudent)).thenReturn(updatedStudent);
+
+        Optional<Student> actualStudent = studentService.updateStudent(updatedStudent);
+
+        verify(studentDaoMock, times(1)).update(updatedStudent);
+        assertTrue(actualStudent.isPresent());
+        assertEquals(updatedStudent, actualStudent.get());
+    }
+
+    @Test
+    void updateStudent_shouldIllegalArgumentException_whenStudenIsNullAndStudentDaoThrowIllegalArgumentException() {
+        Student updatedStudent = null;
+        when(studentDaoMock.update(updatedStudent)).thenThrow(IllegalArgumentException.class);
+
+        assertThrows(IllegalArgumentException.class, () -> studentService.updateStudent(updatedStudent));
+        verify(studentDaoMock, times(1)).update(updatedStudent);
+    }
+
+    @Test
+    void deleteStudent_shouldDeletedStudent_whenStudentIdExist() {
+        Integer studentId = 1;
+
+        studentService.deleteStudent(studentId);
+
+        verify(studentDaoMock, times(1)).delete(studentId);
     }
 
 }

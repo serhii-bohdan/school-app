@@ -15,7 +15,33 @@ public interface UserInputValidator {
      * @return {@code true} if the amount of students is valid, {@code false}
      *         otherwise
      */
-    boolean validateAmountOfStudents(int amountOfStudents);
+    boolean validateAmountOfStudents(Integer amountOfStudents);
+
+    /**
+     * Validates the group ID.
+     *
+     * @param groupId the group ID to validate
+     * @return {@code true} if the group ID is valid, {@code false} otherwise
+     */
+    boolean validateGroupId(Integer groupId);
+
+    /**
+     * Validates the existence of a group with the specified name.
+     *
+     * @param groupName the group name to validate
+     * @return {@code true} if a group with the specified name exists, {@code false}
+     *         otherwise
+     */
+    boolean validateGroupNameExistence(String groupName);
+
+    /**
+     * Validates the group name against a specified pattern.
+     *
+     * @param groupName the group name to validate
+     * @return {@code true} if the group name matches the specified pattern,
+     *         {@code false} otherwise
+     */
+    boolean validateGroupNamePattern(String groupName);
 
     /**
      * Validates the course name.
@@ -24,6 +50,23 @@ public interface UserInputValidator {
      * @return {@code true} if the course name is valid, {@code false} otherwise
      */
     boolean validateCourseName(String courseName);
+
+    /**
+     * Validates the course description.
+     *
+     * @param courseDescription the course description to validate
+     * @return {@code true} if the course description is valid, {@code false}
+     *         otherwise
+     */
+    boolean validateDescription(String courseDescription);
+
+    /**
+     * Validates the student ID.
+     *
+     * @param studentId the student ID to validate
+     * @return {@code true} if the student ID is valid, {@code false} otherwise
+     */
+    boolean validateStudentId(Integer studentId);
 
     /**
      * Validates the student's full name.
@@ -36,22 +79,6 @@ public interface UserInputValidator {
     boolean validateStudentFullName(String firstName, String lastName);
 
     /**
-     * Validates the group ID.
-     *
-     * @param groupId the group ID to validate
-     * @return {@code true} if the group ID is valid, {@code false} otherwise
-     */
-    boolean validateGroupId(int groupId);
-
-    /**
-     * Validates the student ID.
-     *
-     * @param studentId the student ID to validate
-     * @return {@code true} if the student ID is valid, {@code false} otherwise
-     */
-    boolean validateStudentId(int studentId);
-
-    /**
      * Checks if a student is registered for a course.
      *
      * @param firstName  the first name of the student
@@ -61,5 +88,13 @@ public interface UserInputValidator {
      *         {@code false} otherwise
      */
     boolean isStudentOnCourse(String firstName, String lastName, String courseName);
+
+    /**
+     * Validates the length of a name.
+     *
+     * @param name the name to validate
+     * @return {@code true} if the name length is valid, {@code false} otherwise
+     */
+    boolean validateNameLength(String name);
 
 }

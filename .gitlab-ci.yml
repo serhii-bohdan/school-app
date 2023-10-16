@@ -11,6 +11,7 @@ stages:
   - build
   - test
   - package
+  - deploy
 
 before_script:
   - apk add maven
@@ -42,3 +43,14 @@ package-job:
   script:
     - echo "Package job started..."
     - mvn package
+
+deploy_job:
+  stage: deploy
+  tags:
+    - docker
+  script:
+    - echo "Deploy job started..."
+    - docker compose up -d
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "master" || ($CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master")'
+

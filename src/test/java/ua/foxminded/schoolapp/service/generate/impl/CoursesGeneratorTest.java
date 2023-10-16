@@ -8,9 +8,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import ua.foxminded.schoolapp.model.Course;
 import ua.foxminded.schoolapp.service.generate.CoursesGeneratorTestHelper;
+import ua.foxminded.schoolapp.service.generate.Generatable;
 import ua.foxminded.schoolapp.service.generate.Reader;
+import ua.foxminded.schoolapp.dto.CourseDto;
 import ua.foxminded.schoolapp.exception.DataGenerationException;
 import ua.foxminded.schoolapp.exception.FileReadingException;
 
@@ -23,7 +24,7 @@ class CoursesGeneratorTest {
     Reader readerMock;
 
     @Autowired
-    CoursesGenerator coursesGenerator;
+    Generatable<CourseDto> coursesGenerator;
 
     @Test
     void toGenerate_shouldTestCursesList_whenReaderReturnTenCoursesNamesAndDescriptions() {
@@ -32,9 +33,9 @@ class CoursesGeneratorTest {
         when(readerMock.readFileAndPopulateListWithLines("courses/courses.txt")).thenReturn(coursesNames);
         when(readerMock.readFileAndPopulateListWithLines("courses/descriptions.txt")).thenReturn(coursesDescriptions);
 
-        List<Course> courses = coursesGenerator.toGenerate();
+        List<CourseDto> courses = coursesGenerator.toGenerate();
 
-        for (Course course : courses) {
+        for (CourseDto course : courses) {
             assertTrue(coursesNames.contains(course.getCourseName()));
             assertTrue(coursesDescriptions.contains(course.getDescription()));
         }
@@ -47,9 +48,9 @@ class CoursesGeneratorTest {
         when(readerMock.readFileAndPopulateListWithLines("courses/courses.txt")).thenReturn(coursesNames);
         when(readerMock.readFileAndPopulateListWithLines("courses/descriptions.txt")).thenReturn(coursesDescriptions);
 
-        List<Course> courses = coursesGenerator.toGenerate();
+        List<CourseDto> courses = coursesGenerator.toGenerate();
 
-        for (Course course : courses) {
+        for (CourseDto course : courses) {
             assertTrue(coursesNames.contains(course.getCourseName()));
             assertTrue(coursesDescriptions.contains(course.getDescription()));
         }

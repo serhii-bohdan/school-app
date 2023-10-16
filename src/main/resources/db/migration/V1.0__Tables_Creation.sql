@@ -17,7 +17,9 @@ CREATE TABLE courses (
 );
 
 CREATE TABLE students_courses (
-  student_courses_id SERIAL PRIMARY KEY,
-  student_id INTEGER REFERENCES students(student_id) ON DELETE CASCADE NOT NULL,
-  course_id INTEGER REFERENCES courses(course_id) ON DELETE CASCADE NOT NULL
+  student_id INTEGER,
+  course_id INTEGER,
+  FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
+  FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE,
+  PRIMARY KEY (student_id, course_id)
 );

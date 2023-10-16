@@ -11,12 +11,12 @@ import java.util.List;
 public interface BaseDao<T> {
 
     /**
-     * Saves the entity to the database and returns the number of affected rows.
+     * Saves the entity to the database and returns the saved entity.
      *
      * @param entity the entity to save
-     * @return the number of affected rows
+     * @return the saved entity
      */
-    int save(T entity);
+    T save(T entity);
 
     /**
      * Finds an entity in the database by its ID.
@@ -24,23 +24,22 @@ public interface BaseDao<T> {
      * @param entityId the ID of the entity to find
      * @return the found entity, or null if not found
      */
-    T find(int entityId);
+    T find(Integer entityId);
 
     /**
-     * Updates the entity in the database and returns the number of affected rows.
+     * Updates the entity in the database and returns the updated entity.
      *
      * @param entity the entity to update
-     * @return the number of affected rows
+     * @return the updated entity
      */
-    int update(T entity);
+    T update(T entity);
 
     /**
-     * Deletes the entity from the database and returns the number of affected rows.
+     * Deletes the entity from the database.
      *
      * @param entityId the ID of the entity to delete
-     * @return the number of affected rows
      */
-    int delete(int entityId);
+    void delete(Integer entityId);
 
     /**
      * Retrieves all entities of the specified type from the database.

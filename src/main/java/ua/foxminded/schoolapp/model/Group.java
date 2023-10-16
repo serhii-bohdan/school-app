@@ -1,21 +1,47 @@
 package ua.foxminded.schoolapp.model;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 /**
- * The Group class represents a group in a school and implements
- * {@link Serializable} interface. It contains information about 
- * the group's ID and name.
+ * The Group class represents a group in a school.
+ * <p>
+ * This class is annotated with {@link Entity} to mark it as a JPA entity, and
+ * it is mapped to the "groups" table in the database. It implements the
+ * {@link Serializable} interface to allow for serialization. It contains
+ * information about the group's ID and name.
+ * </p>
  *
  * @author Serhii Bohdan
  */
+@Entity
+@Table(name = "groups")
 public class Group implements Serializable {
 
     private static final long serialVersionUID = -533798781066983776L;
 
-    private int id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "group_id")
+    private Integer id;
+
+    @Column(name = "group_name")
     private String groupName;
+
+    @OneToMany(mappedBy = "group", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<Student> students = new HashSet<>();
 
     /**
      * Constructs a Group object with the specified group name.
@@ -27,14 +53,22 @@ public class Group implements Serializable {
     }
 
     public Group() {
-
     }
 
-    public int getId() {
+    /**
+     * Adds a student to the group.
+     *
+     * @param student the student to add to the group
+     */
+    public void addStudent(Student student) {
+        this.students.add(student);
+    }
+
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -46,23 +80,15 @@ public class Group implements Serializable {
         this.groupName = groupName;
     }
 
-    /**
-     * Generates a hash code for the group.
-     *
-     * @return the hash code value for the group
-     */
+    public Set<Student> getStudents() {
+        return Collections.unmodifiableSet(students);
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(groupName, id);
     }
 
-    /**
-     * Checks if this group is equal to another object. Two groups are considered
-     * equal if they have the same ID and name.
-     *
-     * @param obj the object to compare to
-     * @return true if the groups are equal, false otherwise
-     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj)
@@ -72,14 +98,9 @@ public class Group implements Serializable {
         if (getClass() != obj.getClass())
             return false;
         Group other = (Group) obj;
-        return Objects.equals(groupName, other.groupName) && id == other.id;
+        return Objects.equals(groupName, other.groupName) && Objects.equals(id, other.id);
     }
 
-    /**
-     * Returns a string representation of the group.
-     *
-     * @return a string representation of the group
-     */
     @Override
     public String toString() {
         return "Group [id=" + id + ", groupName=" + groupName + "]";

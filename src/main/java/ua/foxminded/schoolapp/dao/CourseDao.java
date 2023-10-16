@@ -1,8 +1,7 @@
 package ua.foxminded.schoolapp.dao;
 
-import java.util.List;
+import java.util.Optional;
 import ua.foxminded.schoolapp.model.Course;
-import ua.foxminded.schoolapp.model.Student;
 
 /**
  * The CourseDao interface provides operations for accessing and manipulating
@@ -13,11 +12,12 @@ import ua.foxminded.schoolapp.model.Student;
 public interface CourseDao extends BaseDao<Course> {
 
     /**
-     * Retrieves all courses for a specific student from the database.
+     * Finds a course in the database by its name.
      *
-     * @param student the student for which to find courses
-     * @return a list of Course objects related to the student
+     * @param courseName the name of the course to find
+     * @return an {@link Optional} containing the found course, or empty if not
+     *         found
      */
-    List<Course> findCoursesForStudent(Student student);
+    Optional<Course> findCourseByName(String courseName);
 
 }

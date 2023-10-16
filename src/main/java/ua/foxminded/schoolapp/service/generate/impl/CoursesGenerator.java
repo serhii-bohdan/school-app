@@ -5,13 +5,13 @@ import java.util.stream.IntStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import ua.foxminded.schoolapp.dto.CourseDto;
 import ua.foxminded.schoolapp.exception.DataGenerationException;
-import ua.foxminded.schoolapp.model.Course;
 import ua.foxminded.schoolapp.service.generate.Generatable;
 import ua.foxminded.schoolapp.service.generate.Reader;
 
 /**
- * The CoursesGenerator class is responsible for generating a list of course
+ * The CoursesGenerator class is responsible for generating a list of course Dto
  * objects with names and descriptions. CoursesGenerator class is an
  * implementation of the {@link Generatable} interface.
  * <p>
@@ -19,12 +19,12 @@ import ua.foxminded.schoolapp.service.generate.Reader;
  * Spring component, and it can be automatically discovered and registered as a
  * bean in the Spring context. The CoursesGenerator uses a {@link Reader} to
  * read course names and descriptions from files, and then generates a list of
- * {@link Course} objects based on the read data.
+ * {@link CourseDto} objects based on the read data.
  *
  * @author Serhii Bohdan
  */
 @Component
-public class CoursesGenerator implements Generatable<Course> {
+public class CoursesGenerator implements Generatable<CourseDto> {
 
     /**
      * The minimum number of courses to generate.
@@ -49,20 +49,20 @@ public class CoursesGenerator implements Generatable<Course> {
     }
 
     /**
-     * Generates a list of course objects with readed from files names and
+     * Generates a list of course Dto objects with readed from files names and
      * descriptions.
      *
-     * @return a list of course objects.
+     * @return a list of course Dto objects.
      */
     @Override
-    public List<Course> toGenerate() {
+    public List<CourseDto> toGenerate() {
         LOGGER.info("Generating courses started...");
         List<String> coursesNames = reader.readFileAndPopulateListWithLines("courses/courses.txt");
         List<String> coursesDescriptions = reader.readFileAndPopulateListWithLines("courses/descriptions.txt");
 
         if (coursesNames.size() >= NUMBER_OF_COURSES && coursesNames.size() == coursesDescriptions.size()) {
-            List<Course> generatedCourses = IntStream.rangeClosed(0, NUMBER_OF_COURSES - 1)
-                    .mapToObj(i -> new Course(coursesNames.get(i), coursesDescriptions.get(i)))
+            List<CourseDto> generatedCourses = IntStream.rangeClosed(0, NUMBER_OF_COURSES - 1)
+                    .mapToObj(i -> new CourseDto(coursesNames.get(i), coursesDescriptions.get(i)))
                     .toList();
 
             LOGGER.info("Generated {} courses.", generatedCourses.size());

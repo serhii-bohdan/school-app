@@ -8,4 +8,3 @@ DELETE FROM courses;
 ALTER SEQUENCE courses_course_id_seq RESTART WITH 1;
 
 DELETE FROM students_courses;
-ALTER SEQUENCE students_courses_student_courses_id_seq RESTART WITH 1;

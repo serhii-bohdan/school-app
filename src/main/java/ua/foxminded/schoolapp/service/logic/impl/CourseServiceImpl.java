@@ -1,12 +1,15 @@
 package ua.foxminded.schoolapp.service.logic.impl;
 
 import java.util.List;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import jakarta.transaction.Transactional;
 import ua.foxminded.schoolapp.dao.CourseDao;
+import ua.foxminded.schoolapp.dto.CourseDto;
+import ua.foxminded.schoolapp.dto.mapper.CourseMapper;
 import ua.foxminded.schoolapp.model.Course;
-import ua.foxminded.schoolapp.model.Student;
 import ua.foxminded.schoolapp.service.generate.Generatable;
 import ua.foxminded.schoolapp.service.logic.CourseService;
 
@@ -19,12 +22,13 @@ import ua.foxminded.schoolapp.service.logic.CourseService;
  * This class is annotated with {@code @Service} to indicate that it is a Spring
  * service, and it can be automatically discovered and registered as a bean in
  * the Spring context. The CourseServiceImpl requires a
- * {@link Generatable<Course>} object to generate courses and a
+ * {@link Generatable<CourseDto>} object to generate courses Dto and a
  * {@link CourseDao} object to access the course data.
  * 
  * @author Serhii Bohdan
  */
 @Service
+@Transactional
 public class CourseServiceImpl implements CourseService {
 
     /**
@@ -33,7 +37,7 @@ public class CourseServiceImpl implements CourseService {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(CourseServiceImpl.class);
 
-    private final Generatable<Course> coursesGenerator;
+    private final Generatable<CourseDto> coursesGenerator;
     private final CourseDao courseDao;
 
     /**
@@ -43,7 +47,7 @@ public class CourseServiceImpl implements CourseService {
      * @param coursesGenerator the generator for creating courses
      * @param courseDao        the data access object for coursesl
      */
-    public CourseServiceImpl(Generatable<Course> coursesGenerator, CourseDao courseDao) {
+    public CourseServiceImpl(Generatable<CourseDto> coursesGenerator, CourseDao courseDao) {
         this.coursesGenerator = coursesGenerator;
         this.courseDao = courseDao;
     }
@@ -54,7 +58,42 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public void initCourses() {
         LOGGER.info("Filling with generated courses");
-        coursesGenerator.toGenerate().forEach(courseDao::save);
+        coursesGenerator.toGenerate().stream()
+                .map(CourseMapper::mapDtoToCourse)
+                .forEach(courseDao::save);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Optional<Course> addCourse(String courseName, String description) {
+        Course newCourse = new Course(courseName, description);
+        LOGGER.debug("Adding a new course: {}", newCourse);
+
+        return Optional.ofNullable(courseDao.save(newCourse));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Optional<Course> getCourseById(Integer courseId) {
+        Course course = courseDao.find(courseId);
+        LOGGER.debug("Search course by ID {}: {}", courseId, course);
+
+        return Optional.ofNullable(course);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Optional<Course> getCourseByName(String courseName) {
+        Optional<Course> course = courseDao.findCourseByName(courseName);
+        LOGGER.debug("Search course by name {}: {}", courseName, course);
+
+        return course;
     }
 
     /**
@@ -72,11 +111,24 @@ public class CourseServiceImpl implements CourseService {
      * {@inheritDoc}
      */
     @Override
-    public List<Course> getCoursesForStudent(Student student) {
-        List<Course> coursesForStudent = courseDao.findCoursesForStudent(student);
-        LOGGER.debug("Received courses for the student {} ==> {}", student, coursesForStudent);
+    public Optional<Course> updateCourse(Course updatedCourse) {
+        Course course = courseDao.update(updatedCourse);
+        LOGGER.debug("Updating course data: {}", course);
 
-        return coursesForStudent;
+        return Optional.ofNullable(course);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void deleteCourseByName(String courseName) {
+        Optional<Course> course = getCourseByName(courseName);
+
+        if (course.isPresent()) {
+            LOGGER.debug("Deleting course: {}", course);
+            courseDao.delete(course.get().getId());
+        }
     }
 
 }

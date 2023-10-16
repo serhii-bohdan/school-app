@@ -1,3 +1,100 @@
+# Task 2.5 Hibernate
+
+**Assignment** <br>
+
+The Hibernate should be used as a provider that implements JPA specification, the Service layer should use and depend on the JPA interfaces, not the Hibernate ones.
+
+1. Add the Hibernate support to your project
+  ```xml
+  <dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-jpa</artifactId>
+  </dependency>
+  ```
+2. Enrich your model with [JPA annotations](https://www.baeldung.com/jpa-entities) Rewrite the DAO layer. Use Hibernate instead of Spring JDBC.
+
+Example:
+
+```java
+@Entity
+@Table(name = "courses")
+public class Course {
+        
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    public Long id;
+                
+    @Column(name = "COURSE_NAME")
+    private String courseName;
+
+    @Column(name = "COURSE_DESCRIPTION")
+    private String courseDescription;
+
+// constructors, getters, setters, etc
+
+}
+```
+
+3. Rewrite your DAO to use EntityManager instead of JDBCTemplate
+
+Example:
+
+```java
+package com.foxminded.spring.console.dao.jpa;
+
+import org.springframework.stereotype.Repository;
+
+import javax.persistence.EntityManager;
+import java.util.Optional;
+
+@Repository
+public class JPACourseDao implements CourseDao {
+
+    public static final String FIND_BY_NAME = "select c from Course c where c.courseName = :courseName";
+
+    @PersistenceContext
+    private EntityManager em;
+
+    @Override
+    Optional<Course> findByName(String name) {
+        Course course = em.createQuery(FIND_BY_NAME, Course.class)
+                .setParameter("courseName", name)
+                .getSingleResult();
+        return Optional.ofNullable(course);
+    }
+
+// rest of code
+
+}
+```
+
+**Testing**
+
+Update your tests code with @DataJpaTest
+
+```java
+@DataJpaTest(includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
+        JPAStudentDao.class
+}))
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Sql(
+        scripts = {"/sql/clear_tables.sql", "/sql/sample_data.sql"},
+        executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
+)
+class JPAStudentDaoTest {
+
+    @Autowired
+    private StudentDao dao;
+
+    // tests here
+}
+```
+
+**Important:**
+- Your database structure shouldn’t be changed
+- Your tests should work with the new dao with minimal changes
+
+
 # Task 2.4 Console menu
 
 **Assignment:**
@@ -248,29 +345,37 @@ courses(
 
 ## Motivation
 From the very beginning, the main motivation for writing this project was:
-1. Desire to acquire new knowledge in the field of such technologies: `Spring Boot`, `SQL`, `PostgreSQL`, `JDBC`, `Spring JDBC API`, `Docker Compose`, `Testcontainers`.
+1. Desire to acquire new knowledge in the field of such technologies: `Spring Boot`, `SQL`, `PostgreSQL`, `JDBC`, `Spring JDBC API`, `Hibernate`, `Docker Compose`, `Testcontainers`.
 2. I also wanted to create something useful that could automate some process and make life easier for other people.
 3. On the other hand, the task was to complete a task that belongs to the Java Spring Development course.
 
 If you are reading this file, it means that I managed to write a program that works and meets the basic requirements :). But I see some shortcomings that I plan to correct in the future:
-- make changes to the program, add new functionality; 
-- finally, I will complete the following tasks from the previously mentioned course, which means that such technologies will gradually be added to project: `Hibernate`, `Spring Data JPA`.
+- make changes to the program; 
+- finally, I will complete the following tasks from the previously mentioned course, which means that such technologies will gradually be added to project: `Spring Data JPA`.
 
 ## Description
 As mentioned earlier, one of the goals was the desire to create something useful. Therefore, the application itself can be used for the management of students, groups and courses in educational institutions. The main menu includes the following options for interacting with the application and managing students, groups, courses:
 
 1. Find all groups with less or equal students’ number.
 2. Find all students related to the course with the given name.
-3. Add a new student.
-4. Delete a student.
-5. Add a student to the course.
-6. Remove the student from one of their courses.
+3. Add a student to the course.
+4. Remove the student from one of their courses.
+5. Add a new group.
+6. Update group information.
+7. Delete a group.
+8. Add a new student.
+9. Update student information.
+10. Delete a student.
+11. Add a new course.
+12. Update course information.
+13. Delete a course.
 
-**What happens at startup?** At the beginning of the application launch, the database is filled with randomly generated groups of students and courses. This is done in order to facilitate the development of the program and its testing. So don't be surprised if you start the app and see some students, groups, and courses are *test data*. After successful initialization, you will see a menu in the console. Next, you can choose one of the options and execute it by entering the number of the option and pressing Enter.
+**What happens at startup?** At the beginning of the program, the database is filled with randomly formed groups, students and courses (this is if before the database was completely empty, if not, then you can work with data that is already present in the database). This is done in order to facilitate the development of the program and its testing. So don't be surprised if you start the app and see some students, groups, and courses are *test data*. After successful initialization, you will see a menu in the console. Next, you can choose one of the options and execute it by entering the number of the option and pressing Enter.
 
 **Technologies used:**
 - *`Java 17`*;
-- *`Spring (Boot, JDBC API)`*;
+- *`Spring Boot`*;
+- *`Hibernate`*;
 - *`PostgreSQL`*, *`Flyway`*;
 - *`JUnit 5`*, *`Mockito`*, *`Testcontainers`*;
 - *`Maven`*, *`Git`*;
@@ -296,10 +401,8 @@ There are two ways to **run** the application. Let's consider both.
    ```
    >docker compose up
    ```
-   This will lead to the error: 
-   ```
-   Exception in thread "main" ua.foxminded.schoolapp. exception.DaoException: An error occurred during the execution of the transferred SQL script.Connection to postgresqldb:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
-   ```
+   >Because this will lead to the fact that the application will immediately finish its work after launch.
+
    >**Note:** When you're done with the application in the container, don't forget to stop the database container (the application container will stop itself). You can also delete these containers if you no longer plan to use them. 
 2) Maven command<br>
    This path requires more settings and services. You must have installed:
@@ -321,9 +424,6 @@ There are two ways to **run** the application. Let's consider both.
         url: jdbc:postgresql://localhost:5432/school
         username: your-database-owner-name
         password: your-local-database-password
-
-      flyway:
-        baseline-on-migrate: true
     ```
     Now you have a database in which the necessary data will be stored. And modifying the [application.yml](src/main/resources/application.yml) file will ensure that the application can successfully connect to this database at runtime. Now you can run the application by executing the following commands in the root of the project:<br>
 
