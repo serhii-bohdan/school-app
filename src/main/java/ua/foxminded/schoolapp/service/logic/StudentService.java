@@ -1,81 +1,55 @@
 package ua.foxminded.schoolapp.service.logic;
 
 import java.util.List;
+import java.util.Optional;
+import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
 
 /**
- * The StudentService interface provides operations for managing students.
- *
+ * The StudentService interface provides operations for managing students. It
+ * allows for initializing students, adding, retrieving, updating, and deleting
+ * students.
+ * 
  * @author Serhii Bohdan
  */
 public interface StudentService {
 
     /**
      * Initializes the students by generating them and saving them.
-     */
-    void initStudents();
-
-    /**
-     * Initializes the students-courses table by randomly assigning students to
-     * courses.
-     */
-    void initStudentsCoursesTable();
-
-    /**
-     * Retrieves a list of students related to the course with the given name.
      *
-     * @param courseName the name of the course
-     * @return a list of students related to the course
+     * @param groups the list of groups to generate students for
      */
-    List<Student> getStudentsRelatedToCourse(String courseName);
+    void initStudents(List<Group> groups);
 
     /**
-     * Adds a new student with the specified first name, last name, and group ID.
+     * Adds a new student with the specified first name, last name, and group.
      *
      * @param firstName the first name of the student
      * @param lastName  the last name of the student
-     * @param groupId   the ID of the group to which the student should belong
-     * @return the number of affected rows (1 if a student was added, 0 otherwise)
+     * @param group     the group to which the student should belong
+     * @return an {@link Optional} containing the added student, or empty if the
+     *         student was not added
      */
-    int addStudent(String firstName, String lastName, int groupId);
-
-    /**
-     * Deletes the student with the specified ID.
-     *
-     * @param studentId the ID of the student to delete
-     * @return the number of affected rows (1 if a student was deleted, 0 otherwise)
-     */
-    int deleteStudent(int studentId);
-
-    /**
-     * Adds the specified student to the course with the given name.
-     *
-     * @param firstName  the first name of the student
-     * @param lastName   the last name of the student
-     * @param courseName the name of the course
-     * @return the number of affected rows (1 if the student was added to the
-     *         course, 0 otherwise)
-     */
-    int addStudentToCourse(String firstName, String lastName, String courseName);
-
-    /**
-     * Deletes the specified student from the course with the given name.
-     *
-     * @param firstName  the first name of the student
-     * @param lastName   the last name of the student
-     * @param courseName the name of the course
-     * @return the number of affected rows (1 if the student was deleted from the
-     *         course, 0 otherwise)
-     */
-    int deleteStudentFromCourse(String firstName, String lastName, String courseName);
+    Optional<Student> addStudent(String firstName, String lastName, Group group);
 
     /**
      * Retrieves the student with the specified ID.
      *
      * @param studentId the ID of the student to retrieve
-     * @return the student with the specified ID, or null if no such student exists
+     * @return an {@link Optional} containing the student with the specified ID, or
+     *         empty if no such student exists
      */
-    Student getStudentById(int studentId);
+    Optional<Student> getStudentById(Integer studentId);
+
+    /**
+     * Retrieves a student by their first name and last name.
+     *
+     * @param firstName the first name of the student
+     * @param lastName  the last name of the student
+     * @return an {@link Optional} containing the student with the specified full
+     *         name, or empty if no such student exists
+     */
+    Optional<Student> getStudentByFullName(String firstName, String lastName);
 
     /**
      * Retrieves a list of all students.
@@ -83,5 +57,21 @@ public interface StudentService {
      * @return a list of all students
      */
     List<Student> getAllStudents();
+
+    /**
+     * Updates student information.
+     *
+     * @param updatedStudent the updated student object
+     * @return an {@link Optional} containing the updated student, or empty if the
+     *         update was unsuccessful
+     */
+    Optional<Student> updateStudent(Student updatedStudent);
+
+    /**
+     * Deletes the student with the specified ID.
+     *
+     * @param studentId the ID of the student to delete
+     */
+    void deleteStudent(Integer studentId);
 
 }

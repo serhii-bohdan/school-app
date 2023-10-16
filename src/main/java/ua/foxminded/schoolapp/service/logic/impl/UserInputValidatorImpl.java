@@ -1,8 +1,10 @@
 package ua.foxminded.schoolapp.service.logic.impl;
 
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import jakarta.transaction.Transactional;
 import ua.foxminded.schoolapp.dao.CourseDao;
 import ua.foxminded.schoolapp.dao.GroupDao;
 import ua.foxminded.schoolapp.dao.StudentDao;
@@ -26,6 +28,7 @@ import ua.foxminded.schoolapp.service.logic.UserInputValidator;
  * @author Serhii Bohdan
  */
 @Service
+@Transactional
 public class UserInputValidatorImpl implements UserInputValidator {
 
     /**
@@ -33,6 +36,8 @@ public class UserInputValidatorImpl implements UserInputValidator {
      * {@link UserInputValidatorImpl} class.
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(UserInputValidatorImpl.class);
+    private static final String GROUP_NAME_PATTERN = "^[A-Z]{2}-[0-9]{2}$";
+    private static final Integer MAX_NAME_LENGTH = 25;
 
     private final GroupDao groupDao;
     private final StudentDao studentDao;
@@ -56,12 +61,52 @@ public class UserInputValidatorImpl implements UserInputValidator {
      * {@inheritDoc}
      */
     @Override
-    public boolean validateAmountOfStudents(int amountOfStudents) {
+    public boolean validateAmountOfStudents(Integer amountOfStudents) {
         LOGGER.debug("Validating amount of students: {}", amountOfStudents);
-        boolean isValid = amountOfStudents >= 10 && amountOfStudents <= 30;
+        boolean isValid = amountOfStudents >= 0;
 
         LOGGER.debug("Amount of students validation result: {}", isValid);
         return isValid;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean validateGroupId(Integer groupId) {
+        LOGGER.debug("Validating group ID: {}", groupId);
+        boolean isValid = groupDao.findAll().stream()
+                .map(Group::getId)
+                .toList().contains(groupId);
+
+        LOGGER.debug("Group ID validation result: {}", isValid);
+        return isValid;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean validateGroupNameExistence(String groupName) {
+        LOGGER.debug("Validation of the presence of a group named: {}", groupName);
+        boolean groupNameExist = groupDao.findAll().stream()
+                .map(Group::getGroupName)
+                .toList().contains(groupName);
+
+        LOGGER.debug("A group named {} exists: {}", groupName, groupNameExist);
+        return groupNameExist;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean validateGroupNamePattern(String groupName) {
+        LOGGER.debug("Validation of the group name according to the pattern: {}", GROUP_NAME_PATTERN);
+        boolean groupNameMatchesPattern = groupName.matches(GROUP_NAME_PATTERN);
+
+        LOGGER.debug("The group name matches the pattern: {}", groupNameMatchesPattern);
+        return groupNameMatchesPattern;
     }
 
     /**
@@ -82,13 +127,13 @@ public class UserInputValidatorImpl implements UserInputValidator {
      * {@inheritDoc}
      */
     @Override
-    public boolean validateStudentFullName(String firstName, String lastName) {
-        LOGGER.debug("Validating student full name: {} {}", firstName, lastName);
-        boolean isValid = studentDao.findAll().stream()
-                .anyMatch(s -> s.getFirstName().equals(firstName)
-                        && s.getLastName().equals(lastName));
+    public boolean validateDescription(String courseDescription) {
+        LOGGER.debug("Validating course descrition: {}", courseDescription);
+        boolean isValid = courseDao.findAll().stream()
+                .map(Course::getDescription)
+                .toList().contains(courseDescription);
 
-        LOGGER.debug("Student full name validation result: {}", isValid);
+        LOGGER.debug("Course descrition validation result: {}", isValid);
         return isValid;
     }
 
@@ -96,21 +141,7 @@ public class UserInputValidatorImpl implements UserInputValidator {
      * {@inheritDoc}
      */
     @Override
-    public boolean validateGroupId(int groupId) {
-        LOGGER.debug("Validating group ID: {}", groupId);
-        boolean isValid = groupDao.findAll().stream()
-                .map(Group::getId)
-                .toList().contains(groupId);
-
-        LOGGER.debug("Group ID validation result: {}", isValid);
-        return isValid;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean validateStudentId(int studentId) {
+    public boolean validateStudentId(Integer studentId) {
         LOGGER.debug("Validating student ID: {}", studentId);
         boolean isValid = studentDao.findAll().stream()
                 .map(Student::getId)
@@ -124,12 +155,44 @@ public class UserInputValidatorImpl implements UserInputValidator {
      * {@inheritDoc}
      */
     @Override
+    public boolean validateStudentFullName(String firstName, String lastName) {
+        LOGGER.debug("Validating student full name: {} {}", firstName, lastName);
+        boolean isValid = studentDao.findAll().stream()
+                .anyMatch(s -> s.getFirstName().equals(firstName) 
+                        && s.getLastName().equals(lastName));
+
+        LOGGER.debug("Student full name validation result: {}", isValid);
+        return isValid;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public boolean isStudentOnCourse(String firstName, String lastName, String courseName) {
         LOGGER.debug("Checking if student is on course: {} {} - {}", firstName, lastName, courseName);
-        boolean isOnCourse = studentDao.isStudentOnCourse(firstName, lastName, courseName);
+        Optional<Student> student = studentDao.findStudentByFullName(firstName, lastName);
+        Optional<Course> course = courseDao.findCourseByName(courseName);
+        boolean isOnCourse = false;
+
+        if (student.isPresent() && course.isPresent()) {
+            isOnCourse = student.get().getCourses().contains(course.get());
+        }
 
         LOGGER.debug("Student on course check result: {}", isOnCourse);
         return isOnCourse;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean validateNameLength(String name) {
+        LOGGER.debug("Validating word length: {}", name);
+        boolean isValid = name.length() <= MAX_NAME_LENGTH;
+
+        LOGGER.debug("Word validation result: {}", isValid);
+        return isValid;
     }
 
 }

@@ -1,56 +1,104 @@
 package ua.foxminded.schoolapp.model;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 /**
- * The Student class represents a student in a school and implements
- * {@link Serializable} interface. It contains information about
- * the student's ID, first name, last name, and group ID.
+ * The Student class represents a student in a school.
+ * <p>
+ * This class is annotated with {@link Entity} to mark it as a JPA entity, and
+ * it is mapped to the "students" table in the database. It implements the
+ * {@link Serializable} interface to allow for serialization. It contains
+ * information about the student's ID, first name, last name, group, and
+ * courses.
+ * </p>
  *
  * @author Serhii Bohdan
  */
+@Entity
+@Table(name = "students")
 public class Student implements Serializable {
 
     private static final long serialVersionUID = -4502594183161233658L;
 
-    private int id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "student_id")
+    private Integer id;
+
+    @Column(name = "first_name")
     private String firstName;
+
+    @Column(name = "last_name")
     private String lastName;
-    private int groupId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id", nullable = false)
+    private Group group;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "students_courses",
+         joinColumns = @JoinColumn(name = "student_id"),
+         inverseJoinColumns = @JoinColumn(name = "course_id"))
+    private Set<Course> courses = new HashSet<>();
 
     /**
      * Constructs a Student object with the specified first name, last name, and
-     * group ID.
+     * group.
      *
      * @param firstName the first name of the student
      * @param lastName  the last name of the student
-     * @param groupId   the ID of the group to which the student belongs
+     * @param group     the group the student belongs to
      */
-    public Student(String firstName, String lastName, int groupId) {
+    public Student(String firstName, String lastName, Group group) {
         this.firstName = firstName;
         this.lastName = lastName;
-        this.groupId = groupId;
+        this.group = group;
     }
 
     public Student() {
-
     }
 
-    public int getId() {
+    /**
+     * Adds a course to the student's courses.
+     *
+     * @param course the course to add
+     */
+    public void addCourse(Course course) {
+        this.courses.add(course);
+        course.addStudent(this);
+    }
+
+    /**
+     * Deletes a course from the student's courses.
+     *
+     * @param course the course to delete
+     */
+    public void deleteCourse(Course course) {
+        this.courses.remove(course);
+        course.deleteStudent(this);
+    }
+
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
-    }
-
-    public int getGroupId() {
-        return groupId;
-    }
-
-    public void setGroupId(int groupId) {
-        this.groupId = groupId;
     }
 
     public String getFirstName() {
@@ -69,24 +117,23 @@ public class Student implements Serializable {
         this.lastName = lastName;
     }
 
-    /**
-     * Generates a hash code for the student.
-     *
-     * @return the hash code value for the student
-     */
-    @Override
-    public int hashCode() {
-        return Objects.hash(firstName, groupId, id, lastName);
+    public Group getGroup() {
+        return group;
     }
 
-    /**
-     * Checks if this student is equal to another object. Two students are
-     * considered equal if they have the same ID, first name, last name, and group
-     * ID.
-     *
-     * @param obj the object to compare to
-     * @return true if the students are equal, false otherwise
-     */
+    public void setGroup(Group group) {
+        this.group = group;
+    }
+
+    public Set<Course> getCourses() {
+        return Collections.unmodifiableSet(courses);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(firstName, group, id, lastName);
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj)
@@ -96,19 +143,13 @@ public class Student implements Serializable {
         if (getClass() != obj.getClass())
             return false;
         Student other = (Student) obj;
-        return Objects.equals(firstName, other.firstName) && groupId == other.groupId && id == other.id
-                && Objects.equals(lastName, other.lastName);
+        return Objects.equals(firstName, other.firstName) && Objects.equals(group, other.group)
+                && Objects.equals(id, other.id) && Objects.equals(lastName, other.lastName);
     }
 
-    /**
-     * Returns a string representation of the student.
-     *
-     * @return a string representation of the student
-     */
     @Override
     public String toString() {
-        return "Student [id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + ", groupId=" + groupId
-                + "]";
+        return "Student [id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + ", group=" + group + "]";
     }
 
 }

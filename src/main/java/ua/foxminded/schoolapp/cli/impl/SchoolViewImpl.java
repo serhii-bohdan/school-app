@@ -2,16 +2,18 @@ package ua.foxminded.schoolapp.cli.impl;
 
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Comparator;
+import ua.foxminded.schoolapp.dto.CourseDto;
+import ua.foxminded.schoolapp.dto.GroupDto;
+import ua.foxminded.schoolapp.dto.StudentDto;
 import ua.foxminded.schoolapp.cli.SchoolView;
-import ua.foxminded.schoolapp.model.Course;
-import ua.foxminded.schoolapp.model.Group;
-import ua.foxminded.schoolapp.model.Student;
 
 /**
  * The SchoolViewImpl class implements the {@link SchoolView} interface and
@@ -58,19 +60,26 @@ public class SchoolViewImpl implements SchoolView {
      */
     @Override
     public void showMenu() {
-        System.out.print("""
-                            **************************
-                            -----   SCHOOL APP   -----
-                            **************************
-                1. Find all groups with less or equal students’ number.
-                2. Find all students related to the course with the given name.
-                3. Add a new student.
-                4. Delete a student.
-                5. Add a student to the course.
-                6. Remove the student from one of their courses.
+        printMessage("""
+                             **************************
+                             -----   SCHOOL APP   -----
+                             **************************
+                 1. Find all groups with less or equal students’ number.
+                 2. Find all students related to the course with the given name.
+                 3. Add a student to the course.
+                 4. Remove the student from one of their courses.
+                 5. Add a new group.
+                 6. Update group information.
+                 7. Delete a group.
+                 8. Add a new student.
+                 9. Update student information.
+                10. Delete a student.
+                11. Add a new course.
+                12. Update course information.
+                13. Delete a course.
 
                 Enter 0 to exit the program.
-                """);
+                 """);
     }
 
     /**
@@ -86,7 +95,7 @@ public class SchoolViewImpl implements SchoolView {
      */
     @Override
     public int getIntNumberFromUser(String message) {
-        System.out.print(message);
+        printMessage(message);
         return getIntInput();
     }
 
@@ -94,36 +103,90 @@ public class SchoolViewImpl implements SchoolView {
      * {@inheritDoc}
      */
     @Override
-    public String getWordFromUser(String message) {
-        System.out.print(message);
-        return scanner.next();
+    public String getSentenceFromUser(String message) {
+        printMessage(message);
+        return scanner.nextLine();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public String getConfirmationFromUserAboutDeletingStudent(Student student) {
+    public String getConfirmationAboutDeletingStudent(StudentDto student) {
         String confirmationQuestion = String.format("Are you sure you want to delete a student %s %s?",
                 student.getFirstName(), student.getLastName());
-        System.out.print(
-                confirmationQuestion + NEW_LINE + "Please confirm your actions (enter Y or N):" + NON_BREAKING_SPACE);
-        return scanner.next();
+
+        return getConfirmationAnswer(confirmationQuestion);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void displayGroupsWithTheirNumberOfStudents(Map<Group, Integer> groupsWithTheirNumberOfStudents) {
-        StringBuilder formattedGroups = new StringBuilder("Groups with their number of students:");
+    public String getConfirmationAboutDeletingGroup(GroupDto group) {
+        String confirmationQuestion = String.format("Are you sure you want to delete a group %s?\n"
+                + "WARNING: Students who belong to this group will also be deleted.", group.getGroupName());
+
+        return getConfirmationAnswer(confirmationQuestion);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public String getConfirmationAboutDeletingCourse(CourseDto course) {
+        String confirmationQuestion = String.format("Are you sure you want to delete a course %s?",
+                course.getCourseName());
+
+        return getConfirmationAnswer(confirmationQuestion);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void displayGroups(List<GroupDto> groups) {
+        StringBuilder formattedGroups = new StringBuilder();
         String lineBetweenRows = "";
 
-        for (Map.Entry<Group, Integer> entry : groupsWithTheirNumberOfStudents.entrySet()) {
-            Group group = entry.getKey();
-            String tableRow = String.format("| %s | %d |", group.getGroupName(), entry.getValue());
+        for (GroupDto group : groups) {
+            String tableRow = String.format("| %s |", group.getGroupName());
             String lineBetweenRowsWithoutPluses = makeCharacterSequence(tableRow.length(), '-');
-            lineBetweenRows = formatLineWithPluses(lineBetweenRowsWithoutPluses, 3 + group.getGroupName().length());
+            lineBetweenRows = formatLineWithPluses(lineBetweenRowsWithoutPluses, 0);
+            tableRow = String.format(NEW_LINE + "%-23s%s", "", tableRow);
+            lineBetweenRows = String.format(NEW_LINE + "%-23s%s", "", lineBetweenRows);
+            formattedGroups.append(tableRow);
+            formattedGroups.append(lineBetweenRows);
+        }
+
+        formattedGroups.insert(0, lineBetweenRows);
+        printMessage(formattedGroups + NEW_LINE);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void displayGroupsWithTheirNumberOfStudents(Map<GroupDto, Integer> groupsWithTheirNumberOfStudents) {
+        StringBuilder formattedGroups = new StringBuilder("Groups with their number of students:");
+        List<String> groupNames = new ArrayList<>();
+        List<String> numberOfStudentsInGroups = new ArrayList<>();
+        String lineBetweenRows = "";
+
+        for (Map.Entry<GroupDto, Integer> entry : groupsWithTheirNumberOfStudents.entrySet()) {
+            groupNames.add(entry.getKey().getGroupName());
+            numberOfStudentsInGroups.add(entry.getValue().toString());
+        }
+
+        String maxStudentsNumber = getStringWithMaxLength(numberOfStudentsInGroups);
+
+        for (int i = 0; i < groupNames.size(); i++) {
+            String groupName = groupNames.get(i);
+            String studentsNumber = numberOfStudentsInGroups.get(i);
+            String spacesAfterStudentsNumber = makeCharacterSequence(
+                    maxStudentsNumber.length() - studentsNumber.length(), ' ');
+            String tableRow = String.format("| %s | %s%s |", groupName, spacesAfterStudentsNumber, studentsNumber);
+            String lineBetweenRowsWithoutPluses = makeCharacterSequence(tableRow.length(), '-');
+            lineBetweenRows = formatLineWithPluses(lineBetweenRowsWithoutPluses, 3 + groupName.length());
             tableRow = String.format(NEW_LINE + "%-23s%s", "", tableRow);
             lineBetweenRows = String.format(NEW_LINE + "%-23s%s", "", lineBetweenRows);
             formattedGroups.append(tableRow);
@@ -131,20 +194,55 @@ public class SchoolViewImpl implements SchoolView {
         }
 
         formattedGroups.insert(37, lineBetweenRows);
-        System.out.print(formattedGroups + NEW_LINE);
+        printMessage(formattedGroups + NEW_LINE);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void displayStudentsWithTheirCourses(Map<Student, List<Course>> studentsWithTheirCourses) {
+    public void displayStudentsWithTheirGroups(Map<StudentDto, GroupDto> studentsWithTheirGroups) {
+        StringBuilder formattedStudentsWithGroups = new StringBuilder();
+        List<String> studentsFullNames = new ArrayList<>();
+        List<String> groupNames = new ArrayList<>();
+        String lineBetweenRows = "";
+
+        for (Map.Entry<StudentDto, GroupDto> entry : studentsWithTheirGroups.entrySet()) {
+            studentsFullNames.add(getStudentFullName(entry.getKey()));
+            groupNames.add(entry.getValue().getGroupName());
+        }
+
+        String maxStudentFullName = getStringWithMaxLength(studentsFullNames);
+
+        for (int i = 0; i < studentsFullNames.size(); i++) {
+            String studentFullName = studentsFullNames.get(i);
+            String groupName = groupNames.get(i);
+            String spacesAfterStudentFullName = makeCharacterSequence(
+                    maxStudentFullName.length() - studentFullName.length(), ' ');
+            String tableRow = String.format("| %s%s | %s |", studentFullName, spacesAfterStudentFullName, groupName);
+            String lineBetweenRowsWithoutPluses = makeCharacterSequence(tableRow.length(), '-');
+            lineBetweenRows = formatLineWithPluses(lineBetweenRowsWithoutPluses, 3 + maxStudentFullName.length());
+            tableRow = String.format(NEW_LINE + "%-18s%s", "", tableRow);
+            lineBetweenRows = String.format(NEW_LINE + "%-18s%s", "", lineBetweenRows);
+            formattedStudentsWithGroups.append(tableRow);
+            formattedStudentsWithGroups.append(lineBetweenRows);
+        }
+
+        formattedStudentsWithGroups.insert(0, lineBetweenRows);
+        printMessage(formattedStudentsWithGroups + NEW_LINE);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void displayStudentsWithTheirCourses(Map<StudentDto, Set<CourseDto>> studentsWithTheirCourses) {
         StringBuilder formattedStudents = new StringBuilder("Students with their courses:");
         List<String> studentsFullNames = new ArrayList<>();
         List<String> coursesNamesEnumerationForEachStudent = new ArrayList<>();
         String lineBetweenRows = "";
 
-        for (Map.Entry<Student, List<Course>> entry : studentsWithTheirCourses.entrySet()) {
+        for (Map.Entry<StudentDto, Set<CourseDto>> entry : studentsWithTheirCourses.entrySet()) {
             studentsFullNames.add(getStudentFullName(entry.getKey()));
             coursesNamesEnumerationForEachStudent.add(getCoursesEnumeration(entry.getValue()));
         }
@@ -169,59 +267,68 @@ public class SchoolViewImpl implements SchoolView {
         }
 
         formattedStudents.insert(28, lineBetweenRows);
-        System.out.print(formattedStudents + NEW_LINE);
+        printMessage(formattedStudents + NEW_LINE);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void displayCourses(List<Course> courses) {
-        StringBuilder formattedCourses = new StringBuilder("Courses with descriptions:");
+    public void displayCourses(List<CourseDto> coursesDtos) {
+        StringBuilder formattedCourses = new StringBuilder();
         String lineBetweenRows = "";
-        String maxCourseName = getMaxCousrse("Name", courses);
-        String maxCourseDescription = getMaxCousrse("Description", courses);
+        String maxCourseName = getMaxCousrse("Name", coursesDtos);
+        String maxCourseDescription = getMaxCousrse("Description", coursesDtos);
 
-        for (Course course : courses) {
+        for (CourseDto courseDto : coursesDtos) {
             String spacesAfterCourseName = makeCharacterSequence(
-                    maxCourseName.length() - course.getCourseName().length(), ' ');
+                    maxCourseName.length() - courseDto.getCourseName().length(), ' ');
             String spacesAfterCourseDescription = makeCharacterSequence(
-                    maxCourseDescription.length() - course.getDescription().length(), ' ');
-            String tableRow = String.format(NEW_LINE + "| %s%s | %s%s |", course.getCourseName(), spacesAfterCourseName,
-                    course.getDescription(), spacesAfterCourseDescription);
+                    maxCourseDescription.length() - courseDto.getDescription().length(), ' ');
+            String tableRow = String.format(NEW_LINE + "| %s%s | %s%s |", courseDto.getCourseName(),
+                    spacesAfterCourseName, courseDto.getDescription(), spacesAfterCourseDescription);
             String lineBetweenRowsWithoutPluses = makeCharacterSequence(tableRow.length() - 1, '-');
             lineBetweenRows = NEW_LINE + formatLineWithPluses(lineBetweenRowsWithoutPluses, 3 + maxCourseName.length());
             formattedCourses.append(tableRow);
             formattedCourses.append(lineBetweenRows);
         }
 
-        formattedCourses.insert(26, lineBetweenRows);
-        System.out.print(formattedCourses);
+        formattedCourses.insert(0, lineBetweenRows);
+        printMessage(formattedCourses + NEW_LINE);
     }
 
     private int getIntInput() {
-        while (true) {
+        try {
 
-            if (scanner.hasNextInt()) {
-                return scanner.nextInt();
-            } else {
-                System.out.print("Invalid input. Please enter a valid integer value: ");
-                scanner.next();
+            while (true) {
+                try {
+                    return Integer.parseInt(scanner.nextLine());
+                } catch (NumberFormatException e) {
+                    printMessage("Invalid input. Please enter a valid integer value: ");
+                }
             }
+
+        } catch (NoSuchElementException e) {
+            return 0;
         }
+    }
+
+    private String getConfirmationAnswer(String confirmationQuestion) {
+        printMessage(confirmationQuestion + NEW_LINE + "Please confirm your actions (enter Y or N):" + NON_BREAKING_SPACE);
+        return scanner.nextLine();
     }
 
     private String makeCharacterSequence(Integer count, Character character) {
         return String.valueOf(character).repeat(Math.max(0, count));
     }
 
-    private String getStudentFullName(Student student) {
-        return student.getFirstName() + " " + student.getLastName();
+    private String getStudentFullName(StudentDto studentDto) {
+        return studentDto.getFirstName() + " " + studentDto.getLastName();
     }
 
-    private String getCoursesEnumeration(List<Course> coursesForStudent) {
+    private String getCoursesEnumeration(Set<CourseDto> coursesForStudent) {
         return coursesForStudent.stream()
-                .map(Course::getCourseName)
+                .map(CourseDto::getCourseName)
                 .collect(Collectors.joining(", "));
     }
 
@@ -231,15 +338,15 @@ public class SchoolViewImpl implements SchoolView {
                 .orElse("");
     }
 
-    private String getMaxCousrse(String identifier, List<Course> courses) {
+    private String getMaxCousrse(String identifier, List<CourseDto> coursesDtos) {
         Stream<String> coursesNamesOrDescriptions = null;
 
         if ("Name".equals(identifier)) {
-            coursesNamesOrDescriptions = courses.stream()
-                    .map(Course::getCourseName);
+            coursesNamesOrDescriptions = coursesDtos.stream()
+                    .map(CourseDto::getCourseName);
         } else if ("Description".equals(identifier)) {
-            coursesNamesOrDescriptions = courses.stream()
-                    .map(Course::getDescription);
+            coursesNamesOrDescriptions = coursesDtos.stream()
+                    .map(CourseDto::getDescription);
         } else {
             throw new RuntimeException("An instance of the Course type does not contain this field: " + identifier);
         }

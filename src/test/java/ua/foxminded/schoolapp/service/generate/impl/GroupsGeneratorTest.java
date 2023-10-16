@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import ua.foxminded.schoolapp.model.Group;
+import ua.foxminded.schoolapp.dto.GroupDto;
 import ua.foxminded.schoolapp.service.generate.Generatable;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -13,15 +13,15 @@ import java.util.List;
 class GroupsGeneratorTest {
 
     @Autowired
-    Generatable<Group> groupsGenerator;
+    Generatable<GroupDto> groupsGenerator;
 
     @Test
     void toGenerate_shouldListWithRandomGroups_whenInvokeToGenerate() {
         String groupNameRegex = "^[A-Z]{2}-[0-9]{2}$";
 
-        List<Group> groups = groupsGenerator.toGenerate();
+        List<GroupDto> groups = groupsGenerator.toGenerate();
 
-        for (Group group : groups) {
+        for (GroupDto group : groups) {
             assertTrue(group.getGroupName().matches(groupNameRegex));
         }
     }

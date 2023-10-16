@@ -10,17 +10,22 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
+import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import ua.foxminded.schoolapp.dto.CourseDto;
+import ua.foxminded.schoolapp.dto.GroupDto;
+import ua.foxminded.schoolapp.dto.StudentDto;
 import ua.foxminded.schoolapp.model.Course;
-import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
 
 @SpringBootTest(classes = { SchoolViewImpl.class })
@@ -43,20 +48,27 @@ class SchoolViewImplTest {
     }
 
     @Test
-    void showMenu_shouldDisplayedProgramMenu_whenInvokeShowMenu() {
+    void showMenu_shouldDisplayedAplicationMenu_whenInvokeShowMenu() {
         String expectedOutput = """
-                            **************************
-                            -----   SCHOOL APP   -----
-                            **************************
-                1. Find all groups with less or equal students’ number.
-                2. Find all students related to the course with the given name.
-                3. Add a new student.
-                4. Delete a student.
-                5. Add a student to the course.
-                6. Remove the student from one of their courses.
+                             **************************
+                             -----   SCHOOL APP   -----
+                             **************************
+                 1. Find all groups with less or equal students’ number.
+                 2. Find all students related to the course with the given name.
+                 3. Add a student to the course.
+                 4. Remove the student from one of their courses.
+                 5. Add a new group.
+                 6. Update group information.
+                 7. Delete a group.
+                 8. Add a new student.
+                 9. Update student information.
+                10. Delete a student.
+                11. Add a new course.
+                12. Update course information.
+                13. Delete a course.
 
                 Enter 0 to exit the program.
-                """;
+                 """;
 
         view.showMenu();
         String actualOutput = baos.toString();
@@ -96,113 +108,379 @@ class SchoolViewImplTest {
 
     @Test
     void getIntNumberFromUser_shouldReturnedIntegerNumberOnFirstAttempt_whenScannerMockReturnIntegerInput() {
-        int expectedIntFromUser = 4;
-        when(scannerMock.hasNextInt()).thenReturn(true);
-        when(scannerMock.nextInt()).thenReturn(expectedIntFromUser);
+        Integer expectedIntFromUser = 4;
+        String message = "Message";
+        when(scannerMock.nextLine()).thenReturn(String.valueOf(expectedIntFromUser));
 
-        int actualIntFromUser = view.getIntNumberFromUser("Message");
+        Integer actualIntFromUser = view.getIntNumberFromUser(message);
 
-        verify(scannerMock, times(1)).hasNextInt();
-        verify(scannerMock, times(1)).nextInt();
+        verify(scannerMock, times(1)).nextLine();
         assertEquals(expectedIntFromUser, actualIntFromUser);
     }
 
     @Test
-    void getIntNumberFromUser_shouldReturnedIntegerNumberOnSecondAttempt_whenScannerMockReturnIncorrectValueOnFirstAttempt() {
-        int expectedIntFromUser = 3;
-        when(scannerMock.hasNextInt()).thenReturn(false, true);
-        when(scannerMock.next()).thenReturn("Not integer");
-        when(scannerMock.nextInt()).thenReturn(expectedIntFromUser);
+    void getIntNumberFromUser_shouldReturnedIntegerNumberOnSecondAttempt_whenInputIsNotNumber() {
+        Integer expectedIntFromUser = 3;
+        when(scannerMock.nextLine()).thenReturn("Not integer", String.valueOf(expectedIntFromUser));
 
-        int actualIntFromUser = view.getIntNumberFromUser("Message");
+        Integer actualIntFromUser = view.getIntNumberFromUser("Message");
 
-        verify(scannerMock, times(2)).hasNextInt();
-        verify(scannerMock, times(1)).next();
-        verify(scannerMock, times(1)).nextInt();
+        verify(scannerMock, times(2)).nextLine();
         assertEquals(expectedIntFromUser, actualIntFromUser);
     }
 
     @Test
-    void getWordFromUser_shouldReturnedEmptyString_whenScannerMockReturEmptyString() {
+    void getIntNumberFromUser_shouldReturnedZero_whenScannerThrowNoSuchElementException() {
+        Integer expectedIntFromUser = 0;
+        when(scannerMock.nextLine()).thenThrow(NoSuchElementException.class);
+
+        Integer actualIntFromUser = view.getIntNumberFromUser("Message");
+
+        verify(scannerMock, times(1)).nextLine();
+        assertEquals(expectedIntFromUser, actualIntFromUser);
+    }
+
+    @Test
+    void getSentenceFromUser_shouldReturnedEmptyString_whenScannerMockReturEmptyString() {
         String expectedReturnedWord = "";
-        when(scannerMock.next()).thenReturn(expectedReturnedWord);
+        when(scannerMock.nextLine()).thenReturn(expectedReturnedWord);
 
-        String actualReturnedWord = view.getWordFromUser("Message");
+        String actualReturnedWord = view.getSentenceFromUser("Message");
 
+        verify(scannerMock, times(1)).nextLine();
         assertEquals(expectedReturnedWord, actualReturnedWord);
     }
 
     @Test
-    void getWordFromUser_shouldReturnedOnlySpaces_whenScannerMockReturnOnlySpaces() {
+    void getSentenceFromUser_shouldReturnedOnlySpaces_whenScannerMockReturnOnlySpaces() {
         String expectedReturnedWord = "          ";
-        when(scannerMock.next()).thenReturn(expectedReturnedWord);
+        when(scannerMock.nextLine()).thenReturn(expectedReturnedWord);
 
-        String actualReturnedWord = view.getWordFromUser("Message");
+        String actualReturnedWord = view.getSentenceFromUser("Message");
 
+        verify(scannerMock, times(1)).nextLine();
         assertEquals(expectedReturnedWord, actualReturnedWord);
     }
 
     @Test
-    void getWordFromUser_shouldReturnedSimpleWord_whenScannerMockReturnSimpleWord() {
+    void getSentenceFromUser_shouldReturnedSimpleWord_whenScannerMockReturnSimpleWord() {
         String expectedReturnedWord = "Art";
-        when(scannerMock.next()).thenReturn(expectedReturnedWord);
+        when(scannerMock.nextLine()).thenReturn(expectedReturnedWord);
 
-        String actualReturnedWord = view.getWordFromUser("Message");
+        String actualReturnedWord = view.getSentenceFromUser("Message");
 
         assertEquals(expectedReturnedWord, actualReturnedWord);
     }
 
     @Test
-    void getConfirmationFromUserAboutDeletingStudent_shouldNullPointerException_whenStudnetIsNull() {
-        assertThrows(NullPointerException.class, () -> view.getConfirmationFromUserAboutDeletingStudent(null));
+    void getSentenceFromUser_shouldReturnedSentence_whenScannerMockReturnSentence() {
+        String expectedReturnedWord = "A simple sentence that contains several words.";
+        when(scannerMock.nextLine()).thenReturn(expectedReturnedWord);
+
+        String actualReturnedWord = view.getSentenceFromUser("Message");
+
+        assertEquals(expectedReturnedWord, actualReturnedWord);
     }
 
     @Test
-    void getConfirmationFromUserAboutDeletingStudent_shouldConfirmationMessageWithNullAndNull_whenStudentFieldsNotInitialized() {
-        Student student = new Student();
+    void getConfirmationAboutDeletingStudent_shouldNullPointerException_whenStudnetIsNull() {
+        assertThrows(NullPointerException.class, () -> view.getConfirmationAboutDeletingStudent(null));
+    }
+
+    @Test
+    void getConfirmationAboutDeletingStudent_shouldConfirmationMessageWithNullAndNull_whenStudentFieldsNotInitialized() {
+        StudentDto student = new StudentDto();
         String expectedConfirmationMessage = "Are you sure you want to delete a student null null?\n"
                 + "Please confirm your actions (enter Y or N): ";
-        when(scannerMock.next()).thenReturn("Y");
+        when(scannerMock.nextLine()).thenReturn("Y");
 
-        view.getConfirmationFromUserAboutDeletingStudent(student);
+        view.getConfirmationAboutDeletingStudent(student);
         String actualConfirmationMessage = baos.toString();
 
         assertEquals(expectedConfirmationMessage, actualConfirmationMessage);
     }
 
     @Test
-    void getConfirmationFromUserAboutDeletingStudent_shouldConfirmationMessageWithStudentFirstNameAndLastName_whenStudentHasInitializedFfirstAndLastNamesFields() {
-        Student student = new Student("FirstName", "LastName", 1);
+    void getConfirmationAboutDeletingStudent_shouldConfirmationMessageWithStudentFirstNameAndLastName_whenStudentHasInitializedFfirstAndLastNamesFields() {
+        StudentDto student = new StudentDto("FirstName", "LastName");
         String expectedConfirmationMessage = "Are you sure you want to delete a student FirstName LastName?\n"
                 + "Please confirm your actions (enter Y or N): ";
-        when(scannerMock.next()).thenReturn("Y");
+        when(scannerMock.nextLine()).thenReturn("Y");
 
-        view.getConfirmationFromUserAboutDeletingStudent(student);
+        view.getConfirmationAboutDeletingStudent(student);
         String actualConfirmationMessage = baos.toString();
 
         assertEquals(expectedConfirmationMessage, actualConfirmationMessage);
     }
 
     @Test
-    void getConfirmationFromUserAboutDeletingStudent_shouldReturnedOneCharacterConfirmation_whenScannerMockReturnOneCharacter() {
-        Student student = new Student("FirstName", "LastName", 1);
+    void getConfirmationAboutDeletingStudent_shouldReturnedOneCharacterConfirmation_whenScannerMockReturnOneCharacter() {
+        StudentDto student = new StudentDto("FirstName", "LastName");
         String expectedConfirmationFromUser = "Y";
-        when(scannerMock.next()).thenReturn(expectedConfirmationFromUser);
+        when(scannerMock.nextLine()).thenReturn(expectedConfirmationFromUser);
 
-        String actualConfirmationFromUser = view.getConfirmationFromUserAboutDeletingStudent(student);
+        String actualConfirmationFromUser = view.getConfirmationAboutDeletingStudent(student);
 
         assertEquals(expectedConfirmationFromUser, actualConfirmationFromUser);
     }
 
     @Test
-    void getConfirmationFromUserAboutDeletingStudent_shouldReturnedNullConfirmation_whenScannerMockReturnNull() {
-        Student student = new Student("FirstName", "LastName", 1);
+    void getConfirmationAboutDeletingStudent_shouldReturnedNullConfirmation_whenScannerMockReturnNull() {
+        StudentDto student = new StudentDto("FirstName", "LastName");
         String expectedConfirmationFromUser = null;
-        when(scannerMock.next()).thenReturn(expectedConfirmationFromUser);
+        when(scannerMock.nextLine()).thenReturn(expectedConfirmationFromUser);
 
-        String actualConfirmationFromUser = view.getConfirmationFromUserAboutDeletingStudent(student);
+        String actualConfirmationFromUser = view.getConfirmationAboutDeletingStudent(student);
 
         assertEquals(expectedConfirmationFromUser, actualConfirmationFromUser);
+    }
+
+    @Test
+    void getConfirmationAboutDeletingGroup_shouldNullPointerException_whenGroupIsNull() {
+        assertThrows(NullPointerException.class, () -> view.getConfirmationAboutDeletingGroup(null));
+    }
+
+    @Test
+    void getConfirmationAboutDeletingGroup_shouldConfirmationMessageWithNull_whenGroupNameNotInitialized() {
+        GroupDto group = new GroupDto();
+        String expectedConfirmationMessage = "Are you sure you want to delete a group null?\n"
+                + "WARNING: Students who belong to this group will also be deleted.\n"
+                + "Please confirm your actions (enter Y or N): ";
+        when(scannerMock.nextLine()).thenReturn("Y");
+
+        view.getConfirmationAboutDeletingGroup(group);
+        String actualConfirmationMessage = baos.toString();
+
+        assertEquals(expectedConfirmationMessage, actualConfirmationMessage);
+    }
+
+    @Test
+    void getConfirmationAboutDeletingGroup_shouldConfirmationMessageWithCorrectGroupName_whenGroupNameCorrectlyInitialized() {
+        GroupDto group = new GroupDto("KQ-98");
+        String expectedConfirmationMessage = "Are you sure you want to delete a group KQ-98?\n"
+                + "WARNING: Students who belong to this group will also be deleted.\n"
+                + "Please confirm your actions (enter Y or N): ";
+        when(scannerMock.nextLine()).thenReturn("Y");
+
+        view.getConfirmationAboutDeletingGroup(group);
+        String actualConfirmationMessage = baos.toString();
+
+        assertEquals(expectedConfirmationMessage, actualConfirmationMessage);
+    }
+
+    @Test
+    void getConfirmationAboutDeletingGroup_shouldReturnedOneCharacterConfirmation_whenScannerMockReturnOneCharacter() {
+        GroupDto group = new GroupDto("KQ-98");
+        String expectedConfirmationFromUser = "Y";
+        when(scannerMock.nextLine()).thenReturn(expectedConfirmationFromUser);
+
+        String actualConfirmationFromUser = view.getConfirmationAboutDeletingGroup(group);
+
+        assertEquals(expectedConfirmationFromUser, actualConfirmationFromUser);
+    }
+
+    @Test
+    void getConfirmationAboutDeletingGroup_shouldReturnedEmptyConfirmation_whenScannerMockReturnEmptyString() {
+        GroupDto group = new GroupDto("KQ-98");
+        String expectedConfirmationFromUser = "";
+        when(scannerMock.nextLine()).thenReturn(expectedConfirmationFromUser);
+
+        String actualConfirmationFromUser = view.getConfirmationAboutDeletingGroup(group);
+
+        assertEquals(expectedConfirmationFromUser, actualConfirmationFromUser);
+    }
+
+    @Test
+    void getConfirmationAboutDeletingGroup_shouldReturnedNullConfirmation_whenScannerMockReturnNull() {
+        GroupDto group = new GroupDto("KQ-98");
+        String expectedConfirmationFromUser = null;
+        when(scannerMock.nextLine()).thenReturn(expectedConfirmationFromUser);
+
+        String actualConfirmationFromUser = view.getConfirmationAboutDeletingGroup(group);
+
+        assertEquals(expectedConfirmationFromUser, actualConfirmationFromUser);
+    }
+
+    @Test
+    void getConfirmationAboutDeletingCourse_shouldNullPointerException_whenCourseIsNull() {
+        assertThrows(NullPointerException.class, () -> view.getConfirmationAboutDeletingCourse(null));
+    }
+
+    @Test
+    void getConfirmationAboutDeletingCourse_shouldConfirmationMessageWithNull_whenCourseNameNotInitialized() {
+        CourseDto course = new CourseDto();
+        String expectedConfirmationMessage = "Are you sure you want to delete a course null?\n"
+                + "Please confirm your actions (enter Y or N): ";
+        when(scannerMock.nextLine()).thenReturn("Y");
+
+        view.getConfirmationAboutDeletingCourse(course);
+        String actualConfirmationMessage = baos.toString();
+
+        assertEquals(expectedConfirmationMessage, actualConfirmationMessage);
+    }
+
+    @Test
+    void getConfirmationAboutDeletingCourse_shouldConfirmationMessageWithCorrectCourseName_whenCourseNameCorrectlyInitialized() {
+        CourseDto course = new CourseDto("CourseName", "Description");
+        String expectedConfirmationMessage = "Are you sure you want to delete a course CourseName?\n"
+                + "Please confirm your actions (enter Y or N): ";
+        when(scannerMock.nextLine()).thenReturn("Y");
+
+        view.getConfirmationAboutDeletingCourse(course);
+        String actualConfirmationMessage = baos.toString();
+
+        assertEquals(expectedConfirmationMessage, actualConfirmationMessage);
+    }
+
+    @Test
+    void getConfirmationAboutDeletingCourse_shouldReturnedOneCharacterConfirmation_whenScannerMockReturnOneCharacter() {
+        CourseDto course = new CourseDto("CourseName", "Description");
+        String expectedConfirmationFromUser = "Y";
+        when(scannerMock.nextLine()).thenReturn(expectedConfirmationFromUser);
+
+        String actualConfirmationFromUser = view.getConfirmationAboutDeletingCourse(course);
+
+        assertEquals(expectedConfirmationFromUser, actualConfirmationFromUser);
+    }
+
+    @Test
+    void getConfirmationAboutDeletingCourse_shouldReturnedOneEmptyConfirmation_whenScannerMockReturnEmptyString() {
+        CourseDto course = new CourseDto("CourseName", "Description");
+        String expectedConfirmationFromUser = "";
+        when(scannerMock.nextLine()).thenReturn(expectedConfirmationFromUser);
+
+        String actualConfirmationFromUser = view.getConfirmationAboutDeletingCourse(course);
+
+        assertEquals(expectedConfirmationFromUser, actualConfirmationFromUser);
+    }
+
+    @Test
+    void getConfirmationAboutDeletingCourse_shouldReturnedNullConfirmation_whenScannerMockReturnNull() {
+        CourseDto course = new CourseDto("CourseName", "Description");
+        String expectedConfirmationFromUser = null;
+        when(scannerMock.nextLine()).thenReturn(expectedConfirmationFromUser);
+
+        String actualConfirmationFromUser = view.getConfirmationAboutDeletingCourse(course);
+
+        assertEquals(expectedConfirmationFromUser, actualConfirmationFromUser);
+    }
+
+    @Test
+    void displayGroups_shouldNullPointerException_whenGroupsListIsNull() {
+        assertThrows(NullPointerException.class, () -> view.displayGroups(null));
+    }
+
+    @Test
+    void displayGroups_shouldNullPointerException_whenGroupInListIsNull() {
+        List<GroupDto> groupsList = new ArrayList<>();
+        groupsList.add(null);
+
+        assertThrows(NullPointerException.class, () -> view.displayGroups(groupsList));
+    }
+
+    @Test
+    void displayGroups_shouldDisplayedGroupNameNull_whenGroupNameInGroupsListIsNull() {
+        GroupDto group = new GroupDto(null);
+        List<GroupDto> groupsList = new ArrayList<>();
+        groupsList.add(group);
+        String expectedDisplayedGroups = """
+
+                                       +------+
+                                       | null |
+                                       +------+
+                """;
+
+        view.displayGroups(groupsList);
+        String actualDisplayedGroups = baos.toString();
+
+        assertEquals(expectedDisplayedGroups, actualDisplayedGroups);
+    }
+
+    @Test
+    void displayGroups_shouldNothingDisplayed_whenGroupsListIsEmpty() {
+        List<GroupDto> groupsList = new ArrayList<>();
+        String expectedDisplayedGroups = """
+
+                """;
+
+        view.displayGroups(groupsList);
+        String actualDisplayedGroups = baos.toString();
+
+        assertEquals(expectedDisplayedGroups, actualDisplayedGroups);
+    }
+
+    @Test
+    void displayGroups_shouldDisplayedGroupNamesTableWithoutNames_whenGroupNamesInGroupsListAreEmpty() {
+        GroupDto firstGroup = new GroupDto("");
+        GroupDto secondGroup = new GroupDto("");
+        List<GroupDto> groupsList = new ArrayList<>();
+        groupsList.add(firstGroup);
+        groupsList.add(secondGroup);
+        String expectedDisplayedGroups = """
+
+                                       +--+
+                                       |  |
+                                       +--+
+                                       |  |
+                                       +--+
+                """;
+
+        view.displayGroups(groupsList);
+        String actualDisplayedGroups = baos.toString();
+
+        assertEquals(expectedDisplayedGroups, actualDisplayedGroups);
+    }
+
+    @Test
+    void displayGroups_shouldDisplayedStraightGroupNamesTable_whenGroupNamesHaveSameLengthInGroupsList() {
+        GroupDto firstGroup = new GroupDto("HS-22");
+        GroupDto secondGroup = new GroupDto("BV-63");
+        GroupDto thirdGroup = new GroupDto("DT-10");
+        List<GroupDto> groupsList = new ArrayList<>();
+        groupsList.add(firstGroup);
+        groupsList.add(secondGroup);
+        groupsList.add(thirdGroup);
+        String expectedDisplayedGroups = """
+
+                                       +-------+
+                                       | HS-22 |
+                                       +-------+
+                                       | BV-63 |
+                                       +-------+
+                                       | DT-10 |
+                                       +-------+
+                """;
+
+        view.displayGroups(groupsList);
+        String actualDisplayedGroups = baos.toString();
+
+        assertEquals(expectedDisplayedGroups, actualDisplayedGroups);
+    }
+
+    @Test
+    void displayGroups_shouldDisplayedDistortedGroupNamesTable_whenGroupNamesHaveDifferentLengthInGroupsList() {
+        GroupDto firstGroup = new GroupDto("H-22");
+        GroupDto secondGroup = new GroupDto("BV-633062");
+        GroupDto thirdGroup = new GroupDto("DT--10");
+        List<GroupDto> groupsList = new ArrayList<>();
+        groupsList.add(firstGroup);
+        groupsList.add(secondGroup);
+        groupsList.add(thirdGroup);
+        String expectedDisplayedGroups = """
+
+                                       +--------+
+                                       | H-22 |
+                                       +------+
+                                       | BV-633062 |
+                                       +-----------+
+                                       | DT--10 |
+                                       +--------+
+                """;
+
+        view.displayGroups(groupsList);
+        String actualDisplayedGroups = baos.toString();
+
+        assertEquals(expectedDisplayedGroups, actualDisplayedGroups);
     }
 
     @Test
@@ -212,7 +490,7 @@ class SchoolViewImplTest {
 
     @Test
     void displayGroupsWithTheirNumberOfStudents_shouldNullPointerException_whenGroupInMapIsNull() {
-        Map<Group, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
+        Map<GroupDto, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
         groupsWithTheirNumberOfStudents.put(null, 20);
 
         assertThrows(NullPointerException.class,
@@ -220,9 +498,18 @@ class SchoolViewImplTest {
     }
 
     @Test
+    void displayGroupsWithTheirNumberOfStudents_shouldNullPointerException_whenNumberOfStudentsInMapIsNull() {
+        Map<GroupDto, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
+        groupsWithTheirNumberOfStudents.put(new GroupDto("LS-43"), null);
+
+        assertThrows(NullPointerException.class,
+                () -> view.displayGroupsWithTheirNumberOfStudents(groupsWithTheirNumberOfStudents));
+    }
+
+    @Test
     void displayGroupsWithTheirNumberOfStudents_shouldNullPointerException_whenGroupNameInMapIsNull() {
-        Group group = new Group(null);
-        Map<Group, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
+        GroupDto group = new GroupDto(null);
+        Map<GroupDto, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
         groupsWithTheirNumberOfStudents.put(group, 20);
 
         assertThrows(NullPointerException.class,
@@ -231,25 +518,17 @@ class SchoolViewImplTest {
 
     @Test
     void displayGroupsWithTheirNumberOfStudents_shouldNullPointerException_whenNumberOfStudentsIsNull() {
-        Group group = new Group("FS-25");
-        Map<Group, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
+        GroupDto group = new GroupDto("FS-25");
+        Map<GroupDto, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
         groupsWithTheirNumberOfStudents.put(group, null);
-        String expectedDisplayedGroups = """
-                Groups with their number of students:
-                                       +-------+------+
-                                       | FS-25 | null |
-                                       +-------+------+
-                """;
 
-        view.displayGroupsWithTheirNumberOfStudents(groupsWithTheirNumberOfStudents);
-        String actualDisplayedGroups = baos.toString();
-
-        assertEquals(expectedDisplayedGroups, actualDisplayedGroups);
+        assertThrows(NullPointerException.class,
+                () -> view.displayGroupsWithTheirNumberOfStudents(groupsWithTheirNumberOfStudents));
     }
 
     @Test
     void displayGroupsWithTheirNumberOfStudents_shouldDisplayedOnlySentence_whenGroupsWithTheirNumberOfStudentsMapEmpty() {
-        Map<Group, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
+        Map<GroupDto, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
         String expectedDisplayedGroups = "Groups with their number of students:\n";
 
         view.displayGroupsWithTheirNumberOfStudents(groupsWithTheirNumberOfStudents);
@@ -259,11 +538,11 @@ class SchoolViewImplTest {
     }
 
     @Test
-    void displayGroupsWithTheirNumberOfStudents_shouldDisplayedCrookedTableGroupsWithTheirNumberOfStudents_whenGroupsInMapHaveNamesWithDifferentLengths() {
-        Map<Group, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
-        Group firstGroup = new Group("JRJF-84");
-        Group secondGroup = new Group("QFL-03");
-        Group thirdGroup = new Group("VA-72");
+    void displayGroupsWithTheirNumberOfStudents_shouldDisplayedDistortedTableGroupsWithTheirNumberOfStudents_whenGroupsInMapHaveNamesWithDifferentLengths() {
+        Map<GroupDto, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
+        GroupDto firstGroup = new GroupDto("JRJF-84");
+        GroupDto secondGroup = new GroupDto("QFL-03");
+        GroupDto thirdGroup = new GroupDto("VA-72");
         groupsWithTheirNumberOfStudents.put(firstGroup, 16);
         groupsWithTheirNumberOfStudents.put(secondGroup, 14);
         groupsWithTheirNumberOfStudents.put(thirdGroup, 10);
@@ -285,21 +564,21 @@ class SchoolViewImplTest {
     }
 
     @Test
-    void displayGroupsWithTheirNumberOfStudents_shouldDisplayedCrookedTableGroupsWithTheirNumberOfStudents_whenNumberOfStudentsInMapHaveDifferentLengths() {
-        Map<Group, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
-        Group firstGroup = new Group("JR-84");
-        Group secondGroup = new Group("QF-03");
-        Group thirdGroup = new Group("VA-72");
+    void displayGroupsWithTheirNumberOfStudents_shouldDisplayedGroupsWithTheirNumberOfStudents_whenNumberOfStudentsInMapHaveDifferentLengths() {
+        Map<GroupDto, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
+        GroupDto firstGroup = new GroupDto("JR-84");
+        GroupDto secondGroup = new GroupDto("QF-03");
+        GroupDto thirdGroup = new GroupDto("VA-72");
         groupsWithTheirNumberOfStudents.put(firstGroup, 6343);
         groupsWithTheirNumberOfStudents.put(secondGroup, 23);
         groupsWithTheirNumberOfStudents.put(thirdGroup, 1);
         String expectedDisplayedGroups = """
                 Groups with their number of students:
                                        +-------+------+
-                                       | QF-03 | 23 |
-                                       +-------+----+
-                                       | VA-72 | 1 |
-                                       +-------+---+
+                                       | QF-03 |   23 |
+                                       +-------+------+
+                                       | VA-72 |    1 |
+                                       +-------+------+
                                        | JR-84 | 6343 |
                                        +-------+------+
                 """;
@@ -312,10 +591,10 @@ class SchoolViewImplTest {
 
     @Test
     void displayGroupsWithTheirNumberOfStudents_shouldDisplayedGroupsWithTheirNumberOfStudents_whenMapContainsThreeCorrectGroupsWithTheirNumberOfStudents() {
-        Map<Group, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
-        Group firstGroup = new Group("JR-84");
-        Group secondGroup = new Group("QL-03");
-        Group thirdGroup = new Group("VA-72");
+        Map<GroupDto, Integer> groupsWithTheirNumberOfStudents = new HashMap<>();
+        GroupDto firstGroup = new GroupDto("JR-84");
+        GroupDto secondGroup = new GroupDto("QL-03");
+        GroupDto thirdGroup = new GroupDto("VA-72");
         groupsWithTheirNumberOfStudents.put(firstGroup, 16);
         groupsWithTheirNumberOfStudents.put(secondGroup, 14);
         groupsWithTheirNumberOfStudents.put(thirdGroup, 10);
@@ -337,18 +616,171 @@ class SchoolViewImplTest {
     }
 
     @Test
+    void displayStudentsWithTheirGroups_shouldNullPointerException_whenStudentsWithTheirGroupsMapIsNull() {
+        assertThrows(NullPointerException.class, () -> view.displayStudentsWithTheirGroups(null));
+    }
+
+    @Test
+    void displayStudentsWithTheirGroups_shouldNullPointerException_whenStudentIsNullInMap() {
+        StudentDto student = null;
+        GroupDto group = new GroupDto("KD-54");
+        Map<StudentDto, GroupDto> studentsWithTheirGroups = new HashMap<>();
+        studentsWithTheirGroups.put(student, group);
+
+        assertThrows(NullPointerException.class, () -> view.displayStudentsWithTheirGroups(studentsWithTheirGroups));
+    }
+
+    @Test
+    void displayStudentsWithTheirGroups_shouldNullPointerException_whenGrouIsNullInMap() {
+        StudentDto student = new StudentDto("FirstName", "LastName");
+        GroupDto group = null;
+        Map<StudentDto, GroupDto> studentsWithTheirGroups = new HashMap<>();
+        studentsWithTheirGroups.put(student, group);
+
+        assertThrows(NullPointerException.class, () -> view.displayStudentsWithTheirGroups(studentsWithTheirGroups));
+    }
+
+    @Test
+    void displayStudentsWithTheirGroups_shouldDisplayedTwoNullsInsteadOfFullStudentNameInTable_whenStudentFirstNameAndLastNameAreNulls() {
+        StudentDto student = new StudentDto(null, null);
+        GroupDto group = new GroupDto("KD-54");
+        Map<StudentDto, GroupDto> studentsWithTheirGroups = new HashMap<>();
+        studentsWithTheirGroups.put(student, group);
+        String expectedDisplayedStudentsWithGroups = """
+
+                                  +-----------+-------+
+                                  | null null | KD-54 |
+                                  +-----------+-------+
+                """;
+
+        view.displayStudentsWithTheirGroups(studentsWithTheirGroups);
+        String actualDisplayedStudentsWithGroups = baos.toString();
+
+        assertEquals(expectedDisplayedStudentsWithGroups, actualDisplayedStudentsWithGroups);
+    }
+
+    @Test
+    void displayStudentsWithTheirGroups_shouldDisplayedNullInsteadOfGroupNameInTable_whenGroupNameIsNull() {
+        StudentDto student = new StudentDto("FirstName", "LastName");
+        GroupDto group = new GroupDto(null);
+        Map<StudentDto, GroupDto> studentsWithTheirGroups = new HashMap<>();
+        studentsWithTheirGroups.put(student, group);
+        String expectedDisplayedStudentsWithGroups = """
+
+                                  +--------------------+------+
+                                  | FirstName LastName | null |
+                                  +--------------------+------+
+                """;
+
+        view.displayStudentsWithTheirGroups(studentsWithTheirGroups);
+        String actualDisplayedStudentsWithGroups = baos.toString();
+
+        assertEquals(expectedDisplayedStudentsWithGroups, actualDisplayedStudentsWithGroups);
+    }
+
+    @Test
+    void displayStudentsWithTheirGroups_shouldNothingDisplayed_whenStudentsWithTheirGroupsMapIsEmpty() {
+        Map<StudentDto, GroupDto> studentsWithTheirGroups = new HashMap<>();
+        String expectedDisplayedStudentsWithGroups = """
+
+                """;
+
+        view.displayStudentsWithTheirGroups(studentsWithTheirGroups);
+        String actualDisplayedStudentsWithGroups = baos.toString();
+
+        assertEquals(expectedDisplayedStudentsWithGroups, actualDisplayedStudentsWithGroups);
+    }
+
+    @Test
+    void displayStudentsWithTheirGroups_shouldDisplayedEmptyTable_whenStudentFirstNameAndLastNameAreEmptyAndGroupNameAlsoEmpty() {
+        StudentDto student = new StudentDto("", "");
+        GroupDto group = new GroupDto("");
+        Map<StudentDto, GroupDto> studentsWithTheirGroups = new HashMap<>();
+        studentsWithTheirGroups.put(student, group);
+        String expectedDisplayedStudentsWithGroups = """
+
+                                  +---+--+
+                                  |   |  |
+                                  +---+--+
+                """;
+
+        view.displayStudentsWithTheirGroups(studentsWithTheirGroups);
+        String actualDisplayedStudentsWithGroups = baos.toString();
+
+        assertEquals(expectedDisplayedStudentsWithGroups, actualDisplayedStudentsWithGroups);
+    }
+
+    @Test
+    void displayStudentsWithTheirGroups_shouldDisplayedStraightTable_whenStudentFullNamesHaveDifferentLengthsAndGroupNamesHaveSameLengths() {
+        StudentDto firstStudent = new StudentDto("FirstName", "LastName");
+        StudentDto secondStudent = new StudentDto("", "");
+        StudentDto thirdStudent = new StudentDto("               ", "            ");
+        GroupDto firstGroup = new GroupDto("MN-90");
+        GroupDto secondGroup = new GroupDto("SC-87");
+        GroupDto thirdGroup = new GroupDto("KJ-56");
+        Map<StudentDto, GroupDto> studentsWithTheirGroups = new HashMap<>();
+        studentsWithTheirGroups.put(firstStudent, firstGroup);
+        studentsWithTheirGroups.put(secondStudent, secondGroup);
+        studentsWithTheirGroups.put(thirdStudent, thirdGroup);
+        String expectedDisplayedStudentsWithGroups = """
+
+                                  +------------------------------+-------+
+                                  | FirstName LastName           | MN-90 |
+                                  +------------------------------+-------+
+                                  |                              | KJ-56 |
+                                  +------------------------------+-------+
+                                  |                              | SC-87 |
+                                  +------------------------------+-------+
+                """;
+
+        view.displayStudentsWithTheirGroups(studentsWithTheirGroups);
+        String actualDisplayedStudentsWithGroups = baos.toString();
+
+        assertEquals(expectedDisplayedStudentsWithGroups, actualDisplayedStudentsWithGroups);
+    }
+
+    @Test
+    void displayStudentsWithTheirGroups_shouldDisplayedDistortedTable_whenStudentFullNamesHaveDifferentLengthsAndGroupNamesAlsoHaveDifferentLengths() {
+        StudentDto firstStudent = new StudentDto("FirstName_1", "LastName_1");
+        StudentDto secondStudent = new StudentDto("FirstName____2", "LastName___2");
+        StudentDto thirdStudent = new StudentDto("FirstName__3", "LastName__3");
+        GroupDto firstGroup = new GroupDto("MNJGFV-90453");
+        GroupDto secondGroup = new GroupDto("");
+        GroupDto thirdGroup = new GroupDto("     ");
+        Map<StudentDto, GroupDto> studentsWithTheirGroups = new HashMap<>();
+        studentsWithTheirGroups.put(firstStudent, firstGroup);
+        studentsWithTheirGroups.put(secondStudent, secondGroup);
+        studentsWithTheirGroups.put(thirdStudent, thirdGroup);
+        String expectedDisplayedStudentsWithGroups = """
+
+                                  +-----------------------------+--------------+
+                                  | FirstName____2 LastName___2 |  |
+                                  +-----------------------------+--+
+                                  | FirstName__3 LastName__3    |       |
+                                  +-----------------------------+-------+
+                                  | FirstName_1 LastName_1      | MNJGFV-90453 |
+                                  +-----------------------------+--------------+
+                """;
+
+        view.displayStudentsWithTheirGroups(studentsWithTheirGroups);
+        String actualDisplayedStudentsWithGroups = baos.toString();
+
+        assertEquals(expectedDisplayedStudentsWithGroups, actualDisplayedStudentsWithGroups);
+    }
+
+    @Test
     void displayStudentsWithTheirCourses_shouldNullPointerException_whenMapWithStudentsAndTheirCoursesIsNull() {
         assertThrows(NullPointerException.class, () -> view.displayStudentsWithTheirCourses(null));
     }
 
     @Test
     void displayStudentsWithTheirCourses_shouldNullPointerException_whenStudentInMapIsNull() {
-        Course firstCourse = new Course("CourseName_1", "Description_1");
-        Course secondCourse = new Course("CourseName_2", "Description_2");
-        List<Course> coursesForStudent = new ArrayList<>();
+        CourseDto firstCourse = new CourseDto("CourseName_1", "Description_1");
+        CourseDto secondCourse = new CourseDto("CourseName_2", "Description_2");
+        Set<CourseDto> coursesForStudent = new HashSet<>();
         coursesForStudent.add(firstCourse);
         coursesForStudent.add(secondCourse);
-        Map<Student, List<Course>> studentsWithTheirCourses = new HashMap<>();
+        Map<StudentDto, Set<CourseDto>> studentsWithTheirCourses = new HashMap<>();
         studentsWithTheirCourses.put(null, coursesForStudent);
 
         assertThrows(NullPointerException.class, () -> view.displayStudentsWithTheirCourses(studentsWithTheirCourses));
@@ -356,13 +788,13 @@ class SchoolViewImplTest {
 
     @Test
     void displayStudentsWithTheirCourses_shouldDisplayedStudentWithNullFirstName_whenStudentFirstNameInMapIsNull() {
-        Student student = new Student(null, "LastName", 1);
-        Course firstCourse = new Course("CourseName_1", "Description_1");
-        Course secondCourse = new Course("CourseName_2", "Description_2");
-        List<Course> coursesForStudent = new ArrayList<>();
+        StudentDto student = new StudentDto(null, "LastName");
+        CourseDto firstCourse = new CourseDto("CourseName_1", "Description_1");
+        CourseDto secondCourse = new CourseDto("CourseName_2", "Description_2");
+        Set<CourseDto> coursesForStudent = new HashSet<>();
         coursesForStudent.add(firstCourse);
         coursesForStudent.add(secondCourse);
-        Map<Student, List<Course>> studentsWithTheirCourses = new HashMap<>();
+        Map<StudentDto, Set<CourseDto>> studentsWithTheirCourses = new HashMap<>();
         studentsWithTheirCourses.put(student, coursesForStudent);
         String expectedDisplayedStudentsWithCourses = """
                 Students with their courses:
@@ -379,8 +811,8 @@ class SchoolViewImplTest {
 
     @Test
     void displayStudentsWithTheirCourses_shouldNullPointerException_whenCoursesListForStudentInMapIsNull() {
-        Student student = new Student("FirstName", "LastName", 1);
-        Map<Student, List<Course>> studentsWithTheirCourses = new HashMap<>();
+        StudentDto student = new StudentDto("FirstName", "LastName");
+        Map<StudentDto, Set<CourseDto>> studentsWithTheirCourses = new HashMap<>();
         studentsWithTheirCourses.put(student, null);
 
         assertThrows(NullPointerException.class, () -> view.displayStudentsWithTheirCourses(studentsWithTheirCourses));
@@ -388,14 +820,14 @@ class SchoolViewImplTest {
 
     @Test
     void displayStudentsWithTheirCourses_shouldNullPointerException_whenCourseInCoursesListForStudentIsNull() {
-        Student student = new Student("FirstName", "LastName", 1);
-        Course firstCourse = new Course("CourseName_1", "Description_1");
-        Course secondCourse = new Course("CourseName_2", "Description_2");
-        List<Course> coursesForStudent = new ArrayList<>();
+        StudentDto student = new StudentDto("FirstName", "LastName");
+        CourseDto firstCourse = new CourseDto("CourseName_1", "Description_1");
+        CourseDto secondCourse = new CourseDto("CourseName_2", "Description_2");
+        Set<CourseDto> coursesForStudent = new HashSet<>();
         coursesForStudent.add(firstCourse);
         coursesForStudent.add(secondCourse);
         coursesForStudent.add(null);
-        Map<Student, List<Course>> studentsWithTheirCourses = new HashMap<>();
+        Map<StudentDto, Set<CourseDto>> studentsWithTheirCourses = new HashMap<>();
         studentsWithTheirCourses.put(student, coursesForStudent);
 
         assertThrows(NullPointerException.class, () -> view.displayStudentsWithTheirCourses(studentsWithTheirCourses));
@@ -403,18 +835,18 @@ class SchoolViewImplTest {
 
     @Test
     void displayStudentsWithTheirCourses_shouldDisplayedNullCourseName_whenCourseNameInCoursesListForStudentIsNull() {
-        Student student = new Student("FirstName", "LastName", 1);
-        Course firstCourse = new Course("CourseName_1", "Description_1");
-        Course secondCourse = new Course(null, "Description_2");
-        List<Course> coursesForStudent = new ArrayList<>();
+        StudentDto student = new StudentDto("FirstName", "LastName");
+        CourseDto firstCourse = new CourseDto("CourseName_1", "Description_1");
+        CourseDto secondCourse = new CourseDto(null, "Description_2");
+        Set<CourseDto> coursesForStudent = new HashSet<>();
         coursesForStudent.add(firstCourse);
         coursesForStudent.add(secondCourse);
-        Map<Student, List<Course>> studentsWithTheirCourses = new HashMap<>();
+        Map<StudentDto, Set<CourseDto>> studentsWithTheirCourses = new HashMap<>();
         studentsWithTheirCourses.put(student, coursesForStudent);
         String expectedDisplayedStudentsWithCourses = """
                 Students with their courses:
                 +--------------------+--------------------+
-                | FirstName LastName | CourseName_1, null |
+                | FirstName LastName | null, CourseName_1 |
                 +--------------------+--------------------+
                 """;
 
@@ -426,7 +858,7 @@ class SchoolViewImplTest {
 
     @Test
     void displayStudentsWithTheirCourses_shouldDisplayedOnlySentence_whenStudentsWithTheirCoursesMapEmpty() {
-        Map<Student, List<Course>> studentsWithTheirCourses = new HashMap<>();
+        Map<StudentDto, Set<CourseDto>> studentsWithTheirCourses = new HashMap<>();
         String expectedDisplayedStudentsWithCourses = """
                 Students with their courses:
                 """;
@@ -439,16 +871,16 @@ class SchoolViewImplTest {
 
     @Test
     void displayStudentsWithTheirCourses_shouldDisplayedCorrectTableWithStudentsAndTheirCourses_whenNamesOfSomeStudentsAreEmpty() {
-        Student firstStudent = new Student("", "", 1);
-        Student secondStudent = new Student("", "LastName_2", 1);
-        Student thirdStudent = new Student("FirstName_3", "", 1);
-        Course firstCourse = new Course("CourseName_1", "Description_1");
-        Course secondCourse = new Course("CourseName_2", "Description_2");
-        Course thirdCourse = new Course("CourseName_3", "Description_3");
-        Course fourthCourse = new Course("CourseName_4", "Description_4");
-        List<Course> coursesForFirstStudent = new ArrayList<>();
-        List<Course> coursesForSecondStudent = new ArrayList<>();
-        List<Course> coursesForThirdStudent = new ArrayList<>();
+        StudentDto firstStudent = new StudentDto("", "");
+        StudentDto secondStudent = new StudentDto("", "LastName_2");
+        StudentDto thirdStudent = new StudentDto("FirstName_3", "");
+        CourseDto firstCourse = new CourseDto("CourseName_1", "Description_1");
+        CourseDto secondCourse = new CourseDto("CourseName_2", "Description_2");
+        CourseDto thirdCourse = new CourseDto("CourseName_3", "Description_3");
+        CourseDto fourthCourse = new CourseDto("CourseName_4", "Description_4");
+        Set<CourseDto> coursesForFirstStudent = new HashSet<>();
+        Set<CourseDto> coursesForSecondStudent = new HashSet<>();
+        Set<CourseDto> coursesForThirdStudent = new HashSet<>();
         coursesForFirstStudent.add(firstCourse);
         coursesForFirstStudent.add(secondCourse);
         coursesForSecondStudent.add(firstCourse);
@@ -458,18 +890,18 @@ class SchoolViewImplTest {
         coursesForThirdStudent.add(secondCourse);
         coursesForThirdStudent.add(thirdCourse);
         coursesForThirdStudent.add(fourthCourse);
-        Map<Student, List<Course>> studentsWithTheirCourses = new HashMap<>();
+        Map<StudentDto, Set<CourseDto>> studentsWithTheirCourses = new HashMap<>();
         studentsWithTheirCourses.put(firstStudent, coursesForFirstStudent);
         studentsWithTheirCourses.put(secondStudent, coursesForSecondStudent);
         studentsWithTheirCourses.put(thirdStudent, coursesForThirdStudent);
         String expectedDisplayedStudentsWithCourses = """
                 Students with their courses:
                 +--------------+--------------------------------------------------------+
+                | FirstName_3  | CourseName_1, CourseName_2, CourseName_3, CourseName_4 |
+                +--------------+--------------------------------------------------------+
                 |  LastName_2  | CourseName_1, CourseName_3, CourseName_4               |
                 +--------------+--------------------------------------------------------+
                 |              | CourseName_1, CourseName_2                             |
-                +--------------+--------------------------------------------------------+
-                | FirstName_3  | CourseName_1, CourseName_2, CourseName_3, CourseName_4 |
                 +--------------+--------------------------------------------------------+
                 """;
 
@@ -481,16 +913,16 @@ class SchoolViewImplTest {
 
     @Test
     void displayStudentsWithTheirCourses_shouldDisplayedCorrectTableWithStudentsAndTheirCourses_whenNamesOfSomeCoursesAreEmpty() {
-        Student firstStudent = new Student("FirstName_1", "LastName_1", 1);
-        Student secondStudent = new Student("FirstName_2", "LastName_2", 1);
-        Student thirdStudent = new Student("FirstName_3", "LastName_3", 1);
-        Course firstCourse = new Course("", "Description_1");
-        Course secondCourse = new Course("", "Description_2");
-        Course thirdCourse = new Course("CourseName_3", "Description_3");
-        Course fourthCourse = new Course("CourseName_4", "Description_4");
-        List<Course> coursesForFirstStudent = new ArrayList<>();
-        List<Course> coursesForSecondStudent = new ArrayList<>();
-        List<Course> coursesForThirdStudent = new ArrayList<>();
+        StudentDto firstStudent = new StudentDto("FirstName_1", "LastName_1");
+        StudentDto secondStudent = new StudentDto("FirstName_2", "LastName_2");
+        StudentDto thirdStudent = new StudentDto("FirstName_3", "LastName_3");
+        CourseDto firstCourse = new CourseDto("", "Description_1");
+        CourseDto secondCourse = new CourseDto("", "Description_2");
+        CourseDto thirdCourse = new CourseDto("CourseName_3", "Description_3");
+        CourseDto fourthCourse = new CourseDto("CourseName_4", "Description_4");
+        Set<CourseDto> coursesForFirstStudent = new HashSet<>();
+        Set<CourseDto> coursesForSecondStudent = new HashSet<>();
+        Set<CourseDto> coursesForThirdStudent = new HashSet<>();
         coursesForFirstStudent.add(firstCourse);
         coursesForFirstStudent.add(secondCourse);
         coursesForSecondStudent.add(firstCourse);
@@ -500,18 +932,18 @@ class SchoolViewImplTest {
         coursesForThirdStudent.add(secondCourse);
         coursesForThirdStudent.add(thirdCourse);
         coursesForThirdStudent.add(fourthCourse);
-        Map<Student, List<Course>> studentsWithTheirCourses = new HashMap<>();
+        Map<StudentDto, Set<CourseDto>> studentsWithTheirCourses = new HashMap<>();
         studentsWithTheirCourses.put(firstStudent, coursesForFirstStudent);
         studentsWithTheirCourses.put(secondStudent, coursesForSecondStudent);
         studentsWithTheirCourses.put(thirdStudent, coursesForThirdStudent);
         String expectedDisplayedStudentsWithCourses = """
                 Students with their courses:
                 +------------------------+--------------------------------+
+                | FirstName_2 LastName_2 | , CourseName_3, CourseName_4   |
+                +------------------------+--------------------------------+
                 | FirstName_3 LastName_3 | , , CourseName_3, CourseName_4 |
                 +------------------------+--------------------------------+
                 | FirstName_1 LastName_1 | ,                              |
-                +------------------------+--------------------------------+
-                | FirstName_2 LastName_2 | , CourseName_3, CourseName_4   |
                 +------------------------+--------------------------------+
                 """;
 
@@ -523,16 +955,16 @@ class SchoolViewImplTest {
 
     @Test
     void displayStudentsWithTheirCourses_shouldDisplayedCorrectTableWithStudentsAndTheirCourses_whenMapContainStudentsWithOtherStudentsAndOtherCourses() {
-        Student firstStudent = new Student("FirstName__1", "LastName___1", 1);
-        Student secondStudent = new Student("First_2", "LastName_2", 1);
-        Student thirdStudent = new Student("F", "LastName____3", 1);
-        Course firstCourse = new Course("CourseName__1", "Description_1");
-        Course secondCourse = new Course("CourseName____2", "Description_2");
-        Course thirdCourse = new Course("CourseName___3", "Description_3");
-        Course fourthCourse = new Course("C", "Description_4");
-        List<Course> coursesForFirstStudent = new ArrayList<>();
-        List<Course> coursesForSecondStudent = new ArrayList<>();
-        List<Course> coursesForThirdStudent = new ArrayList<>();
+        StudentDto firstStudent = new StudentDto("FirstName__1", "LastName___1");
+        StudentDto secondStudent = new StudentDto("First_2", "LastName_2");
+        StudentDto thirdStudent = new StudentDto("F", "LastName____3");
+        CourseDto firstCourse = new CourseDto("CourseName__1", "Description_1");
+        CourseDto secondCourse = new CourseDto("CourseName____2", "Description_2");
+        CourseDto thirdCourse = new CourseDto("CourseName___3", "Description_3");
+        CourseDto fourthCourse = new CourseDto("C", "Description_4");
+        Set<CourseDto> coursesForFirstStudent = new HashSet<>();
+        Set<CourseDto> coursesForSecondStudent = new HashSet<>();
+        Set<CourseDto> coursesForThirdStudent = new HashSet<>();
         coursesForFirstStudent.add(firstCourse);
         coursesForFirstStudent.add(secondCourse);
         coursesForSecondStudent.add(firstCourse);
@@ -542,18 +974,18 @@ class SchoolViewImplTest {
         coursesForThirdStudent.add(secondCourse);
         coursesForThirdStudent.add(thirdCourse);
         coursesForThirdStudent.add(fourthCourse);
-        Map<Student, List<Course>> studentsWithTheirCourses = new HashMap<>();
+        Map<StudentDto, Set<CourseDto>> studentsWithTheirCourses = new HashMap<>();
         studentsWithTheirCourses.put(firstStudent, coursesForFirstStudent);
         studentsWithTheirCourses.put(secondStudent, coursesForSecondStudent);
         studentsWithTheirCourses.put(thirdStudent, coursesForThirdStudent);
         String expectedDisplayedStudentsWithCourses = """
                 Students with their courses:
                 +---------------------------+---------------------------------------------------+
-                | F LastName____3           | CourseName__1, CourseName____2, CourseName___3, C |
-                +---------------------------+---------------------------------------------------+
-                | First_2 LastName_2        | CourseName__1, CourseName___3, C                  |
-                +---------------------------+---------------------------------------------------+
                 | FirstName__1 LastName___1 | CourseName__1, CourseName____2                    |
+                +---------------------------+---------------------------------------------------+
+                | First_2 LastName_2        | C, CourseName__1, CourseName___3                  |
+                +---------------------------+---------------------------------------------------+
+                | F LastName____3           | C, CourseName__1, CourseName___3, CourseName____2 |
                 +---------------------------+---------------------------------------------------+
                 """;
 
@@ -570,7 +1002,7 @@ class SchoolViewImplTest {
 
     @Test
     void displayCourses_shouldNullPointerException_whenCourseInCoursesListIsNull() {
-        List<Course> coursesList = new ArrayList<>();
+        List<CourseDto> coursesList = new ArrayList<>();
         coursesList.add(null);
 
         assertThrows(NullPointerException.class, () -> view.displayCourses(coursesList));
@@ -578,8 +1010,8 @@ class SchoolViewImplTest {
 
     @Test
     void displayCourses_shouldNullPointerException_whenCourseNameInCoursesListIsNull() {
-        Course course = new Course(null, "Description");
-        List<Course> coursesList = new ArrayList<>();
+        CourseDto course = new CourseDto(null, "Description");
+        List<CourseDto> coursesList = new ArrayList<>();
         coursesList.add(course);
 
         assertThrows(NullPointerException.class, () -> view.displayCourses(coursesList));
@@ -587,8 +1019,8 @@ class SchoolViewImplTest {
 
     @Test
     void displayCourses_shouldNullPointerException_whenCourseDescriptionInCoursesListIsNull() {
-        Course course = new Course("CourseName", null);
-        List<Course> coursesList = new ArrayList<>();
+        CourseDto course = new CourseDto("CourseName", null);
+        List<CourseDto> coursesList = new ArrayList<>();
         coursesList.add(course);
 
         assertThrows(NullPointerException.class, () -> view.displayCourses(coursesList));
@@ -596,9 +1028,8 @@ class SchoolViewImplTest {
 
     @Test
     void displayCourses_shouldDisplayedOnlySentences_whenCoursesListEmpty() {
-        List<Course> coursesList = new ArrayList<>();
-        String expectedDisplayedCourses = """
-                Courses with descriptions:""";
+        List<CourseDto> coursesList = new ArrayList<>();
+        String expectedDisplayedCourses = "\n";
 
         view.displayCourses(coursesList);
         String actualDisplayedCourses = baos.toString();
@@ -608,22 +1039,22 @@ class SchoolViewImplTest {
 
     @Test
     void displayCourses_shouldDisplayedTableWithCoursesNamesAndDescriptions_whenSomeCoursesNamesAndDescriptionsEmpty() {
-        Course firstCourse = new Course("", "Description_1");
-        Course secondCourse = new Course("CourseName_2", "");
-        Course thirdCourse = new Course("", "");
-        List<Course> coursesList = new ArrayList<>();
+        CourseDto firstCourse = new CourseDto("", "Description_1");
+        CourseDto secondCourse = new CourseDto("CourseName_2", "");
+        CourseDto thirdCourse = new CourseDto("", "");
+        List<CourseDto> coursesList = new ArrayList<>();
         coursesList.add(firstCourse);
         coursesList.add(secondCourse);
         coursesList.add(thirdCourse);
         String expectedDisplayedCourses = """
-                Courses with descriptions:
+
                 +--------------+---------------+
                 |              | Description_1 |
                 +--------------+---------------+
                 | CourseName_2 |               |
                 +--------------+---------------+
                 |              |               |
-                +--------------+---------------+""";
+                +--------------+---------------+\n""";
 
         view.displayCourses(coursesList);
         String actualDisplayedCourses = baos.toString();
@@ -633,22 +1064,22 @@ class SchoolViewImplTest {
 
     @Test
     void displayCourses_shouldDisplayedTableWithCoursesNamesAndDescriptions_whenСoursesWithDifferentNamesAndDescriptionsPresentInCourseList() {
-        Course firstCourse = new Course("CourseName______1", "Description_____1");
-        Course secondCourse = new Course("CourseName_2", "Description__2");
-        Course thirdCourse = new Course("Co", "De");
-        List<Course> coursesList = new ArrayList<>();
+        CourseDto firstCourse = new CourseDto("CourseName______1", "Description_____1");
+        CourseDto secondCourse = new CourseDto("CourseName_2", "Description__2");
+        CourseDto thirdCourse = new CourseDto("Co", "De");
+        List<CourseDto> coursesList = new ArrayList<>();
         coursesList.add(firstCourse);
         coursesList.add(secondCourse);
         coursesList.add(thirdCourse);
         String expectedDisplayedCourses = """
-                Courses with descriptions:
+
                 +-------------------+-------------------+
                 | CourseName______1 | Description_____1 |
                 +-------------------+-------------------+
                 | CourseName_2      | Description__2    |
                 +-------------------+-------------------+
                 | Co                | De                |
-                +-------------------+-------------------+""";
+                +-------------------+-------------------+\n""";
 
         view.displayCourses(coursesList);
         String actualDisplayedCourses = baos.toString();
@@ -721,7 +1152,7 @@ class SchoolViewImplTest {
 
     @Test
     void getStudentFullName_shouldInvocationTargetException_whenStudentIsNull() throws Exception {
-        Method method = SchoolViewImpl.class.getDeclaredMethod("getStudentFullName", Student.class);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getStudentFullName", StudentDto.class);
         method.setAccessible(true);
         Student student = null;
 
@@ -730,9 +1161,9 @@ class SchoolViewImplTest {
 
     @Test
     void getStudentFullName_shouldStudentFullNameWhereFirstNameIsNull_whenStudentFirstNameIsNull() throws Exception {
-        Method method = SchoolViewImpl.class.getDeclaredMethod("getStudentFullName", Student.class);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getStudentFullName", StudentDto.class);
         method.setAccessible(true);
-        Student student = new Student(null, "LastName", 1);
+        StudentDto student = new StudentDto(null, "LastName");
         String expectedStudentFullName = "null LastName";
 
         String actualStudentFullName = method.invoke(view, student).toString();
@@ -742,9 +1173,9 @@ class SchoolViewImplTest {
 
     @Test
     void getStudentFullName_shouldOneSpace_whenStudentFirstNameAndLastNameAreEmpty() throws Exception {
-        Method method = SchoolViewImpl.class.getDeclaredMethod("getStudentFullName", Student.class);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getStudentFullName", StudentDto.class);
         method.setAccessible(true);
-        Student student = new Student("", "", 1);
+        StudentDto student = new StudentDto("", "");
         String expectedStudentFullName = " ";
 
         String actualStudentFullName = method.invoke(view, student).toString();
@@ -754,9 +1185,9 @@ class SchoolViewImplTest {
 
     @Test
     void getStudentFullName_shouldThreeSpaces_whenStudentFirstNameAndLastNameAreOneSpace() throws Exception {
-        Method method = SchoolViewImpl.class.getDeclaredMethod("getStudentFullName", Student.class);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getStudentFullName", StudentDto.class);
         method.setAccessible(true);
-        Student student = new Student(" ", " ", 1);
+        StudentDto student = new StudentDto(" ", " ");
         String expectedStudentFullName = "   ";
 
         String actualStudentFullName = method.invoke(view, student).toString();
@@ -766,9 +1197,9 @@ class SchoolViewImplTest {
 
     @Test
     void getStudentFullName_shouldCorrectFullName_whenStudentFirstNameAndLastNameAreCorrect() throws Exception {
-        Method method = SchoolViewImpl.class.getDeclaredMethod("getStudentFullName", Student.class);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getStudentFullName", StudentDto.class);
         method.setAccessible(true);
-        Student student = new Student("Firstname", "LastName", 1);
+        StudentDto student = new StudentDto("Firstname", "LastName");
         String expectedStudentFullName = "Firstname LastName";
 
         String actualStudentFullName = method.invoke(view, student).toString();
@@ -777,10 +1208,10 @@ class SchoolViewImplTest {
     }
 
     @Test
-    void getCoursesEnumeration_shouldInvocationTargetException_whenCoursesListIsNull() throws Exception {
-        Method method = SchoolViewImpl.class.getDeclaredMethod("getCoursesEnumeration", List.class);
+    void getCoursesEnumeration_shouldInvocationTargetException_whenCoursesSetIsNull() throws Exception {
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getCoursesEnumeration", Set.class);
         method.setAccessible(true);
-        List<Course> coursesList = null;
+        Set<Course> coursesList = null;
 
         assertThrows(InvocationTargetException.class, () -> method.invoke(view, coursesList));
     }
@@ -788,14 +1219,14 @@ class SchoolViewImplTest {
     @Test
     void getCoursesEnumeration_shouldCoursesEnumerationWhereSecondCourseNameIsNull_whenSecondCourseNmaeIsNull()
             throws Exception {
-        Method method = SchoolViewImpl.class.getDeclaredMethod("getCoursesEnumeration", List.class);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getCoursesEnumeration", Set.class);
         method.setAccessible(true);
-        Course firstCourse = new Course("CourseName_1", "Description_1");
-        Course secondCourse = new Course(null, "Description_2");
-        List<Course> courses = new ArrayList<>();
+        CourseDto firstCourse = new CourseDto("CourseName_1", "Description_1");
+        CourseDto secondCourse = new CourseDto(null, "Description_2");
+        Set<CourseDto> courses = new HashSet<CourseDto>();
         courses.add(firstCourse);
         courses.add(secondCourse);
-        String expectedCoursesEnumeration = "CourseName_1, null";
+        String expectedCoursesEnumeration = "null, CourseName_1";
 
         String actualCoursesEnumeration = method.invoke(view, courses).toString();
 
@@ -803,10 +1234,10 @@ class SchoolViewImplTest {
     }
 
     @Test
-    void getCoursesEnumeration_shouldEmptyString_whenCourseListEmpty() throws Exception {
-        Method method = SchoolViewImpl.class.getDeclaredMethod("getCoursesEnumeration", List.class);
+    void getCoursesEnumeration_shouldEmptyString_whenCourseSetEmpty() throws Exception {
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getCoursesEnumeration", Set.class);
         method.setAccessible(true);
-        List<Course> courses = new ArrayList<>();
+        Set<Course> courses = new HashSet<Course>();
         String expectedCoursesEnumeration = "";
 
         String actualCoursesEnumeration = method.invoke(view, courses).toString();
@@ -816,11 +1247,11 @@ class SchoolViewImplTest {
 
     @Test
     void getCoursesEnumeration_shouldCommaWithSpace_whenCoursesNamesAreEmpty() throws Exception {
-        Method method = SchoolViewImpl.class.getDeclaredMethod("getCoursesEnumeration", List.class);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getCoursesEnumeration", Set.class);
         method.setAccessible(true);
-        Course firstCourse = new Course("", "Description_1");
-        Course secondCourse = new Course("", "Description_2");
-        List<Course> courses = new ArrayList<>();
+        CourseDto firstCourse = new CourseDto("", "Description_1");
+        CourseDto secondCourse = new CourseDto("", "Description_2");
+        Set<CourseDto> courses = new HashSet<>();
         courses.add(firstCourse);
         courses.add(secondCourse);
         String expectedCoursesEnumeration = ", ";
@@ -832,11 +1263,11 @@ class SchoolViewImplTest {
 
     @Test
     void getCoursesEnumeration_shouldCommaWithSpaces_whenCoursesNamesAreSpaces() throws Exception {
-        Method method = SchoolViewImpl.class.getDeclaredMethod("getCoursesEnumeration", List.class);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getCoursesEnumeration", Set.class);
         method.setAccessible(true);
-        Course firstCourse = new Course("  ", "Description_1");
-        Course secondCourse = new Course("  ", "Description_2");
-        List<Course> courses = new ArrayList<>();
+        CourseDto firstCourse = new CourseDto("  ", "Description_1");
+        CourseDto secondCourse = new CourseDto("  ", "Description_2");
+        Set<CourseDto> courses = new HashSet<>();
         courses.add(firstCourse);
         courses.add(secondCourse);
         String expectedCoursesEnumeration = "  ,   ";
@@ -848,11 +1279,11 @@ class SchoolViewImplTest {
 
     @Test
     void getCoursesEnumeration_shouldCorrectCoursesEnumeration_whenCoursesNamesAreCorrect() throws Exception {
-        Method method = SchoolViewImpl.class.getDeclaredMethod("getCoursesEnumeration", List.class);
+        Method method = SchoolViewImpl.class.getDeclaredMethod("getCoursesEnumeration", Set.class);
         method.setAccessible(true);
-        Course firstCourse = new Course("CourseName_1", "Description_1");
-        Course secondCourse = new Course("CourseName_2", "Description_2");
-        List<Course> courses = new ArrayList<>();
+        CourseDto firstCourse = new CourseDto("CourseName_1", "Description_1");
+        CourseDto secondCourse = new CourseDto("CourseName_2", "Description_2");
+        Set<CourseDto> courses = new HashSet<>();
         courses.add(firstCourse);
         courses.add(secondCourse);
         String expectedCoursesEnumeration = "CourseName_1, CourseName_2";

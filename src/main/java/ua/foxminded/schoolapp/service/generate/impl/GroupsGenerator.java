@@ -6,24 +6,24 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import ua.foxminded.schoolapp.model.Group;
+import ua.foxminded.schoolapp.dto.GroupDto;
 import ua.foxminded.schoolapp.service.generate.Generatable;
 
 /**
- * Generates a list of randomly generated group objects. The GroupsGenerator
+ * Generates a list of randomly generated group Dto objects. The GroupsGenerator
  * class is an implementation of the {@link Generatable} interface.
  * <p>
  * This class is annotated with {@code @Component} to indicate that it is a
  * Spring component, and it can be automatically discovered and registered as a
  * bean in the Spring context. The GroupsGenerator generates a list of
- * {@link Group} objects, where each group has a randomly generated name
+ * {@link GroupDto} objects, where each group has a randomly generated name
  * consisting of two uppercase letters as initials and two random digits,
  * separated by a {@link #SEPARATOR}.
  *
  * @author Serhii Bohdan
  */
 @Component
-public class GroupsGenerator implements Generatable<Group> {
+public class GroupsGenerator implements Generatable<GroupDto> {
 
     /**
      * The separator used to separate the initials and random digits in the group
@@ -37,7 +37,8 @@ public class GroupsGenerator implements Generatable<Group> {
     private static final int NUMBER_OF_GROUPS = 10;
 
     /**
-     * The logger for logging events and messages in the {@link GroupsGenerator} class.
+     * The logger for logging events and messages in the {@link GroupsGenerator}
+     * class.
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(GroupsGenerator.class);
 
@@ -47,18 +48,18 @@ public class GroupsGenerator implements Generatable<Group> {
     private static final Random RANDOM = new Random();
 
     /**
-     * Generates a list of randomly generated Group objects.
+     * Generates a list of randomly generated GroupDto objects.
      *
-     * @return a list of randomly generated Group objects.
+     * @return a list of randomly generated GroupDto objects.
      */
     @Override
-    public List<Group> toGenerate() {
+    public List<GroupDto> toGenerate() {
         LOGGER.info("Generating groups started...");
 
-        List<Group> generatedGroups = Stream.generate(() -> getRandomInitials() + SEPARATOR + getTwoRandomDigits())
+        List<GroupDto> generatedGroups = Stream.generate(() -> getRandomInitials() + SEPARATOR + getTwoRandomDigits())
                 .distinct()
                 .limit(NUMBER_OF_GROUPS)
-                .map(Group::new)
+                .map(GroupDto::new)
                 .toList();
 
         LOGGER.info("Generated {} groups.", generatedGroups.size());

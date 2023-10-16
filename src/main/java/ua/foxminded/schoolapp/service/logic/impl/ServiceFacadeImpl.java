@@ -1,11 +1,22 @@
 package ua.foxminded.schoolapp.service.logic.impl;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import jakarta.transaction.Transactional;
+import ua.foxminded.schoolapp.dto.CourseDto;
+import ua.foxminded.schoolapp.dto.GroupDto;
+import ua.foxminded.schoolapp.dto.StudentDto;
+import ua.foxminded.schoolapp.dto.mapper.CourseMapper;
+import ua.foxminded.schoolapp.dto.mapper.GroupMapper;
+import ua.foxminded.schoolapp.dto.mapper.StudentMapper;
 import ua.foxminded.schoolapp.model.Course;
 import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
@@ -30,6 +41,7 @@ import ua.foxminded.schoolapp.service.logic.UserInputValidator;
  * @author Serhii Bohdan
  */
 @Service
+@Transactional
 public class ServiceFacadeImpl implements ServiceFacade {
 
     /**
@@ -63,6 +75,7 @@ public class ServiceFacadeImpl implements ServiceFacade {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void initSchema() {
         boolean groupsTableIsEmpty = groupService.getAllGroups().isEmpty();
         boolean studentsTableIsEmpty = studentService.getAllStudents().isEmpty();
@@ -71,9 +84,9 @@ public class ServiceFacadeImpl implements ServiceFacade {
         if (groupsTableIsEmpty && studentsTableIsEmpty && coursesTableIsEmpty) {
             LOGGER.info("Filling database tables with generated data");
             groupService.initGroups();
-            studentService.initStudents();
+            studentService.initStudents(groupService.getAllGroups());
             courseService.initCourses();
-            studentService.initStudentsCoursesTable();
+            addStudentsToCourses();
         } else {
             LOGGER.info("The database tables are already full");
         }
@@ -83,11 +96,280 @@ public class ServiceFacadeImpl implements ServiceFacade {
      * {@inheritDoc}
      */
     @Override
-    public Map<Group, Integer> getGroupsWithGivenNumberOfStudents(int amountOfStudents) {
-        Map<Group, Integer> groupsWithTheirNumberOfStudents = null;
+    public boolean addNewGroup(String groupName) {
+        boolean groupNameNotExist = !validator.validateGroupNameExistence(groupName);
+        boolean groupNameMatchesPattern = validator.validateGroupNamePattern(groupName);
+        boolean newGroupAdded = false;
 
-        if (validator.validateAmountOfStudents(amountOfStudents)) {
-            groupsWithTheirNumberOfStudents = groupService.getGroupsWithGivenNumberOfStudents(amountOfStudents);
+        if (groupNameNotExist && groupNameMatchesPattern) {
+            LOGGER.debug("Adding new group with name {}", groupName);
+            groupService.addGroup(groupName);
+            newGroupAdded = true;
+        }
+
+        return newGroupAdded;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GroupDto getGroupByName(String groupName) {
+        boolean groupNameExist = validator.validateGroupNameExistence(groupName);
+        GroupDto groupDto = null;
+
+        if (groupNameExist) {
+            Group group = groupService.getGroupByName(groupName).get();
+            groupDto = GroupMapper.mapGroupToDto(group);
+        }
+
+        LOGGER.debug("Received group by name {}: {}", groupName, groupDto);
+        return groupDto;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<GroupDto> getAllGroups() {
+        return groupService.getAllGroups().stream()
+                .map(GroupMapper::mapGroupToDto)
+                .toList();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean updateGroup(String groupNameToUpdate, String newGroupName) {
+        Optional<Group> groupOptional = groupService.getGroupByName(groupNameToUpdate);
+        boolean newGroupNameNotExist = !validator.validateGroupNameExistence(newGroupName);
+        boolean newGroupNameMatchesPattern = validator.validateGroupNamePattern(newGroupName);
+        boolean groupIsUpdated = false;
+
+        if (groupOptional.isPresent() && newGroupNameNotExist && newGroupNameMatchesPattern) {
+            Group groupToUpdate = groupOptional.get();
+            groupToUpdate.setGroupName(newGroupName);
+            LOGGER.debug("Group updating. Updated group: {}", groupToUpdate);
+            groupService.updateGroup(groupToUpdate);
+            groupIsUpdated = true;
+        }
+
+        return groupIsUpdated;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean deleteGroupByName(String groupName) {
+        boolean groupNameExist = validator.validateGroupNameExistence(groupName);
+        boolean groupIsDeleted = false;
+
+        if (groupNameExist) {
+            LOGGER.debug("Deleting group with name: {}", groupName);
+            groupService.deleteGroupByName(groupName);
+            groupIsDeleted = true;
+        }
+
+        return groupIsDeleted;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean addNewStudent(String firstName, String lastName, String groupName) {
+        boolean studentIsNotExists = !validator.validateStudentFullName(firstName, lastName);
+        boolean firstNameLengthIsValid = validator.validateNameLength(firstName);
+        boolean lastNameLengthIsValid = validator.validateNameLength(lastName);
+        boolean groupIsExists = validator.validateGroupNameExistence(groupName);
+        boolean newStudentIsAdded = false;
+
+        if (studentIsNotExists && firstNameLengthIsValid && lastNameLengthIsValid && groupIsExists) {
+            Group group = groupService.getGroupByName(groupName).get();
+            studentService.addStudent(firstName, lastName, group);
+            newStudentIsAdded = true;
+        }
+
+        LOGGER.debug("New student with first name - {}, last name - {} and group name {} is added: {}", firstName,
+                lastName, groupName, newStudentIsAdded);
+        return newStudentIsAdded;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public StudentDto getStudentById(Integer studentId) {
+        boolean studentIdExist = validator.validateStudentId(studentId);
+        StudentDto studentDto = null;
+
+        if (studentIdExist) {
+            Student student = studentService.getStudentById(studentId).get();
+            studentDto = StudentMapper.mapStudentToDto(student);
+        }
+
+        LOGGER.debug("Received student by ID {}: {}", studentId, studentDto);
+        return studentDto;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean updateStudent(String studentFirstNameToUpdate, String studentLastNameToUpdate, String newFirstName,
+            String newLastName, String newGroupName) {
+        Optional<Student> studentOptional = studentService.getStudentByFullName(studentFirstNameToUpdate,
+                studentLastNameToUpdate);
+        boolean newStudentFullNameNotExist = !validator.validateStudentFullName(newFirstName, newLastName);
+        boolean newFirstNameLengthIsValid = validator.validateNameLength(newFirstName);
+        boolean newLastNameLengthIsValid = validator.validateNameLength(newLastName);
+        Optional<Group> groupOptional = groupService.getGroupByName(newGroupName);
+        boolean studentIsUpdated = false;
+
+        if (studentFirstNameToUpdate.equals(newFirstName) && studentLastNameToUpdate.equals(newLastName)) {
+            newStudentFullNameNotExist = !newStudentFullNameNotExist;
+        }
+
+        if (studentOptional.isPresent() && newStudentFullNameNotExist && newFirstNameLengthIsValid
+                && newLastNameLengthIsValid && groupOptional.isPresent()) {
+            Student updatedStudent = studentOptional.get();
+            Group group = groupOptional.get();
+            updatedStudent.setFirstName(newFirstName);
+            updatedStudent.setLastName(newLastName);
+            updatedStudent.setGroup(group);
+            LOGGER.debug("Student updating. Updated student: {}", updatedStudent);
+            studentService.updateStudent(updatedStudent);
+            studentIsUpdated = true;
+        }
+
+        return studentIsUpdated;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean deleteStudentById(Integer studentId) {
+        boolean studentIdExist = validator.validateStudentId(studentId);
+        boolean studentIsdDeleted = false;
+
+        if (studentIdExist) {
+            studentService.deleteStudent(studentId);
+            studentIsdDeleted = true;
+        }
+
+        LOGGER.debug("Student with ID {} is deleted: {}", studentId, studentIsdDeleted);
+        return studentIsdDeleted;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean addNewCourse(String courseName, String description) {
+        boolean courseNameNotExist = !validator.validateCourseName(courseName);
+        boolean courseNameLengthIsValid = validator.validateNameLength(courseName);
+        boolean descriptionNotExist = !validator.validateDescription(description);
+        boolean newCourseIsAdded = false;
+
+        if (courseNameNotExist && courseNameLengthIsValid && descriptionNotExist) {
+            LOGGER.debug("Adding new course with name {} and description {}", courseName, description);
+            courseService.addCourse(courseName, description);
+            newCourseIsAdded = true;
+        }
+
+        return newCourseIsAdded;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CourseDto getCourseByName(String courseName) {
+        boolean courseNameExist = validator.validateCourseName(courseName);
+        CourseDto courseDto = null;
+
+        if (courseNameExist) {
+            Course course = courseService.getCourseByName(courseName).get();
+            courseDto = CourseMapper.mapCourseToDto(course);
+        }
+
+        LOGGER.debug("Received course by name {}: {}", courseName, courseDto);
+        return courseDto;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<CourseDto> getAllCourses() {
+        return courseService.getAllCourses().stream()
+                .map(CourseMapper::mapCourseToDto)
+                .toList();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean updateCourse(String courseNameToUpdate, String newCourseName, String newDescription) {
+        Optional<Course> courseOptional = courseService.getCourseByName(courseNameToUpdate);
+        boolean courseIsPresent = courseOptional.isPresent();
+        boolean newCourseNameNotExist = !validator.validateCourseName(newCourseName);
+        boolean newCourseNameLengthIsValid = validator.validateNameLength(newCourseName);
+        boolean newDescriptionNotExist = !validator.validateDescription(newDescription);
+        boolean courseIsUdated = false;
+
+        if (courseIsPresent && newCourseName.equals(courseOptional.get().getCourseName())) {
+            newCourseNameNotExist = !newCourseNameNotExist;
+        }
+
+        if (courseIsPresent && newDescription.equals(courseOptional.get().getDescription())) {
+            newDescriptionNotExist = !newDescriptionNotExist;
+        }
+
+        if (courseIsPresent && newCourseNameNotExist && newCourseNameLengthIsValid && newDescriptionNotExist) {
+            Course course = courseOptional.get();
+            course.setCourseName(newCourseName);
+            course.setDescription(newDescription);
+            LOGGER.debug("Course updating. Updated course: {}", course);
+            courseService.updateCourse(course);
+            courseIsUdated = true;
+        }
+
+        return courseIsUdated;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean deleteCourseByName(String courseName) {
+        boolean courseNameExist = validator.validateCourseName(courseName);
+        boolean courseIsDeleted = false;
+
+        if (courseNameExist) {
+            courseService.deleteCourseByName(courseName);
+            courseIsDeleted = true;
+        }
+
+        LOGGER.debug("Curse with name {} is deleted: {}", courseName, courseIsDeleted);
+        return courseIsDeleted;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map<GroupDto, Integer> getGroupsWithGivenNumberOfStudents(Integer amountOfStudents) {
+        boolean amountOfStudentsIsValid = validator.validateAmountOfStudents(amountOfStudents);
+        Map<GroupDto, Integer> groupsWithTheirNumberOfStudents = null;
+
+        if (amountOfStudentsIsValid) {
+            groupsWithTheirNumberOfStudents = groupService.getGroupsWithGivenNumberOfStudents(amountOfStudents).stream()
+                    .collect(Collectors.toMap(GroupMapper::mapGroupToDto, group -> group.getStudents().size()));
         }
 
         LOGGER.debug("Received groups with a given number of students: {}", groupsWithTheirNumberOfStudents);
@@ -98,12 +380,14 @@ public class ServiceFacadeImpl implements ServiceFacade {
      * {@inheritDoc}
      */
     @Override
-    public Map<Student, List<Course>> getStudentsWithCoursesByCourseName(String courseName) {
-        Map<Student, List<Course>> studentsWithTheirCourses = null;
+    public Map<StudentDto, Set<CourseDto>> getStudentsWithCoursesByCourseName(String courseName) {
+        boolean courseIsExist = validator.validateCourseName(courseName);
+        Map<StudentDto, Set<CourseDto>> studentsWithTheirCourses = null;
 
-        if (validator.validateCourseName(courseName)) {
-            studentsWithTheirCourses = studentService.getStudentsRelatedToCourse(courseName).stream()
-                    .collect(Collectors.toMap(student -> student, courseService::getCoursesForStudent));
+        if (courseIsExist) {
+            Course course = courseService.getCourseByName(courseName).get();
+            studentsWithTheirCourses = course.getStudents().stream()
+                    .collect(Collectors.toMap(StudentMapper::mapStudentToDto, this::getCoursesDtosForStudent));
         }
 
         LOGGER.debug("Received students with their courses by course name {}: {}", courseName,
@@ -115,34 +399,9 @@ public class ServiceFacadeImpl implements ServiceFacade {
      * {@inheritDoc}
      */
     @Override
-    public boolean addNewStudent(String firstName, String lastName, int groupId) {
-        boolean newStudentIsAdded = false;
-        boolean studentIsNotExists = !validator.validateStudentFullName(firstName, lastName);
-
-        if (studentIsNotExists && validator.validateGroupId(groupId)) {
-            studentService.addStudent(firstName, lastName, groupId);
-            newStudentIsAdded = true;
-        }
-
-        LOGGER.debug("New student with first name - {}, last name - {} and group ID {} is added: {}", firstName,
-                lastName, groupId, newStudentIsAdded);
-        return newStudentIsAdded;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean deleteStudentById(int studentId) {
-        boolean studentIsdDeleted = false;
-
-        if (validator.validateStudentId(studentId)) {
-            studentService.deleteStudent(studentId);
-            studentIsdDeleted = true;
-        }
-
-        LOGGER.debug("Student with ID {} is deleted: ", studentId);
-        return studentIsdDeleted;
+    public Map<StudentDto, GroupDto> getAllStudentsWithTheirGroups() {
+        return studentService.getAllStudents().stream().collect(Collectors.toMap(StudentMapper::mapStudentToDto,
+                student -> GroupMapper.mapGroupToDto(student.getGroup())));
     }
 
     /**
@@ -150,13 +409,15 @@ public class ServiceFacadeImpl implements ServiceFacade {
      */
     @Override
     public boolean addStudentToCourse(String firstName, String lastName, String courseName) {
-        boolean studentIsAddedToCourse = false;
         boolean studentExists = validator.validateStudentFullName(firstName, lastName);
         boolean courseExist = validator.validateCourseName(courseName);
         boolean studentNotOnCourse = !validator.isStudentOnCourse(firstName, lastName, courseName);
+        boolean studentIsAddedToCourse = false;
 
         if (studentExists && courseExist && studentNotOnCourse) {
-            studentService.addStudentToCourse(firstName, lastName, courseName);
+            Student student = studentService.getStudentByFullName(firstName, lastName).get();
+            Course course = courseService.getCourseByName(courseName).get();
+            student.addCourse(course);
             studentIsAddedToCourse = true;
         }
 
@@ -170,13 +431,15 @@ public class ServiceFacadeImpl implements ServiceFacade {
      */
     @Override
     public boolean deleteStudentFromCourse(String firstName, String lastName, String courseName) {
-        boolean studentDeletedFromCourse = false;
         boolean studentExists = validator.validateStudentFullName(firstName, lastName);
         boolean coursesExist = validator.validateCourseName(courseName);
         boolean studentOnCourse = validator.isStudentOnCourse(firstName, lastName, courseName);
+        boolean studentDeletedFromCourse = false;
 
         if (studentExists && coursesExist && studentOnCourse) {
-            studentService.deleteStudentFromCourse(firstName, lastName, courseName);
+            Student student = studentService.getStudentByFullName(firstName, lastName).get();
+            Course course = courseService.getCourseByName(courseName).get();
+            student.deleteCourse(course);
             studentDeletedFromCourse = true;
         }
 
@@ -189,35 +452,41 @@ public class ServiceFacadeImpl implements ServiceFacade {
      * {@inheritDoc}
      */
     @Override
-    public Student getStudentById(int studentId) {
-        Student student = null;
-
-        if (validator.validateStudentId(studentId)) {
-            student = studentService.getStudentById(studentId);
-        }
-
-        LOGGER.debug("Received student by ID {}: {}", studentId, student);
-        return student;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Map<Student, List<Course>> getAllStudentsWithTheirCourses() {
-        Map<Student, List<Course>> allStudentsWithTheirCourses = studentService.getAllStudents().stream()
-                .collect(Collectors.toMap(student -> student, courseService::getCoursesForStudent));
+    public Map<StudentDto, Set<CourseDto>> getAllStudentsWithTheirCourses() {
+        Map<StudentDto, Set<CourseDto>> allStudentsWithTheirCourses = studentService.getAllStudents().stream()
+                .collect(Collectors.toMap(StudentMapper::mapStudentToDto, this::getCoursesDtosForStudent));
         LOGGER.debug("Received all students with their courses: {}", allStudentsWithTheirCourses);
 
         return allStudentsWithTheirCourses;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<Course> getAllCourses() {
-        return courseService.getAllCourses();
+    private void addStudentsToCourses() {
+        Random random = new Random();
+        LOGGER.info("Adding students to courses");
+
+        for (Student student : studentService.getAllStudents()) {
+            int coursesNumberForStudent = random.nextInt(3) + 1;
+            Set<Integer> coursesForStudent = new HashSet<>();
+
+            while (coursesForStudent.size() < coursesNumberForStudent) {
+                int courseId = random.nextInt(1, 11);
+                coursesForStudent.add(courseId);
+            }
+
+            for (Integer courseId : coursesForStudent) {
+                Course course = courseService.getCourseById(courseId).get();
+                student.addCourse(course);
+                LOGGER.debug("Added student {} to course {}", student, course);
+            }
+        }
+
+        LOGGER.info("Students have been added to courses.");
+    }
+
+    private Set<CourseDto> getCoursesDtosForStudent(Student student) {
+        return student.getCourses().stream()
+                .map(CourseMapper::mapCourseToDto)
+                .collect(Collectors.toSet());
     }
 
 }
