@@ -9,28 +9,27 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.hibernate.exception.ConstraintViolationException;
-import org.hibernate.exception.DataException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import ua.foxminded.schoolapp.dao.CourseDao;
 import ua.foxminded.schoolapp.dto.CourseDto;
+import ua.foxminded.schoolapp.dto.mapper.CourseMapper;
 import ua.foxminded.schoolapp.model.Course;
+import ua.foxminded.schoolapp.repository.CourseRepository;
 import ua.foxminded.schoolapp.service.generate.Generatable;
 
 @SpringBootTest(classes = { CourseServiceImpl.class })
 class CourseServiceImplTest {
 
     @MockBean
-    Generatable<CourseDto> coursesGeneratorMock;
+    private Generatable<CourseDto> coursesGeneratorMock;
 
     @MockBean
-    CourseDao courseDaoMock;
+    private CourseRepository courseRepositoryMock;
 
     @Autowired
-    CourseServiceImpl courseService;
+    private CourseServiceImpl courseService;
 
     @Test
     void initCourses_shouldSavedAllCoursesWhichReturnsCoursesGenerator_whenCoursesGeneratorReturnsSeveralCourses() {
@@ -43,7 +42,7 @@ class CourseServiceImplTest {
         courseService.initCourses();
 
         verify(coursesGeneratorMock, times(1)).toGenerate();
-        verify(courseDaoMock, times(3)).save(any(Course.class));
+        verify(courseRepositoryMock, times(3)).save(any(Course.class));
     }
 
     @Test
@@ -54,190 +53,150 @@ class CourseServiceImplTest {
         courseService.initCourses();
 
         verify(coursesGeneratorMock, times(1)).toGenerate();
-        verify(courseDaoMock, never()).save(any(Course.class));
+        verify(courseRepositoryMock, never()).save(any(Course.class));
     }
 
     @Test
-    void addCourse_shouldAddedNewCourseAndReturnedCourseOptional_whenCourseDaoSuccessfulSaveNewCourse() {
-        String courseName = "CourseName";
-        String descrittion = "Description";
-        Course newExpectedCourse = new Course(courseName, descrittion);
-        when(courseDaoMock.save(newExpectedCourse)).thenReturn(newExpectedCourse);
+    void addCourse_shouldIllegalArgumentException_whenCourseDtoIsNull() {
+        CourseDto courseDto = null;
 
-        Optional<Course> actualCourse = courseService.addCourse(courseName, descrittion);
+        assertThrows(IllegalArgumentException.class, () -> courseService.addCourse(courseDto));
+    }
 
-        verify(courseDaoMock, times(1)).save(newExpectedCourse);
+    @Test
+    void addCourse_shouldAddedNewCourseAndReturnedCourseOptional_whenCourseRepositorySuccessfulSaveNewCourse() {
+        CourseDto courseDto = new CourseDto("CourseName", "Description");
+        Course expectedCourse = CourseMapper.mapDtoToCourse(courseDto);
+        when(courseRepositoryMock.save(expectedCourse)).thenReturn(expectedCourse);
+
+        Optional<Course> actualCourse = courseService.addCourse(courseDto);
+
+        verify(courseRepositoryMock, times(1)).save(expectedCourse);
         assertTrue(actualCourse.isPresent());
-        assertEquals(newExpectedCourse, actualCourse.get());
+        assertEquals(expectedCourse, actualCourse.get());
     }
 
     @Test
-    void addCourse_shouldConstraintViolationException_whenCourseNameIsNullAndCourseDaoThrowConstraintViolationException() {
-        String courseName = null;
-        String descrittion = "Description";
-        Course newExpectedCourse = new Course(courseName, descrittion);
-        when(courseDaoMock.save(newExpectedCourse)).thenThrow(ConstraintViolationException.class);
-
-        assertThrows(ConstraintViolationException.class, () -> courseService.addCourse(courseName, descrittion));
-        verify(courseDaoMock, times(1)).save(newExpectedCourse);
-    }
-
-    @Test
-    void addCourse_shouldDataException_whenCourseNameContainsMoreThanTwentyFiveCharactersAndCourseDaoThrowDataException() {
-        String courseName = "NnnneeeewwwwCcccooouuurrrssseeee";
-        String descrittion = "Description";
-        Course newExpectedCourse = new Course(courseName, descrittion);
-        when(courseDaoMock.save(newExpectedCourse)).thenThrow(DataException.class);
-
-        assertThrows(DataException.class, () -> courseService.addCourse(courseName, descrittion));
-        verify(courseDaoMock, times(1)).save(newExpectedCourse);
-    }
-
-    @Test
-    void getCourseById_shouldReturnedCourseOptioanal_whenCourseDaoFoundCourseWithGivenId() {
+    void getCourseById_shouldReturnedCourseOptioanal_whenCourseRepositoryFoundCourseWithGivenId() {
         Integer courseId = 1;
         Course expectedCourse = new Course("NewCourse", "Description");
         expectedCourse.setId(courseId);
-        when(courseDaoMock.find(courseId)).thenReturn(expectedCourse);
+        when(courseRepositoryMock.findById(courseId)).thenReturn(Optional.of(expectedCourse));
 
         Optional<Course> actualCourse = courseService.getCourseById(courseId);
 
-        verify(courseDaoMock, times(1)).find(courseId);
+        verify(courseRepositoryMock, times(1)).findById(courseId);
         assertTrue(actualCourse.isPresent());
         assertEquals(expectedCourse, actualCourse.get());
     }
 
     @Test
-    void getCourseById_shouldEmptyOptioanal_whenCourseDaoNotFoundCourseWithGivenId() {
+    void getCourseById_shouldEmptyOptioanal_whenCourseRepositoryNotFoundCourseWithGivenId() {
         Integer courseId = -1;
-        when(courseDaoMock.find(courseId)).thenReturn(null);
+        when(courseRepositoryMock.findById(courseId)).thenReturn(Optional.empty());
 
         Optional<Course> actualCourse = courseService.getCourseById(courseId);
 
-        verify(courseDaoMock, times(1)).find(courseId);
-        assertFalse(actualCourse.isPresent());
+        verify(courseRepositoryMock, times(1)).findById(courseId);
+        assertTrue(actualCourse.isEmpty());
     }
 
     @Test
-    void getCourseById_shouldEmptyOptioanal_whenGivenCourseIdIsNull() {
-        Integer courseId = null;
-        when(courseDaoMock.find(courseId)).thenReturn(null);
-
-        Optional<Course> actualCourse = courseService.getCourseById(courseId);
-
-        verify(courseDaoMock, times(1)).find(courseId);
-        assertFalse(actualCourse.isPresent());
-    }
-
-    @Test
-    void getCourseByName_shouldCourseOptioanal_whenCourseDaoFoundCourseWithGivenName() {
+    void getCourseByName_shouldCourseOptioanal_whenCourseRepositoryFoundCourseWithGivenName() {
         String courseName = "CourseName";
         Course expectedCourse = new Course(courseName, "Description");
-        when(courseDaoMock.findCourseByName(courseName)).thenReturn(Optional.of(expectedCourse));
+        when(courseRepositoryMock.findByCourseName(courseName)).thenReturn(Optional.of(expectedCourse));
 
         Optional<Course> actualCourse = courseService.getCourseByName(courseName);
 
-        verify(courseDaoMock, times(1)).findCourseByName(courseName);
+        verify(courseRepositoryMock, times(1)).findByCourseName(courseName);
         assertTrue(actualCourse.isPresent());
         assertEquals(expectedCourse, actualCourse.get());
     }
 
     @Test
-    void getCourseByName_shouldEmptyOptioanal_whenCourseDaoNotFoundCourseWithGivenName() {
+    void getCourseByName_shouldEmptyOptioanal_whenCourseRepositoryNotFoundCourseWithGivenName() {
         String courseName = "NotExistent";
-        when(courseDaoMock.findCourseByName(courseName)).thenReturn(Optional.empty());
+        when(courseRepositoryMock.findByCourseName(courseName)).thenReturn(Optional.empty());
 
         Optional<Course> actualCourse = courseService.getCourseByName(courseName);
 
-        verify(courseDaoMock, times(1)).findCourseByName(courseName);
+        verify(courseRepositoryMock, times(1)).findByCourseName(courseName);
         assertTrue(actualCourse.isEmpty());
     }
 
     @Test
     void getCourseByName_shouldEmptyOptioanal_whenGivenCourseNameIsNull() {
         String courseName = null;
-        when(courseDaoMock.findCourseByName(courseName)).thenReturn(Optional.empty());
+        when(courseRepositoryMock.findByCourseName(courseName)).thenReturn(Optional.empty());
 
         Optional<Course> actualCourse = courseService.getCourseByName(courseName);
 
-        verify(courseDaoMock, times(1)).findCourseByName(courseName);
+        verify(courseRepositoryMock, times(1)).findByCourseName(courseName);
         assertTrue(actualCourse.isEmpty());
     }
 
     @Test
-    void getAllCourses_shouldCoursesList_whenCourseDaoFoundAllCourses() {
+    void getAllCourses_shouldCoursesList_whenCourseRepositoryFoundAllCourses() {
         List<Course> expectedCourses = new ArrayList<Course>();
         expectedCourses.add(new Course());
         expectedCourses.add(new Course());
         expectedCourses.add(new Course());
-        when(courseDaoMock.findAll()).thenReturn(expectedCourses);
+        when(courseRepositoryMock.findAll()).thenReturn(expectedCourses);
 
         List<Course> actualCourses = courseService.getAllCourses();
 
-        verify(courseDaoMock, times(1)).findAll();
+        verify(courseRepositoryMock, times(1)).findAll();
         assertEquals(expectedCourses, actualCourses);
     }
 
     @Test
-    void getAllCourses_shouldEmptyCoursesList_whenCourseDaoNotFoundAnyCourse() {
+    void getAllCourses_shouldEmptyCoursesList_whenCourseRepositoryNotFoundAnyCourse() {
         List<Course> expectedCourses = new ArrayList<Course>();
-        when(courseDaoMock.findAll()).thenReturn(expectedCourses);
+        when(courseRepositoryMock.findAll()).thenReturn(expectedCourses);
 
         List<Course> actualCourses = courseService.getAllCourses();
 
-        verify(courseDaoMock, times(1)).findAll();
+        verify(courseRepositoryMock, times(1)).findAll();
         assertTrue(actualCourses.isEmpty());
         assertEquals(expectedCourses, actualCourses);
     }
 
     @Test
-    void updateCourse_shouldReturnedUdatedCourseOptioanal_whenCourseDaoSuccessfulUpdateCourse() {
+    void updateCourse_shouldReturnedUpdatedCourseOptioanal_whenCourseRepositorySuccessfulUpdateCourse() {
         Course updatedCourse = new Course("CourseName", "Description");
         updatedCourse.setId(1);
-        when(courseDaoMock.update(updatedCourse)).thenReturn(updatedCourse);
+        when(courseRepositoryMock.save(updatedCourse)).thenReturn(updatedCourse);
 
         Optional<Course> actualCourse = courseService.updateCourse(updatedCourse);
 
-        verify(courseDaoMock, times(1)).update(updatedCourse);
+        verify(courseRepositoryMock, times(1)).save(updatedCourse);
         assertTrue(actualCourse.isPresent());
         assertEquals(updatedCourse, actualCourse.get());
     }
 
     @Test
-    void updateCourse_shouldIllegalArgumentException_whenUpdatedCourseIsNullAndCourseDaoThrowIllegalArgumentException() {
-        Course uapdatedCourse = null;
-        when(courseDaoMock.update(uapdatedCourse)).thenThrow(IllegalArgumentException.class);
-
-        assertThrows(IllegalArgumentException.class, () -> courseService.updateCourse(uapdatedCourse));
-        verify(courseDaoMock, times(1)).update(uapdatedCourse);
-    }
-
-    @Test
-    void deleteCourseByName_shouldDeletingCourse_whenCourseWasFoundSuccessfullyByGivenName() {
+    void deleteCourseByName_shouldDeletedCourse_whenCourseWithGivenNameIsExist() {
         Integer courseId = 1;
         String courseName = "CourseName";
         String description = "Description";
-        Course groupToDelete = new Course(courseName, description);
-        groupToDelete.setId(courseId);
-        when(courseService.getCourseByName(courseName)).thenReturn(Optional.of(groupToDelete));
+        Course courseToDelete = new Course(courseName, description);
+        courseToDelete.setId(courseId);
+        when(courseService.getCourseByName(courseName)).thenReturn(Optional.of(courseToDelete));
 
         courseService.deleteCourseByName(courseName);
 
-        verify(courseDaoMock, times(1)).delete(courseId);
+        verify(courseRepositoryMock, times(1)).delete(courseToDelete);
     }
 
     @Test
-    void deleteCourseByName_shouldNothingDeleted_whenCourseNotFoundByGivenName() {
-        Integer courseId = 1;
-        String courseName = null;
-        String description = "Description";
-        Course groupToDelete = new Course(courseName, description);
-        groupToDelete.setId(courseId);
+    void deleteCourseByName_shouldNothingDeleted_whenNoCourseWithGivenName() {
+        String courseName = "NotExistent";
         when(courseService.getCourseByName(courseName)).thenReturn(Optional.empty());
 
         courseService.deleteCourseByName(courseName);
 
-        verify(courseDaoMock, never()).delete(courseId);
+        verify(courseRepositoryMock, never()).delete(any(Course.class));
     }
 
 }

@@ -13,7 +13,7 @@ import java.util.List;
 class GroupsGeneratorTest {
 
     @Autowired
-    Generatable<GroupDto> groupsGenerator;
+    private Generatable<GroupDto> groupsGenerator;
 
     @Test
     void toGenerate_shouldListWithRandomGroups_whenInvokeToGenerate() {

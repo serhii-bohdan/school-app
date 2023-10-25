@@ -20,13 +20,13 @@ import ua.foxminded.schoolapp.exception.DataGenerationException;
 @SpringBootTest(classes = { StudentsGenerator.class })
 class StudentsGeneratorTest {
 
-    final StudentGeneratorTestHelper helper = new StudentGeneratorTestHelper();
+    private final StudentGeneratorTestHelper helper = new StudentGeneratorTestHelper();
 
     @MockBean
-    Reader readerMock;
+    private Reader readerMock;
 
     @Autowired
-    Generatable<StudentDto> studentsGenerator;
+    private Generatable<StudentDto> studentsGenerator;
 
     @Test
     void toGenerate_shouldListOfStudentsWithTestNamesAndRandomGroupIds_whenReaderReturnTwentyStudentsNames() {

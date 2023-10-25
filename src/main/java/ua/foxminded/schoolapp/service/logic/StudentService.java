@@ -2,6 +2,7 @@ package ua.foxminded.schoolapp.service.logic;
 
 import java.util.List;
 import java.util.Optional;
+import ua.foxminded.schoolapp.dto.StudentDto;
 import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
 
@@ -22,15 +23,15 @@ public interface StudentService {
     void initStudents(List<Group> groups);
 
     /**
-     * Adds a new student with the specified first name, last name, and group.
+     * Adds a new student with the information provided in the {@code newStudent}
+     * parameter.
      *
-     * @param firstName the first name of the student
-     * @param lastName  the last name of the student
-     * @param group     the group to which the student should belong
-     * @return an {@link Optional} containing the added student, or empty if the
-     *         student was not added
+     * @param newStudent the {@link StudentDto} containing the details of the new
+     *                   student
+     * @return an {@link Optional} containing the added student if the addition was
+     *         successful, empty otherwise
      */
-    Optional<Student> addStudent(String firstName, String lastName, Group group);
+    Optional<Student> addStudent(StudentDto newStudent);
 
     /**
      * Retrieves the student with the specified ID.
@@ -72,6 +73,6 @@ public interface StudentService {
      *
      * @param studentId the ID of the student to delete
      */
-    void deleteStudent(Integer studentId);
+    void deleteStudentById(Integer studentId);
 
 }

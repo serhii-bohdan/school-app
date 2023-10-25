@@ -6,10 +6,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
-import ua.foxminded.schoolapp.dao.CourseDao;
 import ua.foxminded.schoolapp.dto.CourseDto;
 import ua.foxminded.schoolapp.dto.mapper.CourseMapper;
 import ua.foxminded.schoolapp.model.Course;
+import ua.foxminded.schoolapp.repository.CourseRepository;
 import ua.foxminded.schoolapp.service.generate.Generatable;
 import ua.foxminded.schoolapp.service.logic.CourseService;
 
@@ -21,9 +21,9 @@ import ua.foxminded.schoolapp.service.logic.CourseService;
  * <p>
  * This class is annotated with {@code @Service} to indicate that it is a Spring
  * service, and it can be automatically discovered and registered as a bean in
- * the Spring context. The CourseServiceImpl requires a
- * {@link Generatable<CourseDto>} object to generate courses Dto and a
- * {@link CourseDao} object to access the course data.
+ * the Spring context. The CourseServiceImpl requires a {@link Generatable}
+ * object to generate courses Dto and a {@link CourseRepository} object to
+ * access the course data.
  * 
  * @author Serhii Bohdan
  */
@@ -38,18 +38,20 @@ public class CourseServiceImpl implements CourseService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CourseServiceImpl.class);
 
     private final Generatable<CourseDto> coursesGenerator;
-    private final CourseDao courseDao;
+    private final CourseRepository courseRepository;
 
     /**
      * Constructs a new CourseServiceImpl with the specified courses generator and
-     * course Dao.
+     * course repository.
      *
-     * @param coursesGenerator the generator for creating courses
-     * @param courseDao        the data access object for coursesl
+     * @param coursesGenerator an instance of {@link Generatable} for generating
+     *                         courses
+     * @param courseRepository an instance of {@link CourseRepository} for accessing
+     *                         and managing course data
      */
-    public CourseServiceImpl(Generatable<CourseDto> coursesGenerator, CourseDao courseDao) {
+    public CourseServiceImpl(Generatable<CourseDto> coursesGenerator, CourseRepository courseRepository) {
         this.coursesGenerator = coursesGenerator;
-        this.courseDao = courseDao;
+        this.courseRepository = courseRepository;
     }
 
     /**
@@ -60,18 +62,18 @@ public class CourseServiceImpl implements CourseService {
         LOGGER.info("Filling with generated courses");
         coursesGenerator.toGenerate().stream()
                 .map(CourseMapper::mapDtoToCourse)
-                .forEach(courseDao::save);
+                .forEach(courseRepository::save);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Optional<Course> addCourse(String courseName, String description) {
-        Course newCourse = new Course(courseName, description);
-        LOGGER.debug("Adding a new course: {}", newCourse);
+    public Optional<Course> addCourse(CourseDto newCourse) {
+        Course course = CourseMapper.mapDtoToCourse(newCourse);
+        LOGGER.debug("Adding a new course: {}", course);
 
-        return Optional.ofNullable(courseDao.save(newCourse));
+        return Optional.ofNullable(courseRepository.save(course));
     }
 
     /**
@@ -79,10 +81,10 @@ public class CourseServiceImpl implements CourseService {
      */
     @Override
     public Optional<Course> getCourseById(Integer courseId) {
-        Course course = courseDao.find(courseId);
+        Optional<Course> course = courseRepository.findById(courseId);
         LOGGER.debug("Search course by ID {}: {}", courseId, course);
 
-        return Optional.ofNullable(course);
+        return course;
     }
 
     /**
@@ -90,7 +92,7 @@ public class CourseServiceImpl implements CourseService {
      */
     @Override
     public Optional<Course> getCourseByName(String courseName) {
-        Optional<Course> course = courseDao.findCourseByName(courseName);
+        Optional<Course> course = courseRepository.findByCourseName(courseName);
         LOGGER.debug("Search course by name {}: {}", courseName, course);
 
         return course;
@@ -101,7 +103,7 @@ public class CourseServiceImpl implements CourseService {
      */
     @Override
     public List<Course> getAllCourses() {
-        List<Course> allCourses = courseDao.findAll();
+        List<Course> allCourses = courseRepository.findAll();
         LOGGER.debug("All received courses: {}", allCourses);
 
         return allCourses;
@@ -112,8 +114,8 @@ public class CourseServiceImpl implements CourseService {
      */
     @Override
     public Optional<Course> updateCourse(Course updatedCourse) {
-        Course course = courseDao.update(updatedCourse);
-        LOGGER.debug("Updating course data: {}", course);
+        LOGGER.debug("Updating course data: {}", updatedCourse);
+        Course course = courseRepository.save(updatedCourse);
 
         return Optional.ofNullable(course);
     }
@@ -127,7 +129,7 @@ public class CourseServiceImpl implements CourseService {
 
         if (course.isPresent()) {
             LOGGER.debug("Deleting course: {}", course);
-            courseDao.delete(course.get().getId());
+            courseRepository.delete(course.get());
         }
     }
 

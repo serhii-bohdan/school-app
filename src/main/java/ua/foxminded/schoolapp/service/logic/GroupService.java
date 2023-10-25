@@ -2,6 +2,7 @@ package ua.foxminded.schoolapp.service.logic;
 
 import java.util.List;
 import java.util.Optional;
+import ua.foxminded.schoolapp.dto.GroupDto;
 import ua.foxminded.schoolapp.model.Group;
 
 /**
@@ -20,13 +21,14 @@ public interface GroupService {
     void initGroups();
 
     /**
-     * Adds a new group with the specified name.
+     * Adds a new group using the provided {@link GroupDto} object.
      *
-     * @param groupName the name of the group to add
-     * @return an {@link Optional} containing the added group if successful, empty
-     *         otherwise
+     * @param newGroup the {@link GroupDto} object representing the new group to add
+     * @return An {@link Optional} containing the added group if the operation was
+     *         successful, or an empty {@link Optional} if the operation was
+     *         unsuccessful
      */
-    Optional<Group> addGroup(String groupName);
+    Optional<Group> addGroup(GroupDto newGroup);
 
     /**
      * Retrieves a group by its name.

@@ -5,12 +5,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
-import ua.foxminded.schoolapp.dao.CourseDao;
-import ua.foxminded.schoolapp.dao.GroupDao;
-import ua.foxminded.schoolapp.dao.StudentDao;
 import ua.foxminded.schoolapp.model.Course;
 import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
+import ua.foxminded.schoolapp.repository.CourseRepository;
+import ua.foxminded.schoolapp.repository.GroupRepository;
+import ua.foxminded.schoolapp.repository.StudentRepository;
 import ua.foxminded.schoolapp.service.logic.UserInputValidator;
 
 /**
@@ -22,8 +22,9 @@ import ua.foxminded.schoolapp.service.logic.UserInputValidator;
  * The class is annotated with {@code @Service} to indicate that it is a Spring
  * service, and it can be automatically discovered and registered as a bean in
  * the Spring context. The UserInputValidatorImpl requires instances of
- * {@link GroupDao}, {@link StudentDao}, and {@link CourseDao} for data access
- * to perform its validation operations.
+ * {@link GroupRepository}, {@link StudentRepository}, and
+ * {@link CourseRepository} for data access to perform its validation
+ * operations.
  *
  * @author Serhii Bohdan
  */
@@ -36,25 +37,37 @@ public class UserInputValidatorImpl implements UserInputValidator {
      * {@link UserInputValidatorImpl} class.
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(UserInputValidatorImpl.class);
-    private static final String GROUP_NAME_PATTERN = "^[A-Z]{2}-[0-9]{2}$";
-    private static final Integer MAX_NAME_LENGTH = 25;
-
-    private final GroupDao groupDao;
-    private final StudentDao studentDao;
-    private final CourseDao courseDao;
 
     /**
-     * Constructs a new UserInputValidatorImpl with the specified group Dao, student
-     * Dao, and course Dao.
-     *
-     * @param groupDao   the data access object for groups
-     * @param studentDao the data access object for students
-     * @param courseDao  the data access object for courses
+     * A regular expression pattern for validating group names.
      */
-    public UserInputValidatorImpl(GroupDao groupDao, StudentDao studentDao, CourseDao courseDao) {
-        this.groupDao = groupDao;
-        this.studentDao = studentDao;
-        this.courseDao = courseDao;
+    private static final String GROUP_NAME_PATTERN = "^[A-Z]{2}-[0-9]{2}$";
+
+    /**
+     * The maximum length allowed for names of entities.
+     */
+    private static final Integer MAX_NAME_LENGTH = 25;
+
+    private final GroupRepository groupRepository;
+    private final StudentRepository studentRepository;
+    private final CourseRepository courseRepository;
+
+    /**
+     * Constructs a new UserInputValidatorImpl with access to the specified
+     * repositories.
+     *
+     * @param groupRepository   an instance of {@link GroupRepository} for accessing
+     *                          group data
+     * @param studentRepository an instance of {@link StudentRepository} for
+     *                          accessing student data
+     * @param courseRepository  an instance of {@link CourseRepository} for
+     *                          accessing course data
+     */
+    public UserInputValidatorImpl(GroupRepository groupRepository, StudentRepository studentRepository,
+            CourseRepository courseRepository) {
+        this.groupRepository = groupRepository;
+        this.studentRepository = studentRepository;
+        this.courseRepository = courseRepository;
     }
 
     /**
@@ -75,7 +88,7 @@ public class UserInputValidatorImpl implements UserInputValidator {
     @Override
     public boolean validateGroupId(Integer groupId) {
         LOGGER.debug("Validating group ID: {}", groupId);
-        boolean isValid = groupDao.findAll().stream()
+        boolean isValid = groupRepository.findAll().stream()
                 .map(Group::getId)
                 .toList().contains(groupId);
 
@@ -89,7 +102,7 @@ public class UserInputValidatorImpl implements UserInputValidator {
     @Override
     public boolean validateGroupNameExistence(String groupName) {
         LOGGER.debug("Validation of the presence of a group named: {}", groupName);
-        boolean groupNameExist = groupDao.findAll().stream()
+        boolean groupNameExist = groupRepository.findAll().stream()
                 .map(Group::getGroupName)
                 .toList().contains(groupName);
 
@@ -115,7 +128,7 @@ public class UserInputValidatorImpl implements UserInputValidator {
     @Override
     public boolean validateCourseName(String courseName) {
         LOGGER.debug("Validating course name: {}", courseName);
-        boolean isValid = courseDao.findAll().stream()
+        boolean isValid = courseRepository.findAll().stream()
                 .map(Course::getCourseName)
                 .toList().contains(courseName);
 
@@ -129,7 +142,7 @@ public class UserInputValidatorImpl implements UserInputValidator {
     @Override
     public boolean validateDescription(String courseDescription) {
         LOGGER.debug("Validating course descrition: {}", courseDescription);
-        boolean isValid = courseDao.findAll().stream()
+        boolean isValid = courseRepository.findAll().stream()
                 .map(Course::getDescription)
                 .toList().contains(courseDescription);
 
@@ -143,7 +156,7 @@ public class UserInputValidatorImpl implements UserInputValidator {
     @Override
     public boolean validateStudentId(Integer studentId) {
         LOGGER.debug("Validating student ID: {}", studentId);
-        boolean isValid = studentDao.findAll().stream()
+        boolean isValid = studentRepository.findAll().stream()
                 .map(Student::getId)
                 .toList().contains(studentId);
 
@@ -157,8 +170,8 @@ public class UserInputValidatorImpl implements UserInputValidator {
     @Override
     public boolean validateStudentFullName(String firstName, String lastName) {
         LOGGER.debug("Validating student full name: {} {}", firstName, lastName);
-        boolean isValid = studentDao.findAll().stream()
-                .anyMatch(s -> s.getFirstName().equals(firstName) 
+        boolean isValid = studentRepository.findAll().stream()
+                .anyMatch(s -> s.getFirstName().equals(firstName)
                         && s.getLastName().equals(lastName));
 
         LOGGER.debug("Student full name validation result: {}", isValid);
@@ -171,8 +184,8 @@ public class UserInputValidatorImpl implements UserInputValidator {
     @Override
     public boolean isStudentOnCourse(String firstName, String lastName, String courseName) {
         LOGGER.debug("Checking if student is on course: {} {} - {}", firstName, lastName, courseName);
-        Optional<Student> student = studentDao.findStudentByFullName(firstName, lastName);
-        Optional<Course> course = courseDao.findCourseByName(courseName);
+        Optional<Student> student = studentRepository.findByFirstNameAndLastName(firstName, lastName);
+        Optional<Course> course = courseRepository.findByCourseName(courseName);
         boolean isOnCourse = false;
 
         if (student.isPresent() && course.isPresent()) {

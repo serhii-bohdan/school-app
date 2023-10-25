@@ -6,13 +6,13 @@ import ua.foxminded.schoolapp.dto.CourseDto;
 
 public class CoursesGeneratorTestHelper {
     
-    public List<CourseDto> getTestListOfCourses(int numberOfCourses) {
+    public List<CourseDto> getTestListOfCourses(Integer numberOfCourses) {
         return IntStream.rangeClosed(1, numberOfCourses)
-                        .mapToObj(i -> new CourseDto("CourseName_" + i, "CourseDescription_" + i))
-                        .toList();
+                .mapToObj(i -> new CourseDto("CourseName_" + i, "CourseDescription_" + i))
+                .toList();
     }
     
-    public List<String> getTestListOf(String switcher, int numberCoursesNamesOrDescriptions) {
+    public List<String> getTestListOf(String switcher, Integer numberCoursesNamesOrDescriptions) {
         String courseNameOrDescription;
 
         if ("courses_names".equals(switcher) && numberCoursesNamesOrDescriptions > 0) {

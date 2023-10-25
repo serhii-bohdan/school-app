@@ -12,27 +12,27 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import ua.foxminded.schoolapp.dao.CourseDao;
-import ua.foxminded.schoolapp.dao.GroupDao;
-import ua.foxminded.schoolapp.dao.StudentDao;
 import ua.foxminded.schoolapp.model.Course;
 import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
+import ua.foxminded.schoolapp.repository.CourseRepository;
+import ua.foxminded.schoolapp.repository.GroupRepository;
+import ua.foxminded.schoolapp.repository.StudentRepository;
 
 @SpringBootTest(classes = { UserInputValidatorImpl.class })
 class UserInputValidatorImplTest {
 
     @MockBean
-    GroupDao groupDaoMock;
+    private GroupRepository groupRepositoryMock;
 
     @MockBean
-    StudentDao studentDaoMock;
+    private StudentRepository studentRepositoryMock;
 
     @MockBean
-    CourseDao courseDaoMock;
+    private CourseRepository courseRepositoryMock;
 
     @Autowired
-    UserInputValidatorImpl validator;
+    private UserInputValidatorImpl validator;
 
     @Test
     void validateAmountOfStudents_shouldTrue_whenAmountOfStudentsIsZero() {
@@ -81,7 +81,7 @@ class UserInputValidatorImplTest {
         groupsThatExist.add(firstGroup);
         groupsThatExist.add(secondGroup);
         groupsThatExist.add(thirdGroup);
-        when(groupDaoMock.findAll()).thenReturn(groupsThatExist);
+        when(groupRepositoryMock.findAll()).thenReturn(groupsThatExist);
 
         boolean expectedResult = validator.validateGroupId(3);
 
@@ -100,7 +100,7 @@ class UserInputValidatorImplTest {
         groupsThatExist.add(firstGroup);
         groupsThatExist.add(secondGroup);
         groupsThatExist.add(thirdGroup);
-        when(groupDaoMock.findAll()).thenReturn(groupsThatExist);
+        when(groupRepositoryMock.findAll()).thenReturn(groupsThatExist);
 
         boolean expectedResult = validator.validateGroupId(-8);
 
@@ -120,7 +120,7 @@ class UserInputValidatorImplTest {
         groupsThatExist.add(firstGroup);
         groupsThatExist.add(secondGroup);
         groupsThatExist.add(thirdGroup);
-        when(groupDaoMock.findAll()).thenReturn(groupsThatExist);
+        when(groupRepositoryMock.findAll()).thenReturn(groupsThatExist);
 
         boolean expectedResult = validator.validateGroupId(groupId);
 
@@ -136,7 +136,7 @@ class UserInputValidatorImplTest {
         groupsThatExist.add(firstGroup);
         groupsThatExist.add(secondGroup);
         groupsThatExist.add(thirdGroup);
-        when(groupDaoMock.findAll()).thenReturn(groupsThatExist);
+        when(groupRepositoryMock.findAll()).thenReturn(groupsThatExist);
 
         boolean expectedResult = validator.validateGroupNameExistence("MQ-44");
 
@@ -152,7 +152,7 @@ class UserInputValidatorImplTest {
         groupsThatExist.add(firstGroup);
         groupsThatExist.add(secondGroup);
         groupsThatExist.add(thirdGroup);
-        when(groupDaoMock.findAll()).thenReturn(groupsThatExist);
+        when(groupRepositoryMock.findAll()).thenReturn(groupsThatExist);
 
         boolean expectedResult = validator.validateGroupNameExistence("BG-00");
 
@@ -168,7 +168,7 @@ class UserInputValidatorImplTest {
         groupsThatExist.add(firstGroup);
         groupsThatExist.add(secondGroup);
         groupsThatExist.add(thirdGroup);
-        when(groupDaoMock.findAll()).thenReturn(groupsThatExist);
+        when(groupRepositoryMock.findAll()).thenReturn(groupsThatExist);
 
         boolean expectedResult = validator.validateGroupNameExistence(null);
 
@@ -206,7 +206,7 @@ class UserInputValidatorImplTest {
         coursesThatExist.add(new Course("CourseName_1", "Description_1"));
         coursesThatExist.add(new Course("CourseName_2", "Description_2"));
         coursesThatExist.add(new Course("CourseName_3", "Description_3"));
-        when(courseDaoMock.findAll()).thenReturn(coursesThatExist);
+        when(courseRepositoryMock.findAll()).thenReturn(coursesThatExist);
 
         boolean expectedResult = validator.validateCourseName(null);
 
@@ -219,7 +219,7 @@ class UserInputValidatorImplTest {
         coursesThatExist.add(new Course("CourseName_1", "Description_1"));
         coursesThatExist.add(new Course("CourseName_2", "Description_2"));
         coursesThatExist.add(new Course("CourseName_3", "Description_3"));
-        when(courseDaoMock.findAll()).thenReturn(coursesThatExist);
+        when(courseRepositoryMock.findAll()).thenReturn(coursesThatExist);
 
         boolean expectedResult = validator.validateCourseName("CourseName_1");
 
@@ -232,7 +232,7 @@ class UserInputValidatorImplTest {
         coursesThatExist.add(new Course("CourseName_1", "Description_1"));
         coursesThatExist.add(new Course("CourseName_2", "Description_2"));
         coursesThatExist.add(new Course("CourseName_3", "Description_3"));
-        when(courseDaoMock.findAll()).thenReturn(coursesThatExist);
+        when(courseRepositoryMock.findAll()).thenReturn(coursesThatExist);
 
         boolean expectedResult = validator.validateCourseName("CourseName_4");
 
@@ -245,7 +245,7 @@ class UserInputValidatorImplTest {
         coursesThatExist.add(new Course("CourseName_1", "Description_1"));
         coursesThatExist.add(new Course("CourseName_2", "Description_2"));
         coursesThatExist.add(new Course("CourseName_3", "Description_3"));
-        when(courseDaoMock.findAll()).thenReturn(coursesThatExist);
+        when(courseRepositoryMock.findAll()).thenReturn(coursesThatExist);
 
         boolean expectedResult = validator.validateCourseName(null);
 
@@ -258,7 +258,7 @@ class UserInputValidatorImplTest {
         coursesThatExist.add(new Course("CourseName_1", "Description_1"));
         coursesThatExist.add(new Course("CourseName_2", "Description_2"));
         coursesThatExist.add(new Course("CourseName_3", "Description_3"));
-        when(courseDaoMock.findAll()).thenReturn(coursesThatExist);
+        when(courseRepositoryMock.findAll()).thenReturn(coursesThatExist);
 
         boolean expectedResult = validator.validateDescription("Description_1");
 
@@ -271,7 +271,7 @@ class UserInputValidatorImplTest {
         coursesThatExist.add(new Course("CourseName_1", "Description_1"));
         coursesThatExist.add(new Course("CourseName_2", "Description_2"));
         coursesThatExist.add(new Course("CourseName_3", "Description_3"));
-        when(courseDaoMock.findAll()).thenReturn(coursesThatExist);
+        when(courseRepositoryMock.findAll()).thenReturn(coursesThatExist);
 
         boolean expectedResult = validator.validateDescription("NotExistentDescription");
 
@@ -284,7 +284,7 @@ class UserInputValidatorImplTest {
         coursesThatExist.add(new Course("CourseName_1", "Description_1"));
         coursesThatExist.add(new Course("CourseName_2", "Description_2"));
         coursesThatExist.add(new Course("CourseName_3", "Description_3"));
-        when(courseDaoMock.findAll()).thenReturn(coursesThatExist);
+        when(courseRepositoryMock.findAll()).thenReturn(coursesThatExist);
 
         boolean expectedResult = validator.validateDescription(null);
 
@@ -303,7 +303,7 @@ class UserInputValidatorImplTest {
         studentsThatExist.add(firstStudent);
         studentsThatExist.add(secondStudent);
         studentsThatExist.add(thirdStudent);
-        when(studentDaoMock.findAll()).thenReturn(studentsThatExist);
+        when(studentRepositoryMock.findAll()).thenReturn(studentsThatExist);
 
         boolean expectedResult = validator.validateStudentId(1);
 
@@ -322,7 +322,7 @@ class UserInputValidatorImplTest {
         studentsThatExist.add(firstStudent);
         studentsThatExist.add(secondStudent);
         studentsThatExist.add(thirdStudent);
-        when(studentDaoMock.findAll()).thenReturn(studentsThatExist);
+        when(studentRepositoryMock.findAll()).thenReturn(studentsThatExist);
 
         boolean expectedResult = validator.validateStudentId(100);
 
@@ -342,7 +342,7 @@ class UserInputValidatorImplTest {
         studentsThatExist.add(firstStudent);
         studentsThatExist.add(secondStudent);
         studentsThatExist.add(thirdStudent);
-        when(studentDaoMock.findAll()).thenReturn(studentsThatExist);
+        when(studentRepositoryMock.findAll()).thenReturn(studentsThatExist);
 
         boolean expectedResult = validator.validateStudentId(studentId);
 
@@ -355,7 +355,7 @@ class UserInputValidatorImplTest {
         studentsThatExist.add(new Student("FirstName_1", "LastName_1", new Group()));
         studentsThatExist.add(new Student("FirstName_2", "LastName_2", new Group()));
         studentsThatExist.add(new Student("FirstName_3", "LastName_3", new Group()));
-        when(studentDaoMock.findAll()).thenReturn(studentsThatExist);
+        when(studentRepositoryMock.findAll()).thenReturn(studentsThatExist);
 
         boolean expectedResult = validator.validateStudentFullName(null, "LastName_1");
 
@@ -368,7 +368,7 @@ class UserInputValidatorImplTest {
         studentsThatExist.add(new Student("FirstName_1", "LastName_1", new Group()));
         studentsThatExist.add(new Student("FirstName_2", "LastName_2", new Group()));
         studentsThatExist.add(new Student("FirstName_3", "LastName_3", new Group()));
-        when(studentDaoMock.findAll()).thenReturn(studentsThatExist);
+        when(studentRepositoryMock.findAll()).thenReturn(studentsThatExist);
 
         boolean expectedResult = validator.validateStudentFullName("FirstName_3", null);
 
@@ -381,7 +381,7 @@ class UserInputValidatorImplTest {
         studentsThatExist.add(new Student("FirstName_1", "LastName_1", new Group()));
         studentsThatExist.add(new Student("FirstName_2", "LastName_2", new Group()));
         studentsThatExist.add(new Student("FirstName_3", "LastName_3", new Group()));
-        when(studentDaoMock.findAll()).thenReturn(studentsThatExist);
+        when(studentRepositoryMock.findAll()).thenReturn(studentsThatExist);
 
         boolean expectedResult = validator.validateStudentFullName("FirstName_2", "LastName_2");
 
@@ -394,7 +394,7 @@ class UserInputValidatorImplTest {
         studentsThatExist.add(new Student("FirstName_1", "LastName_1", new Group()));
         studentsThatExist.add(new Student("FirstName_2", "LastName_2", new Group()));
         studentsThatExist.add(new Student("FirstName_3", "LastName_3", new Group()));
-        when(studentDaoMock.findAll()).thenReturn(studentsThatExist);
+        when(studentRepositoryMock.findAll()).thenReturn(studentsThatExist);
 
         boolean expectedResult = validator.validateStudentFullName("FirstName_5", "LastName_2");
 
@@ -410,9 +410,9 @@ class UserInputValidatorImplTest {
         Course courseMock = mock(Course.class);
         Set<Course> coursesForStudent = new HashSet<>();
         coursesForStudent.add(courseMock);
-        when(studentDaoMock.findStudentByFullName(studentFirstName, studentLastName))
+        when(studentRepositoryMock.findByFirstNameAndLastName(studentFirstName, studentLastName))
                 .thenReturn(Optional.of(studentMock));
-        when(courseDaoMock.findCourseByName(courseName)).thenReturn(Optional.of(courseMock));
+        when(courseRepositoryMock.findByCourseName(courseName)).thenReturn(Optional.of(courseMock));
         when(studentMock.getCourses()).thenReturn(coursesForStudent);
 
         boolean expectedResult = validator.isStudentOnCourse(studentFirstName, studentLastName, courseName);
@@ -428,9 +428,9 @@ class UserInputValidatorImplTest {
         Student studentMock = mock(Student.class);
         Course courseMock = mock(Course.class);
         Set<Course> coursesForStudent = new HashSet<>();
-        when(studentDaoMock.findStudentByFullName(studentFirstName, studentLastName))
+        when(studentRepositoryMock.findByFirstNameAndLastName(studentFirstName, studentLastName))
                 .thenReturn(Optional.of(studentMock));
-        when(courseDaoMock.findCourseByName(courseName)).thenReturn(Optional.of(courseMock));
+        when(courseRepositoryMock.findByCourseName(courseName)).thenReturn(Optional.of(courseMock));
         when(studentMock.getCourses()).thenReturn(coursesForStudent);
 
         boolean expectedResult = validator.isStudentOnCourse(studentFirstName, studentLastName, courseName);
@@ -444,8 +444,8 @@ class UserInputValidatorImplTest {
         String studentLastName = "NotExistent";
         String courseName = "CourseName";
         Course courseMock = mock(Course.class);
-        when(studentDaoMock.findStudentByFullName(studentFirstName, studentLastName)).thenReturn(Optional.empty());
-        when(courseDaoMock.findCourseByName(courseName)).thenReturn(Optional.of(courseMock));
+        when(studentRepositoryMock.findByFirstNameAndLastName(studentFirstName, studentLastName)).thenReturn(Optional.empty());
+        when(courseRepositoryMock.findByCourseName(courseName)).thenReturn(Optional.of(courseMock));
 
         boolean expectedResult = validator.isStudentOnCourse(studentFirstName, studentLastName, courseName);
 
@@ -458,9 +458,9 @@ class UserInputValidatorImplTest {
         String studentLastName = "LastName";
         String courseName = "NotExistent";
         Student studentMock = mock(Student.class);
-        when(studentDaoMock.findStudentByFullName(studentFirstName, studentLastName))
+        when(studentRepositoryMock.findByFirstNameAndLastName(studentFirstName, studentLastName))
                 .thenReturn(Optional.of(studentMock));
-        when(courseDaoMock.findCourseByName(courseName)).thenReturn(Optional.empty());
+        when(courseRepositoryMock.findByCourseName(courseName)).thenReturn(Optional.empty());
 
         boolean expectedResult = validator.isStudentOnCourse(studentFirstName, studentLastName, courseName);
 
