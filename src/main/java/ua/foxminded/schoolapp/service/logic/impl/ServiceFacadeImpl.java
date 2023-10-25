@@ -102,8 +102,9 @@ public class ServiceFacadeImpl implements ServiceFacade {
         boolean newGroupAdded = false;
 
         if (groupNameNotExist && groupNameMatchesPattern) {
-            LOGGER.debug("Adding new group with name {}", groupName);
-            groupService.addGroup(groupName);
+            GroupDto newGroup = new GroupDto(groupName);
+            LOGGER.debug("Adding new group {}", newGroup);
+            groupService.addGroup(newGroup);
             newGroupAdded = true;
         }
 
@@ -188,12 +189,12 @@ public class ServiceFacadeImpl implements ServiceFacade {
 
         if (studentIsNotExists && firstNameLengthIsValid && lastNameLengthIsValid && groupIsExists) {
             Group group = groupService.getGroupByName(groupName).get();
-            studentService.addStudent(firstName, lastName, group);
+            StudentDto newStudent = new StudentDto(firstName, lastName, group);
+            LOGGER.debug("Adding new student: {}", newStudent);
+            studentService.addStudent(newStudent);
             newStudentIsAdded = true;
         }
 
-        LOGGER.debug("New student with first name - {}, last name - {} and group name {} is added: {}", firstName,
-                lastName, groupName, newStudentIsAdded);
         return newStudentIsAdded;
     }
 
@@ -256,7 +257,7 @@ public class ServiceFacadeImpl implements ServiceFacade {
         boolean studentIsdDeleted = false;
 
         if (studentIdExist) {
-            studentService.deleteStudent(studentId);
+            studentService.deleteStudentById(studentId);
             studentIsdDeleted = true;
         }
 
@@ -275,8 +276,9 @@ public class ServiceFacadeImpl implements ServiceFacade {
         boolean newCourseIsAdded = false;
 
         if (courseNameNotExist && courseNameLengthIsValid && descriptionNotExist) {
-            LOGGER.debug("Adding new course with name {} and description {}", courseName, description);
-            courseService.addCourse(courseName, description);
+            CourseDto newCourse = new CourseDto(courseName, description);
+            LOGGER.debug("Adding new course {}", newCourse);
+            courseService.addCourse(newCourse);
             newCourseIsAdded = true;
         }
 

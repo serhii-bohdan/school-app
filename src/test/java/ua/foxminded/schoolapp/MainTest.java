@@ -12,13 +12,13 @@ import ua.foxminded.schoolapp.cli.SchoolController;
 class MainTest {
 
     @MockBean
-    SchoolController controllerMock;
+    private SchoolController controllerMock;
 
     @Autowired
-    Main main;
+    private Main main;
 
     @Test
-    void run_shouldInvokedAllMethodsInMainMethod_whenTheseMethodsWorkCorrectly() {
+    void run_shouldInvokedRunSchoolAppMethod_whenRunMethodWorkCorrectly() {
         main.run();
 
         verify(controllerMock, times(1)).runSchoolApp();

@@ -9,11 +9,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
-import ua.foxminded.schoolapp.dao.StudentDao;
 import ua.foxminded.schoolapp.dto.StudentDto;
 import ua.foxminded.schoolapp.dto.mapper.StudentMapper;
 import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
+import ua.foxminded.schoolapp.repository.StudentRepository;
 import ua.foxminded.schoolapp.service.generate.Generatable;
 import ua.foxminded.schoolapp.service.logic.StudentService;
 
@@ -26,8 +26,8 @@ import ua.foxminded.schoolapp.service.logic.StudentService;
  * The class is annotated with {@code @Service} to indicate that it is a Spring
  * service, and it can be automatically discovered and registered as a bean in
  * the Spring context. The StudentServiceImpl requires instances of
- * {@link Generatable<StudentDto>} for generating students Dto and a
- * {@link StudentDao} for data access to perform its operations.
+ * {@link Generatable} for generating students Dto and a
+ * {@link StudentRepository} for data access to perform its operations.
  *
  * @author Serhii Bohdan
  */
@@ -42,18 +42,20 @@ public class StudentServiceImpl implements StudentService {
     private static final Logger LOGGER = LoggerFactory.getLogger(StudentServiceImpl.class);
 
     private final Generatable<StudentDto> studentsGenerator;
-    private final StudentDao studentDao;
+    private final StudentRepository studentRepository;
 
     /**
      * Constructs a new StudentServiceImpl with the specified students generator and
-     * student Dao.
+     * student repository.
      *
-     * @param studentsGenerator the generator for creating students
-     * @param studentDao        the data access object for students
+     * @param studentsGenerator an instance of {@link Generatable} for generating
+     *                          student data
+     * @param studentRepository an instance of {@link StudentRepository} for
+     *                          accessing and managing student information
      */
-    public StudentServiceImpl(Generatable<StudentDto> studentsGenerator, StudentDao studentDao) {
+    public StudentServiceImpl(Generatable<StudentDto> studentsGenerator, StudentRepository studentRepository) {
         this.studentsGenerator = studentsGenerator;
-        this.studentDao = studentDao;
+        this.studentRepository = studentRepository;
     }
 
     /**
@@ -68,7 +70,7 @@ public class StudentServiceImpl implements StudentService {
         for (int i = 0; i < groupsIndexes.size(); i++) {
             Student student = StudentMapper.mapDtoToStudent(generatedStudents.get(i));
             student.setGroup(groups.get(groupsIndexes.get(i)));
-            studentDao.save(student);
+            studentRepository.save(student);
         }
     }
 
@@ -76,11 +78,11 @@ public class StudentServiceImpl implements StudentService {
      * {@inheritDoc}
      */
     @Override
-    public Optional<Student> addStudent(String firstName, String lastName, Group group) {
-        Student newStudent = new Student(firstName, lastName, group);
-        LOGGER.debug("Adding a new student: {}", newStudent);
+    public Optional<Student> addStudent(StudentDto newStudent) {
+        Student student = StudentMapper.mapDtoToStudent(newStudent);
+        LOGGER.debug("Adding a new student: {}", student);
 
-        return Optional.ofNullable(studentDao.save(newStudent));
+        return Optional.ofNullable(studentRepository.save(student));
     }
 
     /**
@@ -88,10 +90,10 @@ public class StudentServiceImpl implements StudentService {
      */
     @Override
     public Optional<Student> getStudentById(Integer studentId) {
-        Student student = studentDao.find(studentId);
+        Optional<Student> student = studentRepository.findById(studentId);
         LOGGER.debug("Received student by ID {}: {}", studentId, student);
 
-        return Optional.ofNullable(student);
+        return student;
     }
 
     /**
@@ -99,7 +101,7 @@ public class StudentServiceImpl implements StudentService {
      */
     @Override
     public Optional<Student> getStudentByFullName(String firstName, String lastName) {
-        Optional<Student> student = studentDao.findStudentByFullName(firstName, lastName);
+        Optional<Student> student = studentRepository.findByFirstNameAndLastName(firstName, lastName);
         LOGGER.debug("Search student by full name {} {}: {}", firstName, lastName, student);
 
         return student;
@@ -110,7 +112,7 @@ public class StudentServiceImpl implements StudentService {
      */
     @Override
     public List<Student> getAllStudents() {
-        List<Student> allStudents = studentDao.findAll();
+        List<Student> allStudents = studentRepository.findAll();
         LOGGER.debug("All received students: {}", allStudents);
 
         return allStudents;
@@ -121,8 +123,8 @@ public class StudentServiceImpl implements StudentService {
      */
     @Override
     public Optional<Student> updateStudent(Student udatedStudent) {
-        Student student = studentDao.update(udatedStudent);
-        LOGGER.debug("Updating student data: {}", student);
+        LOGGER.debug("Updating student data: {}", udatedStudent);
+        Student student = studentRepository.save(udatedStudent);
 
         return Optional.ofNullable(student);
     }
@@ -131,9 +133,13 @@ public class StudentServiceImpl implements StudentService {
      * {@inheritDoc}
      */
     @Override
-    public void deleteStudent(Integer studentId) {
-        LOGGER.debug("Deleting student with ID: {}", studentId);
-        studentDao.delete(studentId);
+    public void deleteStudentById(Integer studentId) {
+        Optional<Student> student = getStudentById(studentId);
+
+        if (student.isPresent()) {
+            LOGGER.debug("Deleting student with ID {}: {}", studentId, student);
+            studentRepository.delete(student.get());
+        }
     }
 
     private List<Integer> getRandomGroupsIndexes(Integer studentsNumber, Integer groupsNumber) {

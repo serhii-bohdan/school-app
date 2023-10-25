@@ -31,14 +31,14 @@ import ua.foxminded.schoolapp.model.Student;
 @SpringBootTest(classes = { SchoolViewImpl.class })
 class SchoolViewImplTest {
 
-    ByteArrayOutputStream baos;
-    PrintStream printStreamMock;
+    private ByteArrayOutputStream baos;
+    private PrintStream printStreamMock;
 
     @MockBean
-    Scanner scannerMock;
+    private Scanner scannerMock;
 
     @Autowired
-    SchoolViewImpl view;
+    private SchoolViewImpl view;
 
     @BeforeEach
     void setUp() {
@@ -68,7 +68,7 @@ class SchoolViewImplTest {
                 13. Delete a course.
 
                 Enter 0 to exit the program.
-                 """;
+                """;
 
         view.showMenu();
         String actualOutput = baos.toString();

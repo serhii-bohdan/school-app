@@ -36,19 +36,19 @@ import ua.foxminded.schoolapp.service.logic.UserInputValidator;
 class ServiceFacadeImplTest {
 
     @MockBean
-    GroupService groupServiceMock;
+    private GroupService groupServiceMock;
 
     @MockBean
-    StudentService studentServiceMock;
+    private StudentService studentServiceMock;
 
     @MockBean
-    CourseService courseServiceMock;
+    private CourseService courseServiceMock;
 
     @MockBean
-    UserInputValidator validatorMock;
+    private UserInputValidator validatorMock;
 
     @Autowired
-    ServiceFacadeImpl serviceFacade;
+    private ServiceFacadeImpl serviceFacade;
 
     @Test
     void initSchema_shouldInitializedGroupsStudentsCoursesTables_whenTheyWereAllEmptyBeforeThat() {
@@ -105,36 +105,39 @@ class ServiceFacadeImplTest {
     @Test
     void addNewGroup_shouldAddedNewGroup_whenNoGroupWithGivenNewNameAndGroupNameMatchesPattern() {
         String groupName = "FL-23";
+        GroupDto newGroup = new GroupDto(groupName);
         when(validatorMock.validateGroupNameExistence(groupName)).thenReturn(false);
         when(validatorMock.validateGroupNamePattern(groupName)).thenReturn(true);
 
         boolean expectedResult = serviceFacade.addNewGroup(groupName);
 
-        verify(groupServiceMock, times(1)).addGroup(groupName);
+        verify(groupServiceMock, times(1)).addGroup(newGroup);
         assertTrue(expectedResult);
     }
 
     @Test
     void addNewGroup_shouldNotAddedNewGroup_whenGroupWithGivenNewNameAlreadyExistAndGroupNameMatchesPattern() {
         String groupName = "FL-23";
+        GroupDto newGroup = new GroupDto(groupName);
         when(validatorMock.validateGroupNameExistence(groupName)).thenReturn(true);
         when(validatorMock.validateGroupNamePattern(groupName)).thenReturn(true);
 
         boolean expectedResult = serviceFacade.addNewGroup(groupName);
 
-        verify(groupServiceMock, never()).addGroup(groupName);
+        verify(groupServiceMock, never()).addGroup(newGroup);
         assertFalse(expectedResult);
     }
 
     @Test
     void addNewGroup_shouldNotAddedNewGroup_whenNoGroupWithGivenNewNameAndGroupNameNotMatchesPattern() {
         String groupName = "NotMatchesPattern";
+        GroupDto newGroup = new GroupDto(groupName);
         when(validatorMock.validateGroupNameExistence(groupName)).thenReturn(false);
         when(validatorMock.validateGroupNamePattern(groupName)).thenReturn(false);
 
         boolean expectedResult = serviceFacade.addNewGroup(groupName);
 
-        verify(groupServiceMock, never()).addGroup(groupName);
+        verify(groupServiceMock, never()).addGroup(newGroup);
         assertFalse(expectedResult);
     }
 
@@ -284,6 +287,7 @@ class ServiceFacadeImplTest {
         String lastName = "LastName";
         String groupName = "FL-23";
         Group groupForStudent = new Group(groupName);
+        StudentDto student = new StudentDto(firstName, lastName, groupForStudent);
         when(validatorMock.validateStudentFullName(firstName, lastName)).thenReturn(false);
         when(validatorMock.validateNameLength(firstName)).thenReturn(true);
         when(validatorMock.validateNameLength(lastName)).thenReturn(true);
@@ -292,7 +296,7 @@ class ServiceFacadeImplTest {
 
         boolean expectedResult = serviceFacade.addNewStudent(firstName, lastName, groupName);
 
-        verify(studentServiceMock, times(1)).addStudent(firstName, lastName, groupForStudent);
+        verify(studentServiceMock, times(1)).addStudent(student);
         assertTrue(expectedResult);
     }
 
@@ -302,6 +306,7 @@ class ServiceFacadeImplTest {
         String lastName = "LastName";
         String groupName = "FL-23";
         Group groupForStudent = new Group(groupName);
+        StudentDto student = new StudentDto(firstName, lastName, groupForStudent);
         when(validatorMock.validateStudentFullName(firstName, lastName)).thenReturn(true);
         when(validatorMock.validateNameLength(firstName)).thenReturn(true);
         when(validatorMock.validateNameLength(lastName)).thenReturn(true);
@@ -309,7 +314,7 @@ class ServiceFacadeImplTest {
 
         boolean expectedResult = serviceFacade.addNewStudent(firstName, lastName, groupName);
 
-        verify(studentServiceMock, never()).addStudent(firstName, lastName, groupForStudent);
+        verify(studentServiceMock, never()).addStudent(student);
         assertFalse(expectedResult);
     }
 
@@ -319,6 +324,7 @@ class ServiceFacadeImplTest {
         String lastName = "LastName";
         String groupName = "FL-23";
         Group groupForStudent = new Group(groupName);
+        StudentDto student = new StudentDto(firstName, lastName, groupForStudent);
         when(validatorMock.validateStudentFullName(firstName, lastName)).thenReturn(false);
         when(validatorMock.validateNameLength(firstName)).thenReturn(false);
         when(validatorMock.validateNameLength(lastName)).thenReturn(true);
@@ -326,7 +332,7 @@ class ServiceFacadeImplTest {
 
         boolean expectedResult = serviceFacade.addNewStudent(firstName, lastName, groupName);
 
-        verify(studentServiceMock, never()).addStudent(firstName, lastName, groupForStudent);
+        verify(studentServiceMock, never()).addStudent(student);
         assertFalse(expectedResult);
     }
 
@@ -336,6 +342,7 @@ class ServiceFacadeImplTest {
         String lastName = "LlllaaaasssstttNnnaaammmeeeTttooLong";
         String groupName = "FL-23";
         Group groupForStudent = new Group(groupName);
+        StudentDto student = new StudentDto(firstName, lastName, groupForStudent);
         when(validatorMock.validateStudentFullName(firstName, lastName)).thenReturn(false);
         when(validatorMock.validateNameLength(firstName)).thenReturn(true);
         when(validatorMock.validateNameLength(lastName)).thenReturn(false);
@@ -343,7 +350,7 @@ class ServiceFacadeImplTest {
 
         boolean expectedResult = serviceFacade.addNewStudent(firstName, lastName, groupName);
 
-        verify(studentServiceMock, never()).addStudent(firstName, lastName, groupForStudent);
+        verify(studentServiceMock, never()).addStudent(student);
         assertFalse(expectedResult);
     }
 
@@ -353,6 +360,7 @@ class ServiceFacadeImplTest {
         String lastName = "LasrName";
         String groupName = "FL-23";
         Group groupForStudent = new Group(groupName);
+        StudentDto student = new StudentDto(firstName, lastName, groupForStudent);
         when(validatorMock.validateStudentFullName(firstName, lastName)).thenReturn(false);
         when(validatorMock.validateNameLength(firstName)).thenReturn(true);
         when(validatorMock.validateNameLength(lastName)).thenReturn(true);
@@ -360,7 +368,7 @@ class ServiceFacadeImplTest {
 
         boolean expectedResult = serviceFacade.addNewStudent(firstName, lastName, groupName);
 
-        verify(studentServiceMock, never()).addStudent(firstName, lastName, groupForStudent);
+        verify(studentServiceMock, never()).addStudent(student);
         assertFalse(expectedResult);
     }
 
@@ -587,7 +595,7 @@ class ServiceFacadeImplTest {
 
         boolean studentDeleted = serviceFacade.deleteStudentById(studentId);
 
-        verify(studentServiceMock, times(1)).deleteStudent(studentId);
+        verify(studentServiceMock, times(1)).deleteStudentById(studentId);
         assertTrue(studentDeleted);
     }
 
@@ -598,7 +606,7 @@ class ServiceFacadeImplTest {
 
         boolean studentDeleted = serviceFacade.deleteStudentById(studentId);
 
-        verify(studentServiceMock, never()).deleteStudent(studentId);
+        verify(studentServiceMock, never()).deleteStudentById(studentId);
         assertFalse(studentDeleted);
     }
 
@@ -606,13 +614,14 @@ class ServiceFacadeImplTest {
     void addNewCourse_shouldAddedNewCourse_whenNoCourseWithGivenNewCourseNameAndDescriptionAndCouseNameLengthIsValid() {
         String courseName = "CourseName";
         String description = "Description";
+        CourseDto newCourse = new CourseDto(courseName, description);
         when(validatorMock.validateCourseName(courseName)).thenReturn(false);
         when(validatorMock.validateNameLength(courseName)).thenReturn(true);
         when(validatorMock.validateDescription(description)).thenReturn(false);
 
         boolean actualResult = serviceFacade.addNewCourse(courseName, description);
 
-        verify(courseServiceMock, times(1)).addCourse(courseName, description);
+        verify(courseServiceMock, times(1)).addCourse(newCourse);
         assertTrue(actualResult);
     }
 
@@ -620,13 +629,14 @@ class ServiceFacadeImplTest {
     void addNewCourse_shouldNotAddedNewCourse_whenCourseWithGivenNewCourseNameAlreadyExist() {
         String courseName = "AlreadyExist";
         String description = "Description";
+        CourseDto newCourse = new CourseDto(courseName, description);
         when(validatorMock.validateCourseName(courseName)).thenReturn(true);
         when(validatorMock.validateNameLength(courseName)).thenReturn(true);
         when(validatorMock.validateDescription(description)).thenReturn(false);
 
         boolean actualResult = serviceFacade.addNewCourse(courseName, description);
 
-        verify(courseServiceMock, never()).addCourse(courseName, description);
+        verify(courseServiceMock, never()).addCourse(newCourse);
         assertFalse(actualResult);
     }
 
@@ -634,13 +644,14 @@ class ServiceFacadeImplTest {
     void addNewCourse_shouldNotAddedNewCourse_whenNoCourseWithGivenNewCourseNameAndDescriptionAndCouseNameLengthIsNotValid() {
         String courseName = "CccooouuurrrrssseeeNnnaaammmeTttooLong";
         String description = "Description";
+        CourseDto newCourse = new CourseDto(courseName, description);
         when(validatorMock.validateCourseName(courseName)).thenReturn(false);
         when(validatorMock.validateNameLength(courseName)).thenReturn(false);
         when(validatorMock.validateDescription(description)).thenReturn(false);
 
         boolean actualResult = serviceFacade.addNewCourse(courseName, description);
 
-        verify(courseServiceMock, never()).addCourse(courseName, description);
+        verify(courseServiceMock, never()).addCourse(newCourse);
         assertFalse(actualResult);
     }
 
@@ -648,13 +659,14 @@ class ServiceFacadeImplTest {
     void addNewCourse_shouldNotAddedNewCourse_whenCourseWithGivenDescriptionAlreadyExistAndCouseNameLengthIsValid() {
         String courseName = "CourseName";
         String description = "AlreadyExist";
+        CourseDto newCourse = new CourseDto(courseName, description);
         when(validatorMock.validateCourseName(courseName)).thenReturn(false);
         when(validatorMock.validateNameLength(courseName)).thenReturn(true);
         when(validatorMock.validateDescription(description)).thenReturn(true);
 
         boolean actualResult = serviceFacade.addNewCourse(courseName, description);
 
-        verify(courseServiceMock, never()).addCourse(courseName, description);
+        verify(courseServiceMock, never()).addCourse(newCourse);
         assertFalse(actualResult);
     }
 
@@ -662,13 +674,14 @@ class ServiceFacadeImplTest {
     void addNewCourse_shouldNotAddedNewCourse_whenCourseWithGivenNewCourseNameAndDescriptionAlreadyExistAndCouseNameLengthIsValid() {
         String courseName = "AlreadyExist";
         String description = "AlreadyExist";
+        CourseDto newCourse = new CourseDto(courseName, description);
         when(validatorMock.validateCourseName(courseName)).thenReturn(true);
         when(validatorMock.validateNameLength(courseName)).thenReturn(true);
         when(validatorMock.validateDescription(description)).thenReturn(true);
 
         boolean actualResult = serviceFacade.addNewCourse(courseName, description);
 
-        verify(courseServiceMock, never()).addCourse(courseName, description);
+        verify(courseServiceMock, never()).addCourse(newCourse);
         assertFalse(actualResult);
     }
 

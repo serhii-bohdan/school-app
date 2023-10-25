@@ -13,7 +13,7 @@ import ua.foxminded.schoolapp.service.generate.Reader;
 class ReaderImplTest {
 
     @Autowired
-    Reader reader;
+    private Reader reader;
 
     @Test
     void readFileAndPopulateListWithLines_shouldFileReadingException_whenFileNotExist() {

@@ -9,29 +9,28 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.hibernate.exception.ConstraintViolationException;
-import org.hibernate.exception.DataException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import ua.foxminded.schoolapp.dao.GroupDao;
 import ua.foxminded.schoolapp.dto.GroupDto;
+import ua.foxminded.schoolapp.dto.mapper.GroupMapper;
 import ua.foxminded.schoolapp.model.Group;
 import ua.foxminded.schoolapp.model.Student;
+import ua.foxminded.schoolapp.repository.GroupRepository;
 import ua.foxminded.schoolapp.service.generate.Generatable;
 
 @SpringBootTest(classes = { GroupServiceImpl.class })
 class GroupServiceImplTest {
 
     @MockBean
-    Generatable<GroupDto> groupsGeneratorMock;
+    private Generatable<GroupDto> groupsGeneratorMock;
 
     @MockBean
-    GroupDao groupDaoMock;
+    private GroupRepository groupRepositoryMock;
 
     @Autowired
-    GroupServiceImpl groupService;
+    private GroupServiceImpl groupService;
 
     @Test
     void initGroups_shouldSavedAllGroupsWhichReturnsGroupsGenerator_whenGroupsGeneratorReturnsSeveralGroups() {
@@ -44,7 +43,7 @@ class GroupServiceImplTest {
         groupService.initGroups();
 
         verify(groupsGeneratorMock, times(1)).toGenerate();
-        verify(groupDaoMock, times(3)).save(any(Group.class));
+        verify(groupRepositoryMock, times(3)).save(any(Group.class));
     }
 
     @Test
@@ -55,128 +54,103 @@ class GroupServiceImplTest {
         groupService.initGroups();
 
         verify(groupsGeneratorMock, times(1)).toGenerate();
-        verify(groupDaoMock, never()).save(any(Group.class));
+        verify(groupRepositoryMock, never()).save(any(Group.class));
     }
 
     @Test
-    void addGroup_shouldAddedAndReturnedNewGroupOptional_whenGroupDaoSuccessfulSaveNewGroup() {
+    void addGroup_shouldIllegalArgumentException_whenNewGroupDtoIsNull() {
+        GroupDto newGroupDto = null;
+
+        assertThrows(IllegalArgumentException.class, () -> groupService.addGroup(newGroupDto));
+    }
+
+    @Test
+    void addGroup_shouldAddedAndReturnedNewGroupOptional_whenGroupRepositorySuccessfulSaveNewGroup() {
         String newGroupName = "LK-33";
-        Group newGroup = new Group(newGroupName);
-        when(groupDaoMock.save(newGroup)).thenReturn(newGroup);
+        GroupDto newGroupDto = new GroupDto(newGroupName);
+        Group newGroup = GroupMapper.mapDtoToGroup(newGroupDto);
+        when(groupRepositoryMock.save(newGroup)).thenReturn(newGroup);
 
-        Optional<Group> newReturnedGroup = groupService.addGroup(newGroupName);
+        Optional<Group> newReturnedGroup = groupService.addGroup(newGroupDto);
 
-        verify(groupDaoMock, times(1)).save(newGroup);
+        verify(groupRepositoryMock, times(1)).save(newGroup);
         assertTrue(newReturnedGroup.isPresent());
         assertEquals(newGroup, newReturnedGroup.get());
     }
 
     @Test
-    void addGroup_shouldConstraintViolationException_whenNewGroupNameIsNullAndGroupDaoThrowConstraintViolationException() {
-        String newGroupName = null;
-        Group newGroup = new Group(newGroupName);
-        when(groupDaoMock.save(newGroup)).thenThrow(ConstraintViolationException.class);
-
-        assertThrows(ConstraintViolationException.class, () -> groupService.addGroup(newGroupName));
-        verify(groupDaoMock, times(1)).save(newGroup);
-    }
-
-    @Test
-    void addGroup_shouldDataException_whenNewGroupNameContainsMoreThenFiveCharactersAndGroupDaoThrowDataException() {
-        String newGroupName = "LP-130";
-        Group newGroup = new Group(newGroupName);
-        when(groupDaoMock.save(newGroup)).thenThrow(DataException.class);
-
-        assertThrows(DataException.class, () -> groupService.addGroup(newGroupName));
-        verify(groupDaoMock, times(1)).save(newGroup);
-    }
-
-    @Test
-    void getGroupByName_shouldReturnedGroupOptional_whenGroupDaoFoundGroupByName() {
+    void getGroupByName_shouldReturnedGroupOptional_whenGroupRepositoryFoundGroupByName() {
         String groupName = "LK-33";
-        Optional<Group> expectedGroup = Optional.of(new Group(groupName));
-        when(groupDaoMock.findGroupByName(groupName)).thenReturn(expectedGroup);
+        Group expectedGroup = new Group(groupName);
+        when(groupRepositoryMock.findByGroupName(groupName)).thenReturn(Optional.of(expectedGroup));
 
         Optional<Group> actualGroup = groupService.getGroupByName(groupName);
 
-        verify(groupDaoMock, times(1)).findGroupByName(groupName);
+        verify(groupRepositoryMock, times(1)).findByGroupName(groupName);
         assertTrue(actualGroup.isPresent());
-        assertEquals(expectedGroup.get(), actualGroup.get());
+        assertEquals(expectedGroup, actualGroup.get());
     }
 
     @Test
-    void getGroupByName_shouldReturnedEmptyOptional_whenGroupDaoNotFindGroupWithGivenName() {
+    void getGroupByName_shouldReturnedEmptyOptional_whenGroupRepositoryNotFindGroupWithGivenName() {
         String groupName = "NotExistent";
-        Optional<Group> expectedGroup = Optional.empty();
-        when(groupDaoMock.findGroupByName(groupName)).thenReturn(expectedGroup);
+        when(groupRepositoryMock.findByGroupName(groupName)).thenReturn(Optional.empty());
 
         Optional<Group> actualGroup = groupService.getGroupByName(groupName);
 
-        verify(groupDaoMock, times(1)).findGroupByName(groupName);
+        verify(groupRepositoryMock, times(1)).findByGroupName(groupName);
         assertFalse(actualGroup.isPresent());
     }
 
     @Test
-    void getGroupByName_shouldReturnedEmptyOptional_whenGroupDaoNotFindGroupWithGivenNameAndNameIsNull() {
+    void getGroupByName_shouldReturnedEmptyOptional_whenGroupRepositoryNotFindGroupWithGivenNameAndNameIsNull() {
         String groupName = null;
-        Optional<Group> expectedGroup = Optional.empty();
-        when(groupDaoMock.findGroupByName(groupName)).thenReturn(expectedGroup);
+        when(groupRepositoryMock.findByGroupName(groupName)).thenReturn(Optional.empty());
 
         Optional<Group> actualGroup = groupService.getGroupByName(groupName);
 
-        verify(groupDaoMock, times(1)).findGroupByName(groupName);
+        verify(groupRepositoryMock, times(1)).findByGroupName(groupName);
         assertFalse(actualGroup.isPresent());
     }
 
     @Test
-    void getAllGroups_shouldGroupsList_whenGroupDaoReturnsNotEmptyGroupsList() {
+    void getAllGroups_shouldGroupsList_whenGroupRepositoryReturnsNotEmptyGroupsList() {
         List<Group> expectedGroups = new ArrayList<Group>();
         expectedGroups.add(new Group());
         expectedGroups.add(new Group());
-        when(groupDaoMock.findAll()).thenReturn(expectedGroups);
+        when(groupRepositoryMock.findAll()).thenReturn(expectedGroups);
 
         List<Group> actualGroups = groupService.getAllGroups();
 
-        verify(groupDaoMock, times(1)).findAll();
+        verify(groupRepositoryMock, times(1)).findAll();
         assertEquals(expectedGroups, actualGroups);
     }
 
     @Test
-    void getAllGroups_shouldEmptyGroupsList_whenGroupDaoReturnsEmptyGroupsList() {
-        List<Group> expectedGroups = new ArrayList<Group>();
-        when(groupDaoMock.findAll()).thenReturn(expectedGroups);
+    void getAllGroups_shouldEmptyGroupsList_whenGroupRepositoryReturnsEmptyGroupsList() {
+        when(groupRepositoryMock.findAll()).thenReturn(new ArrayList<Group>());
 
         List<Group> actualGroups = groupService.getAllGroups();
 
-        verify(groupDaoMock, times(1)).findAll();
+        verify(groupRepositoryMock, times(1)).findAll();
         assertTrue(actualGroups.isEmpty());
-        assertEquals(expectedGroups, actualGroups);
     }
 
     @Test
-    void updateGroup_shouldReturnedUpdatedGroup_whenGroupDaoReturnUpdatedGroup() {
+    void updateGroup_shouldReturnedUpdatedGroup_whenGroupRepositoryReturnUpdatedGroup() {
         Group uapdatedGroup = new Group("AS-84");
         uapdatedGroup.setId(1);
-        when(groupDaoMock.update(uapdatedGroup)).thenReturn(uapdatedGroup);
+        when(groupRepositoryMock.save(uapdatedGroup)).thenReturn(uapdatedGroup);
 
         Optional<Group> actualUpdatedGroup = groupService.updateGroup(uapdatedGroup);
 
-        verify(groupDaoMock, times(1)).update(uapdatedGroup);
+        verify(groupRepositoryMock, times(1)).save(uapdatedGroup);
         assertTrue(actualUpdatedGroup.isPresent());
         assertEquals(uapdatedGroup, actualUpdatedGroup.get());
     }
 
     @Test
-    void updateGroup_shouldIllegalArgumentException_whenUpdatedGroupIsNullAndGroupDaoThrowIllegalArgumentException() {
-        Group uapdatedGroup = null;
-        when(groupDaoMock.update(uapdatedGroup)).thenThrow(IllegalArgumentException.class);
-
-        assertThrows(IllegalArgumentException.class, () -> groupService.updateGroup(uapdatedGroup));
-        verify(groupDaoMock, times(1)).update(uapdatedGroup);
-    }
-
-    @Test
-    void deleteGroupByName_shouldDeletingGroup_whenGroupWasFoundSuccessfullyByThisName() {
+    void deleteGroupByName_shouldDeletedGroup_whenGroupWithGivenNameIsExist() {
         Integer groupId = 1;
         String groupName = "AS-84";
         Group groupToDelete = new Group(groupName);
@@ -185,18 +159,17 @@ class GroupServiceImplTest {
 
         groupService.deleteGroupByName(groupName);
 
-        verify(groupDaoMock, times(1)).delete(groupId);
+        verify(groupRepositoryMock, times(1)).delete(groupToDelete);
     }
 
     @Test
-    void deleteGroupByName_shouldNothingDeleted_whenGroupNotFoundByThisName() {
-        Integer groupId = 1;
+    void deleteGroupByName_shouldNothingDeleted_whenNoGroupWithGivenName() {
         String groupName = null;
         when(groupService.getGroupByName(groupName)).thenReturn(Optional.empty());
 
         groupService.deleteGroupByName(groupName);
 
-        verify(groupDaoMock, never()).delete(groupId);
+        verify(groupRepositoryMock, never()).delete(any(Group.class));
     }
 
     @Test
@@ -214,7 +187,7 @@ class GroupServiceImplTest {
         allGroups.add(firstGroup);
         allGroups.add(secondGroup);
         allGroups.add(thirdGroup);
-        when(groupDaoMock.findAll()).thenReturn(allGroups);
+        when(groupRepositoryMock.findAll()).thenReturn(allGroups);
 
         List<Group> groupsThatHaveGivenNumberOfStudents = groupService
                 .getGroupsWithGivenNumberOfStudents(numberOfStudents);
@@ -238,7 +211,7 @@ class GroupServiceImplTest {
         allGroups.add(firstGroup);
         allGroups.add(secondGroup);
         allGroups.add(thirdGroup);
-        when(groupDaoMock.findAll()).thenReturn(allGroups);
+        when(groupRepositoryMock.findAll()).thenReturn(allGroups);
 
         List<Group> groupsThatHaveGivenNumberOfStudents = groupService
                 .getGroupsWithGivenNumberOfStudents(numberOfStudents);
@@ -263,7 +236,7 @@ class GroupServiceImplTest {
         allGroups.add(firstGroup);
         allGroups.add(secondGroup);
         allGroups.add(thirdGroup);
-        when(groupDaoMock.findAll()).thenReturn(allGroups);
+        when(groupRepositoryMock.findAll()).thenReturn(allGroups);
 
         List<Group> groupsThatHaveGivenNumberOfStudents = groupService
                 .getGroupsWithGivenNumberOfStudents(numberOfStudents);
@@ -286,7 +259,7 @@ class GroupServiceImplTest {
         allGroups.add(firstGroup);
         allGroups.add(secondGroup);
         allGroups.add(thirdGroup);
-        when(groupDaoMock.findAll()).thenReturn(allGroups);
+        when(groupRepositoryMock.findAll()).thenReturn(allGroups);
 
         List<Group> groupsThatHaveGivenNumberOfStudents = groupService
                 .getGroupsWithGivenNumberOfStudents(numberOfStudents);
@@ -309,7 +282,7 @@ class GroupServiceImplTest {
         allGroups.add(firstGroup);
         allGroups.add(secondGroup);
         allGroups.add(thirdGroup);
-        when(groupDaoMock.findAll()).thenReturn(allGroups);
+        when(groupRepositoryMock.findAll()).thenReturn(allGroups);
 
         assertThrows(NullPointerException.class,
                 () -> groupService.getGroupsWithGivenNumberOfStudents(numberOfStudents));

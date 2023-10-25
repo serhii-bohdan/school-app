@@ -79,7 +79,7 @@ public class SchoolViewImpl implements SchoolView {
                 13. Delete a course.
 
                 Enter 0 to exit the program.
-                 """);
+                """);
     }
 
     /**

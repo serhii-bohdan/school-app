@@ -18,13 +18,13 @@ import ua.foxminded.schoolapp.exception.FileReadingException;
 @SpringBootTest(classes = { CoursesGenerator.class })
 class CoursesGeneratorTest {
 
-    final CoursesGeneratorTestHelper helper = new CoursesGeneratorTestHelper();;
+    private final CoursesGeneratorTestHelper helper = new CoursesGeneratorTestHelper();;
 
     @MockBean
-    Reader readerMock;
+    private Reader readerMock;
 
     @Autowired
-    Generatable<CourseDto> coursesGenerator;
+    private Generatable<CourseDto> coursesGenerator;
 
     @Test
     void toGenerate_shouldTestCursesList_whenReaderReturnTenCoursesNamesAndDescriptions() {

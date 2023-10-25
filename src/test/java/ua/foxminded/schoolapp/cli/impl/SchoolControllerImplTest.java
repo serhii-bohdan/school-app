@@ -19,18 +19,18 @@ import ua.foxminded.schoolapp.service.logic.ServiceFacade;
 @SpringBootTest(classes = { SchoolControllerImpl.class })
 class SchoolControllerImplTest {
 
-    static final String NEW_LINE = "\n";
-    static final String NON_BREAKING_SPACE = "\u00A0";
-    static final String SELECTION = "Select an option: ";
+    private static final String NEW_LINE = "\n";
+    private static final String NON_BREAKING_SPACE = "\u00A0";
+    private static final String SELECTION = "Select an option: ";
 
     @MockBean
-    SchoolView viewMock;
+    private SchoolView viewMock;
 
     @MockBean
-    ServiceFacade serviceFacadeMock;
+    private ServiceFacade serviceFacadeMock;
 
     @Autowired
-    SchoolControllerImpl controller;
+    private SchoolControllerImpl controller;
 
     @Test
     void runSchoolApp_shouldPrintedMessageAboutIncorrectnessEnteredNumber_whenSelectedFirstOptionAndMapWithGroupsAndTheirNumberOfStudentsIsNull() {

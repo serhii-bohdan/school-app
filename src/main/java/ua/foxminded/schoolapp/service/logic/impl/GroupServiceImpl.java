@@ -6,10 +6,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
-import ua.foxminded.schoolapp.dao.GroupDao;
 import ua.foxminded.schoolapp.dto.GroupDto;
 import ua.foxminded.schoolapp.dto.mapper.GroupMapper;
 import ua.foxminded.schoolapp.model.Group;
+import ua.foxminded.schoolapp.repository.GroupRepository;
 import ua.foxminded.schoolapp.service.generate.Generatable;
 import ua.foxminded.schoolapp.service.logic.GroupService;
 
@@ -21,9 +21,9 @@ import ua.foxminded.schoolapp.service.logic.GroupService;
  * <p>
  * This class is annotated with {@code @Service} to indicate that it is a Spring
  * service, and it can be automatically discovered and registered as a bean in
- * the Spring context. The GroupServiceImpl requires a
- * {@link Generatable<GroupDto>} object to generate groups Dto and a
- * {@link GroupDao} object to access the group data.
+ * the Spring context. The GroupServiceImpl requires a {@link Generatable}
+ * object to generate groups Dto and a {@link GroupRepository} object to access
+ * the group data.
  *
  * @author Serhii Bohdan
  */
@@ -38,18 +38,20 @@ public class GroupServiceImpl implements GroupService {
     private static final Logger LOGGER = LoggerFactory.getLogger(GroupServiceImpl.class);
 
     private final Generatable<GroupDto> groupsGenerator;
-    private final GroupDao groupDao;
+    private final GroupRepository groupRepository;
 
     /**
      * Constructs a new GroupServiceImpl with the specified groups generator and
-     * group Dao.
+     * group repository.
      *
-     * @param groupsGenerator the generator for creating groups
-     * @param groupDao        the data access object for groups
+     * @param groupsGenerator an instance of {@link Generatable} for generating
+     *                        groups
+     * @param groupRepository an instance of {@link GroupRepository} for accessing
+     *                        and managing group data
      */
-    public GroupServiceImpl(Generatable<GroupDto> groupsGenerator, GroupDao groupDao) {
+    public GroupServiceImpl(Generatable<GroupDto> groupsGenerator, GroupRepository groupRepository) {
         this.groupsGenerator = groupsGenerator;
-        this.groupDao = groupDao;
+        this.groupRepository = groupRepository;
     }
 
     /**
@@ -60,18 +62,18 @@ public class GroupServiceImpl implements GroupService {
         LOGGER.info("Filling with generated groups");
         groupsGenerator.toGenerate().stream()
                 .map(GroupMapper::mapDtoToGroup)
-                .forEach(groupDao::save);
+                .forEach(groupRepository::save);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Optional<Group> addGroup(String groupName) {
-        Group newGroup = new Group(groupName);
-        LOGGER.debug("Adding a new group: {}", newGroup);
+    public Optional<Group> addGroup(GroupDto newGroup) {
+        Group group = GroupMapper.mapDtoToGroup(newGroup);
+        LOGGER.debug("Adding a new group: {}", group);
 
-        return Optional.ofNullable(groupDao.save(newGroup));
+        return Optional.ofNullable(groupRepository.save(group));
     }
 
     /**
@@ -79,7 +81,7 @@ public class GroupServiceImpl implements GroupService {
      */
     @Override
     public Optional<Group> getGroupByName(String groupName) {
-        Optional<Group> group = groupDao.findGroupByName(groupName);
+        Optional<Group> group = groupRepository.findByGroupName(groupName);
         LOGGER.debug("Search group by name {}: {}", groupName, group);
 
         return group;
@@ -90,7 +92,7 @@ public class GroupServiceImpl implements GroupService {
      */
     @Override
     public List<Group> getAllGroups() {
-        List<Group> allGroups = groupDao.findAll();
+        List<Group> allGroups = groupRepository.findAll();
         LOGGER.debug("Search for all groups. All received groups: {}", allGroups);
 
         return allGroups;
@@ -101,8 +103,8 @@ public class GroupServiceImpl implements GroupService {
      */
     @Override
     public Optional<Group> updateGroup(Group updatedGroup) {
-        Group group = groupDao.update(updatedGroup);
-        LOGGER.debug("Updating group data. Updated group: {}", group);
+        LOGGER.debug("Updating group data. Updated group: {}", updatedGroup);
+        Group group = groupRepository.save(updatedGroup);
 
         return Optional.ofNullable(group);
     }
@@ -116,7 +118,7 @@ public class GroupServiceImpl implements GroupService {
 
         if (group.isPresent()) {
             LOGGER.debug("Deleting group: {}", group);
-            groupDao.delete(group.get().getId());
+            groupRepository.delete(group.get());
         }
     }
 
@@ -125,7 +127,7 @@ public class GroupServiceImpl implements GroupService {
      */
     @Override
     public List<Group> getGroupsWithGivenNumberOfStudents(Integer amountOfStudents) {
-        List<Group> groupsWithGivenNumberOfStudents = groupDao.findAll().stream()
+        List<Group> groupsWithGivenNumberOfStudents = groupRepository.findAll().stream()
                 .filter(group -> group.getStudents().size() <= amountOfStudents)
                 .toList();
 

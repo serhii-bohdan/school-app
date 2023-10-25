@@ -2,6 +2,7 @@ package ua.foxminded.schoolapp.service.logic;
 
 import java.util.List;
 import java.util.Optional;
+import ua.foxminded.schoolapp.dto.CourseDto;
 import ua.foxminded.schoolapp.model.Course;
 
 /**
@@ -20,14 +21,13 @@ public interface CourseService {
     void initCourses();
 
     /**
-     * Adds a new course with the specified name and description.
+     * Adds a new course using the provided {@link CourseDto}.
      *
-     * @param courseName  the name of the course to add
-     * @param description the description of the course
-     * @return an {@link Optional} containing the added course if successful, empty
-     *         otherwise
+     * @param newCourse the {@link CourseDto} representing the new course to add
+     * @return an {@link Optional} containing the added course if the operation was
+     *         successful, or an empty {@link Optional} if not
      */
-    Optional<Course> addCourse(String courseName, String description);
+    Optional<Course> addCourse(CourseDto newCourse);
 
     /**
      * Retrieves a course by its ID.
