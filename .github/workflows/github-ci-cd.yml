@@ -5,10 +5,23 @@ on:
     branches: [master, dev]
   pull_request:
     branches: [master]
-    
+
 jobs:
-
-  build:
+  build-test-package-deploy:
+    strategy:
+      matrix:
+        job: ['build', 'test', 'package', 'deploy']
+        include:
+          - job: 'build'
+            run: 'mvn -B compile'
+          - job: 'test'
+            run: 'mvn -B test'
+          - job: 'package'
+            run: 'mvn -B package'
+          - job: 'deploy'
+            run: 'docker compose up -d'
+            setup: 'docker/setup-buildx-action@v1'
+    needs: ${{ matrix.job == 'build' && '' || 'build-test-package-deploy' }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -17,42 +30,8 @@ jobs:
       with:
         java-version: '17'
         distribution: 'adopt'
-    - name: Build with Maven
-      run: mvn -B compile
-
-  test:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up JDK 17
-      uses: actions/setup-java@v2
-      with:
-        java-version: '17'
-        distribution: 'adopt'
-    - name: Test with Maven
-      run: mvn -B test
-      
-  package:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up JDK 17
-      uses: actions/setup-java@v2
-      with:
-        java-version: '17'
-        distribution: 'adopt'
-    - name: Package with Maven
-      run: mvn -B package
-
-  deploy:
-    needs: package
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
     - name: Set up Docker
-      uses: docker/setup-buildx-action@v1
-    - name: Deploy
-      run: docker compose up -d
-  
+      if: matrix.setup
+      uses: ${{ matrix.setup }}
+    - name: ${{ matrix.job }} with Maven
+      run: ${{ matrix.run }}
