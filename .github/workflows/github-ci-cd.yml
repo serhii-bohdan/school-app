@@ -52,7 +52,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Set up Docker
-      uses: docker/setup-docker-buildx-action@v1'
+      uses: docker/setup-docker-buildx-action@v3'
     - name: Deploy
       run: docker compose up -d
   
