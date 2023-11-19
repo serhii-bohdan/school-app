@@ -1,4 +1,4 @@
-# School App
+# School App [![Build Status](https://github.com/serhii-bohdan/school-app/actions/workflows/github-ci.yml/badge.svg)](https://github.com/serhii-bohdan/school-app/actions/workflows/github-ci.yml)
 
 ## Motivation
 From the very beginning, the main motivation for writing this project was:
@@ -8,7 +8,7 @@ From the very beginning, the main motivation for writing this project was:
 ## Important
 
 From the very beginning, the development of this project was carried out on [GitLab](https://gitlab.com/), this explains the fact that there is a configuration file `.gitlab-ci.yml` for CI/CD.
-At the end of the main part of the development, the project was moved to [GitHub](https://github.com/). Accordingly, `.github/workflows/github-ci-cd.yml` was added in order to automate the development process here.
+At the end of the main part of the development, the project was moved to [GitHub](https://github.com/). Accordingly, `.github/workflows/github-ci.yml` was added in order to automate the development process here.
 
 ## Description
 The main purpose of the `School App` is to simplify and automate the management of groups, students and courses in a particular educational institution. Therefore, the application interface provides thirteen options for controlling the above-mentioned participants in the educational process. These thirteen options are listed below:
@@ -43,7 +43,7 @@ The main purpose of the `School App` is to simplify and automate the management 
 To **install** this project, you must have Git version control installed on your device. It would also be nice to have a basic knowledge of using Git. You can download and learn how to use the version control system [here](https://git-scm.com/book/en/v2). Go to the folder where you want to install the project. Open Git Bash in it and enter the command:
 
 ```
-$git clone https://gitlab.com/SerhiiBohdan/school-app.git
+$git clone https://github.com/serhii-bohdan/school-app.git
 ```
 
 This way you will have the app installed.
