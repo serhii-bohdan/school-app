@@ -1,0 +1,61 @@
+name: Java CI/CD with Maven and Docker
+
+on:
+  push:
+    branches: [master, dev]
+  pull_request:
+    branches: [master]
+
+env:
+  JAVA_VERSION: '17'
+  JAVA_DISTRIBUTION: 'adopt'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 17
+      uses: actions/setup-java@v2
+      with:
+        java-version: ${{env.JAVA_VERSION}}
+        distribution: ${{env.JAVA_DISTRIBUTION}}
+    - name: Build with Maven
+      run: mvn -B compile
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 17
+      uses: actions/setup-java@v2
+      with:
+        java-version: ${{env.JAVA_VERSION}}
+        distribution: ${{env.JAVA_DISTRIBUTION}}
+    - name: Test with Maven
+      run: mvn -B test
+
+  package:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 17
+      uses: actions/setup-java@v2
+      with:
+        java-version: ${{env.JAVA_VERSION}}
+        distribution: ${{env.JAVA_DISTRIBUTION}}
+    - name: Package with Maven
+      run: mvn -B package
+
+  deploy:
+    needs: package
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' || github.event_name == 'pull_request'
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Docker
+      uses: docker/setup-buildx-action@v1
+    - name: Deploy
+      run: docker compose up -d
